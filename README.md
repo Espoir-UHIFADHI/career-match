@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# Career Match - AI-Powered Career Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Career Match est une application web moderne conçue pour optimiser votre recherche d'emploi grâce à l'intelligence artificielle. Elle offre une suite d'outils pour analyser votre CV, prédire des emails professionnels et faciliter le networking.
 
-Currently, two official plugins are available:
+![Career Match Banner](https://via.placeholder.com/1200x400?text=Career+Match+Dashboard)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Fonctionnalités Principales
 
-## React Compiler
+### 1. Analyse et Optimisation de CV
+- **Analyse IA** : Compare votre CV avec une description de poste spécifique.
+- **Score de Correspondance** : Obtient un score de pertinence basé sur des critères clés.
+- **Recommandations** : Reçoit des suggestions concrètes pour améliorer votre CV (mots-clés manquants, structure, etc.).
+- **Génération PDF** : Télécharge une version optimisée de votre CV.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Email Predictor (Outil de Networking)
+- **Découverte de Patterns** : Trouve le format d'email utilisé par une entreprise (ex: `prenom.nom@entreprise.com`).
+- **Génération d'Emails** : Génère l'email professionnel probable d'un recruteur à partir de son nom et de l'entreprise.
+- **Vérification** : (À venir) Vérification de l'existence de l'email.
 
-## Expanding the ESLint configuration
+### 3. Assistant de Networking
+- **Stratégies d'Approche** : Conseils pour contacter les recruteurs et les employés.
+- **Modèles de Messages** : Templates personnalisables pour LinkedIn et emails froids.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠 Technologies Utilisées
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Ce projet est construit avec une stack moderne et performante :
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Frontend** : [React](https://react.dev/) (v18) avec [TypeScript](https://www.typescriptlang.org/).
+- **Build Tool** : [Vite](https://vitejs.dev/) pour un développement rapide.
+- **Styling** : [Tailwind CSS](https://tailwindcss.com/) pour un design responsive et élégant.
+- **IA** : [Google Gemini API](https://ai.google.dev/) pour l'analyse de texte et la génération de contenu.
+- **Icônes** : [Lucide React](https://lucide.dev/).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📦 Installation et Démarrage
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Suivez ces étapes pour lancer le projet localement :
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1.  **Cloner le dépôt**
+    ```bash
+    git clone https://github.com/Espoir-UHIFADHI/career-match.git
+    cd career-match
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2.  **Installer les dépendances**
+    ```bash
+    npm install
+    ```
+
+3.  **Configurer les variables d'environnement**
+    Créez un fichier `.env` à la racine du projet et ajoutez votre clé API Gemini :
+    ```env
+    VITE_GEMINI_API_KEY=votre_cle_api_ici
+    ```
+
+4.  **Lancer le serveur de développement**
+    ```bash
+    npm run dev
+    ```
+    L'application sera accessible à l'adresse `http://localhost:5173`.
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou une Pull Request pour proposer des améliorations.
+
+## 📄 Licence
+
+Ce projet est sous licence MIT.
