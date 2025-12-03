@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUserStore } from "../../store/useUserStore";
 import { Search, Loader2, User, ExternalLink, MapPin, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -41,6 +42,13 @@ export function NetworkingSearch() {
             setError("⚠️ Clé API Serper manquante. Veuillez ajouter VITE_SERPER_API_KEY dans votre fichier .env et redémarrer le serveur.");
             setHasSearched(true);
             setResults([]);
+            return;
+        }
+
+        // Check Credits
+        const { useCredit, credits } = useUserStore.getState();
+        if (!useCredit(1)) {
+            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
             return;
         }
 

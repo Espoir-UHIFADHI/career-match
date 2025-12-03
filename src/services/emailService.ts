@@ -58,6 +58,24 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
         return null;
     }
 
+    // 1. Check Cache
+    const cacheKey = `cache_hunter_${domain}`;
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+        try {
+            const { pattern, timestamp } = JSON.parse(cachedData);
+            // Optional: Check if cache is too old (e.g. > 30 days)
+            // For now, we keep it simple as per instructions: "Si oui : Renvoie les données du cache"
+            console.log(`[Hunter Cache] Hit for ${domain}`);
+            return pattern;
+        } catch (e) {
+            console.error("Error parsing cache:", e);
+            localStorage.removeItem(cacheKey);
+        }
+    }
+
+    // 2. Call API if not in cache
     try {
         const response = await fetch(`https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${HUNTER_API_KEY}`);
 
@@ -67,7 +85,18 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
         }
 
         const data: HunterResponse = await response.json();
-        return data.data.pattern;
+        const pattern = data.data.pattern;
+
+        // 3. Save to Cache
+        if (pattern) {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                pattern: pattern,
+                timestamp: Date.now()
+            }));
+            console.log(`[Hunter Cache] Saved for ${domain}`);
+        }
+
+        return pattern;
     } catch (error) {
         console.error("Error fetching email pattern:", error);
         return null;

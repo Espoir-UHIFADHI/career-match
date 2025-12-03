@@ -3,6 +3,7 @@ import { Briefcase, FileText, User, Mail, Menu, X } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { cn } from "../lib/utils";
 
+
 export function Layout({ children }: { children: React.ReactNode }) {
     const { step } = useAppStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -27,10 +28,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20 text-white">
                             <Briefcase className="h-5 w-5" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                        <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 hidden sm:inline-block">
                             CV Match AI
                         </span>
                     </div>
+
+
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200">

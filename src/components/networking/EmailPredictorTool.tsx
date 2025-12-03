@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUserStore } from "../../store/useUserStore";
 import { Mail, Loader2, Building2, User, Copy, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -22,6 +23,14 @@ export function EmailPredictorTool() {
 
     const handlePredict = async () => {
         if (!company) return;
+
+        // Check Credits
+        const { useCredit, credits } = useUserStore.getState();
+        // Cost is 2 credits for email discovery
+        if (!useCredit(2)) {
+            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+            return;
+        }
 
         setStatus('loading');
         setError(null);
