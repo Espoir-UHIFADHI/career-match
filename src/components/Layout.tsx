@@ -1,16 +1,22 @@
-import React from "react";
-import { Briefcase, FileText, User, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { Briefcase, FileText, User, Mail, Menu, X } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { cn } from "../lib/utils";
 
 export function Layout({ children }: { children: React.ReactNode }) {
     const { step } = useAppStore();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navItems = [
         { id: 1, name: "Upload CV", icon: FileText, activeSteps: [1, 2, 3, 4] },
         { id: 5, name: "Networking", icon: User, activeSteps: [5] },
         { id: 6, name: "Email Predictor", icon: Mail, activeSteps: [6] },
     ];
+
+    const handleNavClick = (id: number) => {
+        useAppStore.getState().setStep(id);
+        setIsMobileMenuOpen(false);
+    };
 
     return (
         <div className="min-h-screen font-sans text-slate-900 selection:bg-indigo-500/20 selection:text-indigo-900">
@@ -26,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         </span>
                     </div>
 
-                    {/* Step Indicator */}
+                    {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200">
                         {navItems.map((item, i) => {
                             const isActive = item.activeSteps.includes(step);
@@ -51,7 +57,46 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             );
                         })}
                     </nav>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    >
+                        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    </button>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                {isMobileMenuOpen && (
+                    <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-slate-200 shadow-lg animate-slide-down">
+                        <div className="p-4 space-y-2">
+                            {navItems.map((item) => {
+                                const isActive = item.activeSteps.includes(step);
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => handleNavClick(item.id)}
+                                        className={cn(
+                                            "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                                            isActive
+                                                ? "bg-indigo-50 text-indigo-700 border border-indigo-100"
+                                                : "text-slate-600 hover:bg-slate-50"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "p-2 rounded-lg",
+                                            isActive ? "bg-indigo-100" : "bg-slate-100"
+                                        )}>
+                                            <item.icon className={cn("h-5 w-5", isActive ? "text-indigo-600" : "text-slate-500")} />
+                                        </div>
+                                        {item.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </header>
 
             {/* Main Content */}
