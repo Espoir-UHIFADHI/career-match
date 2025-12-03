@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Link, FileText, Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight, Link as LinkIcon } from "lucide-react";
+import { Search, FileText, Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight, Link as LinkIcon } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -10,12 +10,11 @@ import type { JobAnalysis } from "../../types";
 export function JobInput() {
     const { setJobData, setStep } = useAppStore();
     const [mode, setMode] = useState<"url" | "text">("url");
-    const [input, setInput] = useState("");
     const [url, setUrl] = useState("");
     const [description, setDescription] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [previewData, setPreviewData] = useState<JobAnalysis | null>(null);
+    const [previewData, setPreviewData] = useState<(JobAnalysis & { url?: string }) | null>(null);
 
     const analyzeJob = async () => {
         const contentToAnalyze = mode === "url" ? url : description;
@@ -81,7 +80,7 @@ export function JobInput() {
 
             const analysis = await generateJSON(prompt);
             console.log("Job Analysis Result:", analysis);
-            setPreviewData({ ...analysis, url: mode === "url" ? url : undefined } as JobAnalysis);
+            setPreviewData({ ...analysis, url: mode === "url" ? url : undefined });
         } catch (err) {
             console.error(err);
             setError("Failed to analyze job. Please try again or paste text manually.");
@@ -92,7 +91,9 @@ export function JobInput() {
 
     const handleProceed = () => {
         if (previewData) {
-            setJobData(previewData);
+            // Ensure we only pass the properties expected by JobAnalysis
+            const { url: _url, ...jobData } = previewData;
+            setJobData(jobData);
             setStep(3);
         }
     };
