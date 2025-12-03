@@ -18,8 +18,12 @@ Career Match est une application web moderne conçue pour optimiser votre recher
 - **Vérification** : (À venir) Vérification de l'existence de l'email.
 
 ### 3. Assistant de Networking
-- **Stratégies d'Approche** : Conseils pour contacter les recruteurs et les employés.
-- **Modèles de Messages** : Templates personnalisables pour LinkedIn et emails froids.
+- **Stratégies d'Approche** : Conseils pratiques pour contacter efficacement les recruteurs et les employés (Approche Chaleureuse, Valeur avant tout, Relance Intelligente).
+- **Modèles de Messages** : Bibliothèque de templates personnalisables pour :
+    - Connexions LinkedIn (Anciens élèves, Spontanée).
+    - Emails de demande de conseils.
+    - Messages de relance.
+- **Personnalisation Facile** : Remplissage automatique des champs (Nom, Entreprise) et copie en un clic.
 
 ## 🛠 Technologies Utilisées
 
