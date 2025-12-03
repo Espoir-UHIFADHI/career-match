@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
+
 import { Copy, Check, BookOpen, MessageSquare, Lightbulb, Send } from "lucide-react";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
@@ -191,8 +191,8 @@ export function NetworkingGuide() {
                                                 {template.title}
                                             </CardTitle>
                                             <span className={`text-xs px-2 py-1 rounded-full border ${template.category === 'linkedin' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                    template.category === 'email' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                        'bg-purple-50 text-purple-600 border-purple-100'
+                                                template.category === 'email' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                    'bg-purple-50 text-purple-600 border-purple-100'
                                                 }`}>
                                                 {template.category}
                                             </span>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ArrowRight, Loader2, Download, Eye } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
@@ -10,7 +10,7 @@ import { PrintableCV } from "./PrintableCV";
 import type { MatchResult } from "../../types";
 
 export function MatchingDashboard() {
-    const { cvData, jobData, analysisResults, setAnalysisResults, setStep, language, setLanguage } = useAppStore();
+    const { cvData, jobData, analysisResults, setAnalysisResults, language, setLanguage } = useAppStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPreview, setShowPreview] = useState(false);
