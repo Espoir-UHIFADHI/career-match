@@ -11,6 +11,7 @@ import { generateNetworkingQueries } from "../../services/ai/gemini";
 import { Mail, Copy, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
 import { NetworkingGuide } from "./NetworkingGuide";
+import { SignInButton, useUser } from "@clerk/clerk-react";
 
 interface Contact {
     name: string;
@@ -22,12 +23,8 @@ interface Contact {
     emailConfidence?: number;
 }
 
-import { AuthModal } from "../auth/AuthModal";
-
-// ... existing imports
 
 export function NetworkingSearch() {
-    const [showAuthModal, setShowAuthModal] = useState(false);
     const [company, setCompany] = useState("");
     const [role, setRole] = useState("");
     const [location, setLocation] = useState("");
@@ -36,6 +33,7 @@ export function NetworkingSearch() {
     const [hasSearched, setHasSearched] = useState(false);
     const [page, setPage] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const { isSignedIn, user } = useUser();
     const RESULTS_PER_PAGE = 10;
 
     const handleSearch = async (isLoadMore = false) => {
@@ -51,19 +49,26 @@ export function NetworkingSearch() {
         }
 
         // Check Credits
-        const { useCredit, credits, session } = useUserStore.getState();
-        const success = await useCredit(1);
+        const { useCredit, credits } = useUserStore.getState();
+
+        if (!isSignedIn || !user) {
+            // If not signed in, we can't check credits properly or deduct them.
+            // The UI should probably show a sign in button instead of search if strict.
+            // For now, let's just alert or return.
+            // Ideally, the button below handles the sign in trigger.
+            return;
+        }
+
+        const success = await useCredit(user.id, 1);
 
         if (!success) {
-            if (!session) {
-                setShowAuthModal(true);
-            } else {
-                alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
-            }
+            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
             return;
         }
 
         setIsSearching(true);
+        // ... rest of the function
+
 
         setError(null); // Reset error on new search
         if (!isLoadMore) {
@@ -295,23 +300,34 @@ export function NetworkingSearch() {
                                 </div>
                             </div>
 
-                            <Button
-                                onClick={() => handleSearch(false)}
-                                disabled={isSearching || (!company && !role)}
-                                className="w-full md:w-auto md:min-w-[200px] h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.02]"
-                            >
-                                {isSearching && !hasSearched ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Searching LinkedIn...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Search className="mr-2 h-4 w-4" />
-                                        Find Contacts
-                                    </>
-                                )}
-                            </Button>
+                            {isSignedIn ? (
+                                <Button
+                                    onClick={() => handleSearch(false)}
+                                    disabled={isSearching || (!company && !role)}
+                                    className="w-full md:w-auto md:min-w-[200px] h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    {isSearching && !hasSearched ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Searching LinkedIn...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Search className="mr-2 h-4 w-4" />
+                                            Find Contacts
+                                        </>
+                                    )}
+                                </Button>
+                            ) : (
+                                <SignInButton mode="modal">
+                                    <Button
+                                        className="w-full md:w-auto md:min-w-[200px] h-11 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-lg shadow-slate-900/25 transition-all duration-300 hover:scale-[1.02]"
+                                    >
+                                        <User className="mr-2 h-4 w-4" />
+                                        Se connecter pour chercher
+                                    </Button>
+                                </SignInButton>
+                            )}
                             <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 font-medium mt-2">
                                 <Sparkles className="w-3 h-3" />
                                 Powered by AI Smart Search
@@ -468,7 +484,6 @@ export function NetworkingSearch() {
                     <NetworkingGuide />
                 </TabsContent>
             </Tabs>
-            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
     );
 }
