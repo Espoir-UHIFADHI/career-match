@@ -64,7 +64,7 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
 
     if (cachedData) {
         try {
-            const { pattern, timestamp } = JSON.parse(cachedData);
+            const { pattern } = JSON.parse(cachedData);
             // Optional: Check if cache is too old (e.g. > 30 days)
             // For now, we keep it simple as per instructions: "Si oui : Renvoie les données du cache"
             console.log(`[Hunter Cache] Hit for ${domain}`);

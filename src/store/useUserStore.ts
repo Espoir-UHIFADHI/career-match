@@ -9,6 +9,7 @@ interface UserState {
     setSession: (session: Session | null) => void;
     fetchCredits: () => Promise<void>;
     useCredit: (amount: number) => Promise<boolean>;
+    addCredits: (amount: number) => void;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -76,6 +77,10 @@ export const useUserStore = create<UserState>((set, get) => ({
             console.error('Error spending credits:', error);
             return false;
         }
+    },
+
+    addCredits: (amount: number) => {
+        set((state) => ({ credits: state.credits + amount }));
     },
 }));
 
