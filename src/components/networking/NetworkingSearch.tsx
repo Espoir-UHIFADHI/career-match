@@ -22,7 +22,12 @@ interface Contact {
     emailConfidence?: number;
 }
 
+import { AuthModal } from "../auth/AuthModal";
+
+// ... existing imports
+
 export function NetworkingSearch() {
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const [company, setCompany] = useState("");
     const [role, setRole] = useState("");
     const [location, setLocation] = useState("");
@@ -46,13 +51,20 @@ export function NetworkingSearch() {
         }
 
         // Check Credits
-        const { useCredit, credits } = useUserStore.getState();
-        if (!useCredit(1)) {
-            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+        const { useCredit, credits, session } = useUserStore.getState();
+        const success = await useCredit(1);
+
+        if (!success) {
+            if (!session) {
+                setShowAuthModal(true);
+            } else {
+                alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+            }
             return;
         }
 
         setIsSearching(true);
+
         setError(null); // Reset error on new search
         if (!isLoadMore) {
             setResults([]);
@@ -456,6 +468,7 @@ export function NetworkingSearch() {
                     <NetworkingGuide />
                 </TabsContent>
             </Tabs>
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
     );
 }

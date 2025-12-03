@@ -21,11 +21,20 @@ export function MatchingDashboard() {
         documentTitle: "Optimized_CV",
     });
 
+    const prevLanguageRef = useRef(language);
+
     useEffect(() => {
+        const hasLanguageChanged = prevLanguageRef.current !== language;
+        const hasResults = !!analysisResults;
+
         if (cvData && jobData && !isProcessing) {
-            runAnalysis();
+            // Only run if we don't have results yet, OR if the language has changed
+            if (!hasResults || hasLanguageChanged) {
+                runAnalysis();
+            }
         }
-    }, [language]);
+        prevLanguageRef.current = language;
+    }, [language, cvData, jobData]);
 
     const runAnalysis = async () => {
         if (!cvData || !jobData) return;
@@ -34,6 +43,7 @@ export function MatchingDashboard() {
         try {
             const results = await matchAndOptimize(cvData, jobData, language);
             setAnalysisResults(results as MatchResult);
+            setShowPreview(true);
         } catch (err) {
             console.error(err);
             setError("Failed to analyze match. Please try again.");
@@ -66,14 +76,30 @@ export function MatchingDashboard() {
     if (!analysisResults) return null;
 
     const { score, analysis, recommendations } = analysisResults;
+    const isLowMatch = score < 45 || !analysisResults.optimizedCV;
 
     return (
         <div className="space-y-8">
+            {isLowMatch && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm">
+                    <div className="flex items-start">
+                        <AlertTriangle className="h-6 w-6 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <h3 className="text-lg font-medium text-red-800">Low Match Score Detected ({score}%)</h3>
+                            <p className="text-sm text-red-700 mt-1">
+                                The match between your profile and this job description is too low to generate a valid optimized CV.
+                                We do not generate fake information. Please review the missing keywords and recommendations below to improve your profile or apply to a more relevant position.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Score Card */}
                 <Card className="md:col-span-1 glass-panel bg-white border-slate-200 shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-center text-slate-900">Match Score</CardTitle>
+                        <CardTitle className="text-center text-slate-900">Score Initial</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center pt-2">
                         <div className="relative flex items-center justify-center h-32 w-32">
@@ -96,13 +122,13 @@ export function MatchingDashboard() {
                                     fill="transparent"
                                     strokeDasharray={351.86}
                                     strokeDashoffset={351.86 - (351.86 * score) / 100}
-                                    className="text-indigo-600 transition-all duration-1000 ease-out"
+                                    className={`transition-all duration-1000 ease-out ${score < 45 ? "text-red-500" : "text-indigo-600"}`}
                                 />
                             </svg>
                             <span className="absolute text-4xl font-bold text-slate-900">{score}%</span>
                         </div>
-                        <p className="mt-4 text-center text-sm text-slate-600 font-medium">
-                            {score >= 80 ? "Excellent Match!" : score >= 60 ? "Good Potential" : "Needs Improvement"}
+                        <p className={`mt-4 text-center text-sm font-medium ${score < 45 ? "text-red-600" : "text-slate-600"}`}>
+                            {score >= 80 ? "Excellent Match!" : score >= 60 ? "Good Potential" : score >= 45 ? "Needs Improvement" : "Critical Low Match"}
                         </p>
                     </CardContent>
                 </Card>
@@ -110,7 +136,12 @@ export function MatchingDashboard() {
                 {/* Key Insights */}
                 <Card className="md:col-span-2 glass-panel bg-white border-slate-200 shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-slate-900">Analysis</CardTitle>
+                        <CardTitle className="text-slate-900">Analyse du CV Original</CardTitle>
+                        <p className="text-sm text-slate-500">
+                            {isLowMatch
+                                ? "Voici les raisons principales du faible score de matching."
+                                : `Voici pourquoi votre score initial est de ${score}%. Le CV optimisé ci-dessous corrige ces points.`}
+                        </p>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -190,35 +221,44 @@ export function MatchingDashboard() {
                         <Loader2 className="h-4 w-4" />
                         Regenerate Analysis
                     </Button>
-                    <Button variant="outline" onClick={() => setShowPreview(!showPreview)} className="w-full sm:w-auto gap-2 hover:bg-slate-100 text-slate-700 border-slate-300">
-                        <Eye className="h-4 w-4" />
-                        {showPreview ? "Hide Preview" : "Preview Optimized CV"}
-                    </Button>
-                    <Button size="lg" onClick={() => handlePrint()} className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25">
-                        <Download className="h-4 w-4" /> Download PDF
-                    </Button>
+
+                    {!isLowMatch && (
+                        <>
+                            <Button variant="outline" onClick={() => setShowPreview(!showPreview)} className="w-full sm:w-auto gap-2 hover:bg-slate-100 text-slate-700 border-slate-300">
+                                <Eye className="h-4 w-4" />
+                                {showPreview ? "Hide Preview" : "Preview Optimized CV"}
+                            </Button>
+                            <Button size="lg" onClick={() => handlePrint()} className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25">
+                                <Download className="h-4 w-4" /> Download PDF
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
 
-            {showPreview && (
-                <Card className="mt-8 glass-panel bg-white border-slate-200 shadow-sm overflow-hidden">
-                    <CardHeader className="bg-slate-50 border-b border-slate-200">
-                        <CardTitle className="text-slate-900">Optimized CV Preview</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0 bg-slate-50 overflow-x-auto">
-                        <div className="min-w-[800px] p-8">
-                            <div className="shadow-lg bg-white">
-                                <PrintableCV data={analysisResults.optimizedCV} language={language} />
+            {
+                showPreview && !isLowMatch && analysisResults.optimizedCV && (
+                    <Card className="mt-8 glass-panel bg-white border-slate-200 shadow-sm overflow-hidden">
+                        <CardHeader className="bg-slate-50 border-b border-slate-200">
+                            <CardTitle className="text-slate-900">Optimized CV Preview</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 bg-slate-50 overflow-x-auto">
+                            <div className="min-w-[800px] p-8">
+                                <div className="shadow-lg bg-white">
+                                    <PrintableCV data={analysisResults.optimizedCV} language={language} />
+                                </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
+                        </CardContent>
+                    </Card>
+                )
+            }
 
             {/* Hidden Printable Component */}
-            <div className="hidden">
-                <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={language} />
-            </div>
+            {!isLowMatch && analysisResults.optimizedCV && (
+                <div className="hidden">
+                    <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={language} />
+                </div>
+            )}
         </div>
     );
 }

@@ -48,7 +48,7 @@ export async function parseCV(file: File): Promise<ParsedCV> {
   // 2. CONFIGURATION DU MODÈLE (Flash = Rapide & Stable)
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    generationConfig: { responseMimeType: "application/json" }
+    generationConfig: { responseMimeType: "application/json", temperature: 0 }
   });
 
   try {
@@ -120,23 +120,35 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
 
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    generationConfig: { responseMimeType: "application/json" }
+    generationConfig: { responseMimeType: "application/json", temperature: 0 }
   });
 
   const prompt = `
   Rôle : Expert en Recrutement pour cabinets de conseil "Top Tier" (McKinsey, BCG, Bain, Deloitte, PwC, EY, KPMG).
-  Action : Analyse la compatibilité entre ce CV et cette Offre d'Emploi, puis optimise le CV pour qu'il soit PARFAIT pour ces cabinets exigeants.
+  Action : Analyse la compatibilité entre ce CV et cette Offre d'Emploi.
   Langue de sortie : ${language}
 
   Données CV : ${JSON.stringify(cv)}
   Données Offre : ${JSON.stringify(job)}
 
-  RÈGLES D'OR "BIG FOUR / MBB" (NON NÉGOCIABLES) :
+  RÈGLE CRITIQUE DE MATCHING (SEUIL DE PERTINENCE) :
+  1. Tu dois d'abord évaluer le score de matching (0-100).
+  2. SI LE SCORE EST INFÉRIEUR À 45% (Seuil Critique) :
+     - C'est un "Low Match". Le profil ne correspond pas du tout au poste (ex: Ingénieur Mécanique pour un poste de Couturier).
+     - DANS CE CAS : NE GÉNÈRE PAS DE "optimizedCV". Mets "optimizedCV": null.
+     - Tu ne dois PAS mentir ou inventer des compétences pour forcer le matching.
+     - Explique clairement dans "analysis.weaknesses" et "recommendations" pourquoi le profil est rejeté.
+
+  3. SI LE SCORE EST SUPÉRIEUR OU ÉGAL À 45% :
+     - Procède à l'optimisation complète du CV selon les règles "BIG FOUR / MBB" ci-dessous.
+
+  RÈGLES D'OR "BIG FOUR / MBB" (UNIQUEMENT SI SCORE >= 45%) :
   1. STRUCTURE & LISIBILITÉ (Règle des 6 secondes) :
      - Le CV DOIT tenir sur UNE SEULE PAGE (A4). C'est impératif.
      - Utilise des BULLET POINTS (Listes à puces) pour TOUTES les expériences.
      - Limite à 3-5 puces par expérience pertinente.
      - Pas de blocs de texte compacts. Aère le contenu.
+     - RESPECTE LES MARGES : Ne surcharge pas la page. Si nécessaire, réduis le contenu moins pertinent.
 
   2. CONTENU "IMPACT & CONSULTING" :
      - Chaque puce doit suivre la structure : "Verbe d'action fort + Contexte/Tâche + RÉSULTAT CHIFFRÉ (Impact)".
@@ -150,31 +162,25 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
 
   4. ÉDUCATION (Critère N°1) :
      - Affiche CLAIREMENT : Nom de l'école (en premier), Ville, Diplôme, Dates.
-     - Ajoute la Mention ou le GPA si c'est un atout.
-
-  5. COMPÉTENCES & LANGUES :
-     - Sépare les "Hard Skills" (Outils, Tech) des "Soft Skills" (Comportemental).
-     - LANGUES : Indique TOUJOURS le niveau (ex: "Anglais : Courant / C1"). C'est éliminatoire sinon.
-
-  7. OPTIMISATION DE L'ESPACE & MARGES (CRITIQUE - NON NÉGOCIABLE) :
-     - LE CV DOIT TENIR SUR UNE PAGE. C'est la priorité absolue.
-     - HEADLINE : MAX 90 caractères. Si c'est plus long, COUPE ou REFORMULE. Doit tenir sur 1 ligne.
-     - SUMMARY : MAX 350 caractères (environ 3 lignes).
-     - BULLET POINTS : MAX 130 caractères par puce. Une puce = 1 ligne (exceptionnellement 2).
-     - Si un texte dépasse, tu DOIS le résumer de manière agressive.
-     - Supprime les mots de liaison inutiles (ex: "en charge de", "responsable de", "afin de"). Utilise un style télégraphique.
-
-  Tâche :
-  1. Calcule un score de compatibilité (0-100).
-  2. Identifie les points forts, points faibles, et mots-clés manquants.
-  3. Évalue le fit culturel.
-  4. GÉNÈRE LE CV OPTIMISÉ (optimizedCV) en respectant scrupuleusement les limites de caractères.
-     - Headline : "[Poste] | [Expertise]" (Court et percutant, < 90 chars)
-     - Summary : Pitch ultra-court (< 350 chars).
-     - Experience : 3-4 puces max par poste. Chaque puce < 130 chars.
-     - Education : Complète mais concise.
-     - Skills : Liste de mots-clés pertinents uniquement.
+     - Summary : Pitch percutant et professionnel (2-3 lignes MAXIMUM).
+     - Experience : 3 puces MAXIMUM par poste. Soyez précis et concis (méthode STAR).
+     - Education : Complète mais concise (pas de description longue).
+     - Skills : SÉLECTIONNE UNIQUEMENT les 8-10 compétences les plus pertinentes.
      - Interests : Court.
+
+   5. INTEGRATION OBLIGATOIRE DES MOTS-CLÉS (CRITIQUE) :
+      - Tu vas identifier des "Missing Keywords" dans l'analyse.
+      - SÉLECTIONNE les 3 à 5 mots-clés les plus CRITIQUES pour le poste.
+      - TU DOIS LES AJOUTER dans optimizedCV.skills ou dans les puces d'expérience.
+      - C'est NON NÉGOCIABLE pour les compétences techniques clés (Hard Skills).
+      - Fais-le de manière naturelle, mais assure-toi qu'ils sont présents.
+      - IMPORTANT : N'UTILISE PAS DE MARKDOWN (pas de **, pas de *) dans les valeurs JSON. Écris du texte brut uniquement.
+
+   6. CURATION DES SKILLS (ESSENTIEL) :
+      - NE LISTE PAS toutes les compétences du candidat.
+      - SÉLECTIONNE UNIQUEMENT les 10-15 compétences les plus pertinentes pour CETTE offre d'emploi.
+      - Supprime les compétences obsolètes ou non pertinentes pour le poste visé.
+      - L'objectif est la PERTINENCE, pas la quantité.
 
   Structure JSON attendue (MatchResult) :
   {
@@ -185,25 +191,7 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
       "missingKeywords": ["..."],
       "cultureFit": "..."
     },
-    "optimizedCV": {
-      "contact": { ... },
-      "headline": "...",
-      "summary": "...",
-      "skills": ["..."],
-      "softSkills": ["..."],
-      "languages": ["Anglais (C1)", "Français (Natif)"],
-      "interests": ["Passion 1", "Passion 2"],
-      "experience": [
-        {
-          "company": "...",
-          "role": "...",
-          "dates": "...",
-          "description": "- Puce 1 (Action + Résultat)\n- Puce 2 (Action + Résultat)\n- Puce 3 (Action + Résultat)"
-        }
-      ],
-      "education": [ ... ],
-      "certifications": [ ... ]
-    },
+    "optimizedCV": { ... } OU null (si score < 45),
     "recommendations": ["..."]
   }
   `;
@@ -232,7 +220,7 @@ export async function generateJSON<T = any>(prompt: string): Promise<T> {
 
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    generationConfig: { responseMimeType: "application/json" }
+    generationConfig: { responseMimeType: "application/json", temperature: 0 }
   });
 
   try {
@@ -263,7 +251,7 @@ export async function generateNetworkingQueries(
 
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    generationConfig: { responseMimeType: "application/json" }
+    generationConfig: { responseMimeType: "application/json", temperature: 0 }
   });
 
   const prompt = `
@@ -301,6 +289,47 @@ export async function generateNetworkingQueries(
     return JSON.parse(text) as { queries: string[] };
   } catch (error) {
     console.error("❌ Erreur Génération Requêtes Networking:", error);
+    throw error;
+  }
+}
+
+/**
+ * Optimise le contenu du CV (Bullet points, structure) sans offre spécifique
+ */
+export async function optimizeCVContent(cv: ParsedCV): Promise<ParsedCV> {
+  console.log("🚀 Optimisation CV générique avec Gemini Flash...");
+
+  if (!apiKey || !genAI) {
+    throw new Error("Clé API manquante.");
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    generationConfig: { responseMimeType: "application/json", temperature: 0 }
+  });
+
+  const prompt = `
+  Rôle : Expert en Rédaction de CV "Top Tier" (McKinsey, BCG, Bain).
+  Action : Réécris et améliore le contenu de ce CV pour qu'il soit plus percutant, orienté résultats, et professionnel.
+  
+  Données CV : ${JSON.stringify(cv)}
+
+  Instructions :
+  1. Améliore le "Summary" pour qu'il soit une proposition de valeur forte.
+  2. Réécris les descriptions d'expérience en bullet points "Action + Résultat".
+  3. Corrige les fautes et améliore le style (langage professionnel).
+  4. Garde la même structure JSON.
+
+  Structure JSON attendue : (Même format que l'entrée)
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    return JSON.parse(text) as ParsedCV;
+  } catch (error) {
+    console.error("❌ Erreur Optimisation CV:", error);
     throw error;
   }
 }

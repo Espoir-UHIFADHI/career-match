@@ -8,7 +8,10 @@ import { Label } from "../ui/Label";
 import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 
+import { AuthModal } from "../auth/AuthModal";
+
 export function EmailPredictorTool() {
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const [company, setCompany] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -25,10 +28,16 @@ export function EmailPredictorTool() {
         if (!company) return;
 
         // Check Credits
-        const { useCredit, credits } = useUserStore.getState();
+        const { useCredit, credits, session } = useUserStore.getState();
         // Cost is 2 credits for email discovery
-        if (!useCredit(2)) {
-            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+        const success = await useCredit(2);
+
+        if (!success) {
+            if (!session) {
+                setShowAuthModal(true);
+            } else {
+                alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+            }
             return;
         }
 
@@ -278,6 +287,7 @@ export function EmailPredictorTool() {
                     </div>
                 </div>
             )}
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
     );
 }

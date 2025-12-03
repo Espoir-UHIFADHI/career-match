@@ -1,5 +1,8 @@
+import { useEffect } from "react";
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
+import { useUserStore } from "./store/useUserStore";
+import { supabase } from "./services/supabase";
 import { Button } from "./components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { Steps } from "./components/ui/Steps";
@@ -19,29 +22,36 @@ const steps = [
   { id: 4, name: 'Results', description: 'Download PDF' },
 ];
 
+import { LandingPage } from "./components/LandingPage";
+
+// ... existing imports
+
 function App() {
   console.log("App.tsx rendering");
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language } = useAppStore();
+  const { setSession, session } = useUserStore();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setSession]);
+
 
   const handleStepClick = (stepId: number) => {
-    // Prevent jumping ahead without data
+    // ... existing logic
     if (stepId === 2 && !cvData) return;
     if (stepId === 3 && (!cvData || !jobData)) return;
     if (stepId === 4 && (!analysisResults)) return;
-    // Networking (step 5) can be accessed anytime? Or maybe after CV upload?
-    // Let's allow it anytime for now, or maybe after step 1.
-    // User request: "Implémente un onglet networking séparé"
-    // Let's make it accessible if step 1 is done, or just always accessible?
-    // Usually networking is better when you know what you are looking for.
-    // Let's allow it if cvData exists, similar to other steps, or just make it independent.
-    // If I make it independent, I need to handle the "Next" flow.
-    // Let's keep it linear for now: accessible if previous steps are done OR if it's treated as a separate tool.
-    // Given the "separate tab" request, maybe it should be always clickable if we had a real tab system.
-    // But with the current "Steps" flow, it implies a sequence.
-    // Let's allow clicking step 5 if step 1 is done (basic profile).
     if (stepId === 5 && !cvData) return;
-    // Step 6 (Email Predictor) is always accessible
-
 
     setStep(stepId);
   };
@@ -69,9 +79,19 @@ function App() {
             <Button variant="ghost" onClick={() => setStep(3)} className="mb-4 gap-2">
               <ArrowLeft className="h-4 w-4" /> Back to Dashboard
             </Button>
-            <div className="bg-white shadow-xl rounded-lg overflow-hidden my-8">
-              <PrintableCV data={analysisResults.optimizedCV} language={language} />
-            </div>
+            {analysisResults.optimizedCV ? (
+              <div className="bg-white shadow-xl rounded-lg overflow-hidden my-8">
+                <PrintableCV data={analysisResults.optimizedCV} language={language} />
+              </div>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center my-8">
+                <h3 className="text-lg font-medium text-red-800 mb-2">Optimization Skipped</h3>
+                <p className="text-red-600">
+                  The match score was too low to generate a valid optimized CV.
+                  Please return to the dashboard to review the analysis.
+                </p>
+              </div>
+            )}
           </div>
         ) : <MatchingDashboard />;
       case 5: return <NetworkingSearch />;
@@ -82,10 +102,14 @@ function App() {
 
   return (
     <Layout>
-      <div className="space-y-8">
-        {step !== 5 && step !== 6 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
-        {renderStep()}
-      </div>
+      {!session ? (
+        <LandingPage />
+      ) : (
+        <div className="space-y-8">
+          {step !== 5 && step !== 6 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
+          {renderStep()}
+        </div>
+      )}
     </Layout>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save } from "lucide-react";
+import { Save, Loader2, Sparkles } from "lucide-react";
 import type { ParsedCV } from "../../types";
 import { Button } from "../ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
@@ -8,6 +8,9 @@ import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
 import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
+import { useUserStore } from "../../store/useUserStore";
+import { optimizeCVContent } from "../../services/ai/gemini";
+import { AuthModal } from "../auth/AuthModal";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -17,6 +20,8 @@ interface CVReviewProps {
 
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const [formData, setFormData] = useState<ParsedCV>(initialData);
+    const [isOptimizing, setIsOptimizing] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -104,6 +109,41 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
         });
     };
 
+    const handleOptimize = async () => {
+        console.log("handleOptimize called");
+        // Check Credits
+        const { useCredit, credits, session } = useUserStore.getState();
+        console.log("Session:", session?.user?.email, "Credits:", credits);
+
+        const success = await useCredit(1);
+        console.log("useCredit result:", success);
+
+        if (!success) {
+            if (!session) {
+                console.log("No session, showing auth modal");
+                setShowAuthModal(true);
+            } else {
+                console.log("Not enough credits");
+                alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+            }
+            return;
+        }
+
+        setIsOptimizing(true);
+        try {
+            console.log("Starting optimization...");
+            const optimizedCV = await optimizeCVContent(formData);
+            console.log("Optimization result:", optimizedCV);
+            setFormData(optimizedCV);
+            alert("CV Optimisé avec succès !");
+        } catch (error) {
+            console.error("Optimization failed:", error);
+            alert("Erreur lors de l'optimisation.");
+        } finally {
+            setIsOptimizing(false);
+        }
+    };
+
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -129,6 +169,23 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         className="flex-1 md:flex-none hover:bg-slate-100 text-slate-700 border-slate-300"
                     >
                         Back
+                    </Button>
+                    <Button
+                        onClick={handleOptimize}
+                        disabled={isOptimizing}
+                        className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/25"
+                    >
+                        {isOptimizing ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Optimizing...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Optimiser avec l'IA (1 Crédit)
+                            </>
+                        )}
                     </Button>
                     <Button
                         onClick={handleSave}
@@ -521,6 +578,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     </Card>
                 </div>
             </div>
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div >
     );
 }

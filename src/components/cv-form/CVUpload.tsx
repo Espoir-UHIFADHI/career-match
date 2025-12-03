@@ -34,7 +34,7 @@ export function CVUpload() {
 
         } catch (err) {
             console.error(err);
-            setError(err instanceof Error ? err.message : "Failed to parse CV. Please try again or paste text manually.");
+            setError("Une erreur est survenue lors de l'analyse. Veuillez réessayer.");
         } finally {
             setIsProcessing(false);
         }

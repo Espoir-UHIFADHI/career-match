@@ -62,7 +62,7 @@ export const MatchResultSchema = z.object({
         missingKeywords: z.array(z.string()),
         cultureFit: z.string(),
     }),
-    optimizedCV: CVSchema, // The rewritten CV
+    optimizedCV: CVSchema.optional(), // The rewritten CV (optional if score is too low)
     recommendations: z.array(z.string()),
 });
 
