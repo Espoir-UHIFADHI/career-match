@@ -6,7 +6,8 @@ import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { searchGoogle } from "../../services/search/serper";
 import { findCompanyDomain, getEmailPattern, generateEmail } from "../../services/emailService";
-import { Mail, Copy } from "lucide-react";
+import { generateNetworkingQueries } from "../../services/ai/gemini";
+import { Mail, Copy, Sparkles } from "lucide-react";
 
 interface Contact {
     name: string;
@@ -32,6 +33,15 @@ export function NetworkingSearch() {
     const handleSearch = async (isLoadMore = false) => {
         if (!company && !role) return;
 
+        // Check API key before attempting search
+        const apiKey = import.meta.env.VITE_SERPER_API_KEY;
+        if (!apiKey) {
+            setError("⚠️ Clé API Serper manquante. Veuillez ajouter VITE_SERPER_API_KEY dans votre fichier .env et redémarrer le serveur.");
+            setHasSearched(true);
+            setResults([]);
+            return;
+        }
+
         setIsSearching(true);
         setError(null); // Reset error on new search
         if (!isLoadMore) {
@@ -41,66 +51,94 @@ export function NetworkingSearch() {
         }
 
         try {
-            // Construct a targeted LinkedIn search query
-            // site:linkedin.com/in/ Company Role Location
-            // We remove quotes to allow for broader matching (fuzzy search)
-            const parts = ["site:linkedin.com/in/"];
+            let queries: string[] = [];
 
-            if (company) {
-                parts.push(company);
-            }
-
-            if (role) {
-                // Replace " or " with " OR " for Google search operator
-                const optimizedRole = role.replace(/\s+or\s+/gi, " OR ");
-                parts.push(`(${optimizedRole})`);
-            }
-
-            if (location) {
-                parts.push(location);
-            }
-
-            const query = parts.join(" ");
-            console.log("Networking Query:", query); // Debug log
-
-            const start = isLoadMore ? (page + 1) * RESULTS_PER_PAGE : 0;
-            console.log("Searching with start:", start, "num:", RESULTS_PER_PAGE); // Debug log
-            const searchResults = await searchGoogle(query, RESULTS_PER_PAGE, start);
-            console.log("Search results count:", searchResults?.length || 0); // Debug log
-
-            if (searchResults && searchResults.length > 0) {
-                const contacts: Contact[] = searchResults.map(r => {
-                    // Try to extract name and title from the search result title
-                    // Format is often: "Name - Title - Company | LinkedIn"
-                    const titleParts = r.title.split(" - ");
-                    const name = titleParts[0] || "Unknown Name";
-                    const jobTitle = titleParts[1] || "Unknown Title";
-
-                    return {
-                        name: name,
-                        title: jobTitle,
-                        link: r.link,
-                        snippet: r.snippet
-                    };
-                });
-
-                if (isLoadMore) {
-                    setResults(prev => [...prev, ...contacts]);
-                    setPage(prev => prev + 1);
-                } else {
-                    setResults(contacts);
+            // 1. Generate Smart Queries using Gemini
+            if (!isLoadMore) {
+                try {
+                    console.log("🧠 Generating smart queries with Gemini...");
+                    const smartSearch = await generateNetworkingQueries(company, role, location);
+                    queries = smartSearch.queries;
+                    console.log("✅ Smart Queries Generated:", queries);
+                } catch (e) {
+                    console.error("❌ Smart search generation failed, falling back to basic search", e);
+                    // Fallback to basic query construction
+                    const parts = ["site:linkedin.com/in/"];
+                    if (company) parts.push(`"${company}"`);
+                    if (role) parts.push(`(${role.replace(/\s+or\s+/gi, " OR ")})`);
+                    if (location) parts.push(location);
+                    queries = [parts.join(" ")];
+                    console.log("🔄 Fallback Query:", queries);
                 }
             } else {
-                // No results found
-                console.warn("No results returned from Serper API");
-                if (!isLoadMore) {
-                    setResults([]);
+                // For load more, we might need to store the queries in state to paginate through them
+                // For simplicity in this iteration, we'll just re-generate or use a basic query
+                const parts = ["site:linkedin.com/in/"];
+                if (company) parts.push(`"${company}"`);
+                if (role) parts.push(`(${role.replace(/\s+or\s+/gi, " OR ")})`);
+                if (location) parts.push(location);
+                queries = [parts.join(" ")];
+            }
+
+            // 2. Execute searches (parallel or sequential)
+            // We'll take the first query for now, or combine results from multiple
+            // To avoid burning too many API credits, let's start with the first 2 queries if available
+            const queriesToRun = queries.slice(0, 2);
+            let allContacts: Contact[] = [];
+
+            console.log(`🔍 Executing ${queriesToRun.length} search queries...`);
+
+            for (const query of queriesToRun) {
+                const start = isLoadMore ? (page + 1) * RESULTS_PER_PAGE : 0;
+                console.log(`📡 Searching: "${query}" (start: ${start}, num: ${RESULTS_PER_PAGE})`);
+
+                const searchResults = await searchGoogle(query, RESULTS_PER_PAGE, start);
+                console.log(`📊 Results received: ${searchResults.length} contacts`);
+
+                if (searchResults && searchResults.length > 0) {
+                    const contacts = searchResults.map(r => {
+                        const titleParts = r.title.split(" - ");
+                        const name = titleParts[0] || "Unknown Name";
+                        const jobTitle = titleParts[1] || "Unknown Title";
+                        return {
+                            name: name,
+                            title: jobTitle,
+                            link: r.link,
+                            snippet: r.snippet
+                        };
+                    });
+                    allContacts = [...allContacts, ...contacts];
                 }
             }
+
+            // 3. Deduplicate
+            const uniqueContacts = allContacts.filter((contact, index, self) =>
+                index === self.findIndex((t) => t.link === contact.link)
+            );
+
+            // Filter against existing results
+            const newUniqueContacts = uniqueContacts.filter(contact =>
+                !results.some(existing => existing.link === contact.link)
+            );
+
+            console.log(`✅ Final results: ${newUniqueContacts.length} unique contacts`);
+
+            if (isLoadMore) {
+                setResults(prev => [...prev, ...newUniqueContacts]);
+                setPage(prev => prev + 1);
+            } else {
+                setResults(newUniqueContacts);
+            }
+
+            // If no results found, set a helpful message
+            if (newUniqueContacts.length === 0 && !isLoadMore) {
+                setError("Aucun résultat trouvé. Essayez d'élargir vos critères de recherche ou vérifiez l'orthographe du nom de l'entreprise.");
+            }
+
         } catch (error) {
-            console.error("Networking search failed:", error);
+            console.error("❌ Networking search failed:", error);
             const errorMessage = error instanceof Error ? error.message : "Une erreur s'est produite lors de la recherche";
-            setError(errorMessage);
+            setError(`Erreur de recherche: ${errorMessage}`);
             if (!isLoadMore) {
                 setResults([]);
             }
@@ -114,9 +152,11 @@ export function NetworkingSearch() {
         if (!contact || !company) return;
 
         // Update status to loading
-        const newResults = [...results];
-        newResults[contactIndex] = { ...contact, emailStatus: 'loading' };
-        setResults(newResults);
+        setResults(prev => {
+            const newResults = [...prev];
+            newResults[contactIndex] = { ...newResults[contactIndex], emailStatus: 'loading' };
+            return newResults;
+        });
 
         try {
             // 1. Find domain
@@ -135,18 +175,29 @@ export function NetworkingSearch() {
 
             const email = generateEmail(firstName, lastName, pattern, domain);
 
+            if (!email) {
+                throw new Error("Impossible de générer l'email (nom invalide ou pattern manquant)");
+            }
+
             // Update result
-            newResults[contactIndex] = {
-                ...contact,
-                email: email,
-                emailStatus: 'success'
-            };
-            setResults(newResults);
+            console.log(`Setting email for contact ${contactIndex}: ${email}`);
+            setResults(prev => {
+                const newResults = [...prev];
+                newResults[contactIndex] = {
+                    ...newResults[contactIndex],
+                    email: email,
+                    emailStatus: 'success'
+                };
+                return newResults;
+            });
 
         } catch (error) {
             console.error("Email prediction failed:", error);
-            newResults[contactIndex] = { ...contact, emailStatus: 'error' };
-            setResults(newResults);
+            setResults(prev => {
+                const newResults = [...prev];
+                newResults[contactIndex] = { ...newResults[contactIndex], emailStatus: 'error' };
+                return newResults;
+            });
         }
     };
 
@@ -230,6 +281,10 @@ export function NetworkingSearch() {
                             </>
                         )}
                     </Button>
+                    <div className="flex items-center justify-center gap-2 text-xs text-indigo-600 font-medium mt-2">
+                        <Sparkles className="w-3 h-3" />
+                        Powered by AI Smart Search
+                    </div>
                 </CardContent>
             </Card>
 
@@ -246,7 +301,7 @@ export function NetworkingSearch() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {results.map((contact, i) => (
-                            <Card key={i} className="glass-panel bg-white border-slate-200 hover:border-indigo-300 shadow-sm group transition-all">
+                            <Card key={`${i}-${contact.emailStatus}`} className="glass-panel bg-white border-slate-200 hover:border-indigo-300 shadow-sm group transition-all">
                                 <CardContent className="p-5">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="space-y-2">
@@ -319,14 +374,32 @@ export function NetworkingSearch() {
                         ))}
 
                         {results.length === 0 && !isSearching && (
-                            <div className="col-span-2 text-center py-12 glass-panel bg-slate-50 rounded-xl border-dashed border-slate-300">
+                            <div className="col-span-2 text-center py-12 glass-panel bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
                                 <Search className="h-12 w-12 mx-auto mb-4 text-slate-400" />
                                 {error ? (
-                                    <>
+                                    <div className="space-y-3">
                                         <p className="text-lg text-red-600 font-semibold">❌ Erreur de Recherche</p>
-                                        <p className="text-sm text-slate-600 mt-2">{error}</p>
-                                        <p className="text-xs text-slate-500 mt-3">Vérifiez votre clé API Serper dans le fichier .env</p>
-                                    </>
+                                        <p className="text-sm text-slate-700 mt-2 max-w-md mx-auto bg-red-50 border border-red-200 rounded-lg p-3">
+                                            {error}
+                                        </p>
+                                        {error.includes("API") && (
+                                            <div className="text-xs text-slate-600 mt-4 space-y-2 max-w-lg mx-auto text-left bg-white border border-slate-200 rounded-lg p-4">
+                                                <p className="font-semibold text-indigo-700">💡 Pour configurer l'API Serper :</p>
+                                                <ol className="list-decimal list-inside space-y-1 ml-2">
+                                                    <li>Créez un compte sur <a href="https://serper.dev" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">serper.dev</a></li>
+                                                    <li>Copiez votre clé API</li>
+                                                    <li>Ajoutez <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">VITE_SERPER_API_KEY=votre_clé</code> dans le fichier <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">.env</code></li>
+                                                    <li>Redémarrez le serveur de développement</li>
+                                                </ol>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => console.log("Error details:", error)}
+                                            className="text-xs text-indigo-600 hover:text-indigo-700 underline mt-2"
+                                        >
+                                            Afficher les détails dans la console
+                                        </button>
+                                    </div>
                                 ) : (
                                     <>
                                         <p className="text-lg text-slate-600">Aucun contact trouvé.</p>

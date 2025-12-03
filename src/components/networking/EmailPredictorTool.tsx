@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
+import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 
 export function EmailPredictorTool() {
     const [company, setCompany] = useState("");
@@ -15,12 +16,18 @@ export function EmailPredictorTool() {
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
+    // Verification state
+    const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
+    const [verificationResult, setVerificationResult] = useState<VerificationResponse['data'] | null>(null);
+
     const handlePredict = async () => {
         if (!company) return;
 
         setStatus('loading');
         setError(null);
         setResult(null);
+        setVerificationStatus('idle');
+        setVerificationResult(null);
 
         try {
             // 1. Find domain
@@ -34,7 +41,8 @@ export function EmailPredictorTool() {
             // 3. Generate email if names provided
             let email: string | undefined;
             if (firstName && lastName) {
-                email = generateEmail(firstName, lastName, pattern, domain);
+                const generated = generateEmail(firstName, lastName, pattern, domain);
+                email = generated || undefined;
             }
 
             setResult({ email, domain, pattern });
@@ -51,6 +59,52 @@ export function EmailPredictorTool() {
             navigator.clipboard.writeText(result.email);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleVerify = async () => {
+        if (!result?.email) return;
+
+        setVerificationStatus('verifying');
+        try {
+            const data = await verifyEmail(result.email);
+            if (data) {
+                setVerificationResult(data);
+                setVerificationStatus('verified');
+            } else {
+                setVerificationStatus('error');
+            }
+        } catch (e) {
+            setVerificationStatus('error');
+        }
+    };
+
+    const getVerificationBadge = () => {
+        if (!verificationResult) return null;
+
+        const { status, score } = verificationResult;
+
+        if (status === 'valid') {
+            return (
+                <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1 rounded-full text-sm font-medium border border-green-200">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Valid (Score: {score}%)
+                </div>
+            );
+        } else if (status === 'invalid') {
+            return (
+                <div className="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-1 rounded-full text-sm font-medium border border-red-200">
+                    <XCircle className="w-4 h-4" />
+                    Invalid (Score: {score}%)
+                </div>
+            );
+        } else {
+            return (
+                <div className="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-1 rounded-full text-sm font-medium border border-amber-200">
+                    <HelpCircle className="w-4 h-4" />
+                    {status === 'accept_all' ? 'Accept All' : 'Risky'} (Score: {score}%)
+                </div>
+            );
         }
     };
 
@@ -159,6 +213,35 @@ export function EmailPredictorTool() {
                                     >
                                         {copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
                                     </Button>
+                                </div>
+
+                                {/* Verification Section */}
+                                <div className="flex flex-col items-center gap-4 pt-4 border-t border-slate-100 w-full max-w-md mx-auto">
+                                    {verificationStatus === 'idle' && (
+                                        <Button
+                                            onClick={handleVerify}
+                                            variant="outline"
+                                            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                        >
+                                            Verify Email Existence
+                                        </Button>
+                                    )}
+
+                                    {verificationStatus === 'verifying' && (
+                                        <div className="flex items-center gap-2 text-slate-500">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Verifying...
+                                        </div>
+                                    )}
+
+                                    {verificationStatus === 'verified' && getVerificationBadge()}
+
+                                    {verificationStatus === 'error' && (
+                                        <div className="flex items-center gap-2 text-red-500 text-sm">
+                                            <AlertCircle className="w-4 h-4" />
+                                            Verification failed
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>

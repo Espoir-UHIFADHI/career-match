@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
-import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X } from "lucide-react";
+import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -17,11 +18,70 @@ interface CVReviewProps {
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const [formData, setFormData] = useState<ParsedCV>(initialData);
 
-    const handleSave = () => {
-        onSave(formData);
+    const [errors, setErrors] = useState<string[]>([]);
+
+    const validateForm = (): boolean => {
+        const newErrors: string[] = [];
+
+        // 1. Contact Info
+        if (!formData.contact.firstName.trim()) newErrors.push("First Name is required.");
+        if (!formData.contact.lastName.trim()) newErrors.push("Last Name is required.");
+        if (!formData.contact.email?.trim()) newErrors.push("Email is required.");
+
+        // 2. Summary
+        if (!formData.summary?.trim()) newErrors.push("Professional Summary is required.");
+
+        // 3. Experience
+        if (!formData.experience || formData.experience.length === 0) {
+            newErrors.push("At least one experience is required.");
+        } else {
+            formData.experience.forEach((exp, idx) => {
+                if (!exp.company.trim() || !exp.role.trim()) {
+                    newErrors.push(`Experience #${idx + 1}: Company and Role are required.`);
+                }
+            });
+        }
+
+        // 4. Education
+        if (!formData.education || formData.education.length === 0) {
+            newErrors.push("At least one education entry is required (Big Four standard).");
+        } else {
+            formData.education.forEach((edu, idx) => {
+                if (!edu.school.trim() || !edu.degree.trim()) {
+                    newErrors.push(`Education #${idx + 1}: School and Degree are required.`);
+                }
+            });
+        }
+
+        // 5. Skills
+        if (!formData.skills || formData.skills.length === 0 || formData.skills.every(s => !s.trim())) {
+            newErrors.push("At least one skill is required.");
+        }
+
+        // 6. Languages
+        if (!formData.languages || formData.languages.length === 0 || formData.languages.every(l => !l.trim())) {
+            newErrors.push("At least one language is required (with proficiency level).");
+        }
+
+        // 7. Interests
+        if (!formData.interests || formData.interests.length === 0 || formData.interests.every(i => !i.trim())) {
+            newErrors.push("At least one interest is required (Airport Test).");
+        }
+
+        setErrors(newErrors);
+        return newErrors.length === 0;
     };
 
-    const updateArrayItem = (section: "skills" | "languages", index: number, value: string) => {
+    const handleSave = () => {
+        if (validateForm()) {
+            onSave(formData);
+        } else {
+            // Scroll to top to show errors
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const updateArrayItem = (section: "skills" | "languages" | "interests", index: number, value: string) => {
         setFormData((prev) => {
             const newArray = [...(prev[section] || [])];
             newArray[index] = value;
@@ -29,14 +89,14 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
         });
     };
 
-    const addArrayItem = (section: "skills" | "languages") => {
+    const addArrayItem = (section: "skills" | "languages" | "interests") => {
         setFormData((prev) => ({
             ...prev,
             [section]: [...(prev[section] || []), ""],
         }));
     };
 
-    const removeArrayItem = (section: "skills" | "languages", index: number) => {
+    const removeArrayItem = (section: "skills" | "languages" | "interests", index: number) => {
         setFormData((prev) => {
             const newArray = [...(prev[section] || [])];
             newArray.splice(index, 1);
@@ -51,6 +111,17 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     <h2 className="text-3xl font-bold text-slate-900">Review Extracted Data</h2>
                     <p className="text-slate-600">Verify and edit the information extracted from your CV.</p>
                 </div>
+                {errors.length > 0 && (
+                    <div className="w-full md:w-auto mb-4 md:mb-0 order-last md:order-none">
+                        <Alert variant="destructive" className="border-red-500 bg-red-50">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Missing Information</AlertTitle>
+                            <AlertDescription>
+                                Please fill in the required fields below to proceed.
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                )}
                 <div className="flex gap-3 w-full md:w-auto">
                     <Button
                         variant="outline"
@@ -200,13 +271,13 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                             <div className="space-y-3 pt-4 border-t border-slate-200">
                                 <Label className="text-slate-600">Languages</Label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {formData.languages.map((lang, idx) => (
+                                    {(formData.languages || []).map((lang, idx) => (
                                         <div key={idx} className="flex gap-2">
                                             <Input
                                                 value={lang}
                                                 onChange={(e) => updateArrayItem("languages", idx, e.target.value)}
                                                 className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
-                                                placeholder="Language (e.g. English, French)"
+                                                placeholder="Language (e.g. English C1)"
                                             />
                                             <Button
                                                 variant="ghost"
@@ -225,6 +296,38 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         className="col-span-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
                                     >
                                         <Plus className="h-4 w-4 mr-2" /> Add Language
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 pt-4 border-t border-slate-200">
+                                <Label className="text-slate-600">Interests (Airport Test)</Label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {(formData.interests || []).map((interest, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <Input
+                                                value={interest}
+                                                onChange={(e) => updateArrayItem("interests", idx, e.target.value)}
+                                                className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
+                                                placeholder="Interest (e.g. Marathon, Chess)"
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => removeArrayItem("interests", idx)}
+                                                className="text-slate-400 hover:text-red-500 hover:bg-red-50"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addArrayItem("interests")}
+                                        className="col-span-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" /> Add Interest
                                     </Button>
                                 </div>
                             </div>
@@ -418,6 +521,6 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     </Card>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

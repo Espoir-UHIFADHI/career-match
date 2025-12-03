@@ -6,11 +6,13 @@ export interface AppState {
     cvData: ParsedCV | null;
     jobData: JobAnalysis | null;
     analysisResults: MatchResult | null;
+    language: "English" | "French";
 
     setStep: (step: number) => void;
     setCvData: (data: ParsedCV | null) => void;
     setJobData: (data: JobAnalysis) => void;
     setAnalysisResults: (results: MatchResult) => void;
+    setLanguage: (lang: "English" | "French") => void;
     reset: () => void;
 }
 
@@ -19,10 +21,12 @@ export const useAppStore = create<AppState>((set) => ({
     cvData: null,
     jobData: null,
     analysisResults: null,
+    language: "French",
 
     setStep: (step) => set({ step }),
     setCvData: (cvData) => set({ cvData }),
     setJobData: (jobData) => set({ jobData }),
     setAnalysisResults: (analysisResults) => set({ analysisResults }),
-    reset: () => set({ step: 1, cvData: null, jobData: null, analysisResults: null }),
+    setLanguage: (language) => set({ language }),
+    reset: () => set({ step: 1, cvData: null, jobData: null, analysisResults: null, language: "French" }),
 }));

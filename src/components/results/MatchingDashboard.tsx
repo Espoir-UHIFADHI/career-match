@@ -10,11 +10,10 @@ import { PrintableCV } from "./PrintableCV";
 import type { MatchResult } from "../../types";
 
 export function MatchingDashboard() {
-    const { cvData, jobData, analysisResults, setAnalysisResults, setStep } = useAppStore();
+    const { cvData, jobData, analysisResults, setAnalysisResults, setStep, language, setLanguage } = useAppStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPreview, setShowPreview] = useState(false);
-    const [language, setLanguage] = useState<"English" | "French">("French");
     const printRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = useReactToPrint({
@@ -209,7 +208,7 @@ export function MatchingDashboard() {
                     <CardContent className="p-0 bg-slate-50 overflow-x-auto">
                         <div className="min-w-[800px] p-8">
                             <div className="shadow-lg bg-white">
-                                <PrintableCV data={analysisResults.optimizedCV} />
+                                <PrintableCV data={analysisResults.optimizedCV} language={language} />
                             </div>
                         </div>
                     </CardContent>
@@ -218,7 +217,7 @@ export function MatchingDashboard() {
 
             {/* Hidden Printable Component */}
             <div className="hidden">
-                <PrintableCV ref={printRef} data={analysisResults.optimizedCV} />
+                <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={language} />
             </div>
         </div>
     );

@@ -124,40 +124,57 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
   });
 
   const prompt = `
-  Rôle : Expert en Recrutement et Spécialiste ATS (Applicant Tracking System).
-  Action : Analyse la compatibilité entre ce CV et cette Offre d'Emploi, puis optimise le CV pour maximiser ses chances de passer les filtres ATS.
+  Rôle : Expert en Recrutement pour cabinets de conseil "Top Tier" (McKinsey, BCG, Bain, Deloitte, PwC, EY, KPMG).
+  Action : Analyse la compatibilité entre ce CV et cette Offre d'Emploi, puis optimise le CV pour qu'il soit PARFAIT pour ces cabinets exigeants.
   Langue de sortie : ${language}
 
   Données CV : ${JSON.stringify(cv)}
   Données Offre : ${JSON.stringify(job)}
 
-  RÈGLES D'OR "EXPERT RECRUTEMENT" (À RESPECTER IMPÉRATIVEMENT) :
-  1. TITRE (HEADLINE) : Génère un titre percutant sous le format : "[Poste visé] | [Domaine d'expertise] | [Élément différenciant]" (ex: "Consultant Stratégie | Transformation Digitale | Trilingue").
-  2. MÉTHODE S.T.A.R. : Pour chaque expérience, utilise la formule : "Verbe d'action + Tâche + Méthode + Résultat quantifié".
-     - Ex: "Optimisé le processus de facturation (Action) en automatisant 3 étapes (Méthode), réduisant les délais de 40% (Résultat)."
-  3. VERBES D'ACTION : Commence TOUJOURS par un verbe fort (Dirigé, Piloté, Conçu, Analysé...). JAMAIS "Responsable de" ou "Participation à".
-  4. PAS DE PRONOMS : Pas de "Je", "Mon", "Ma". Style impersonnel et direct.
-  5. FORMAT "ONE PAGE" STRICT :
-     - SOIS CONCIS : Le CV DOIT tenir sur UNE SEULE PAGE.
-     - Résumé : 2-3 lignes maximum, ultra-ciblé.
-     - Expérience : 3-4 puces max pour les postes récents, 2 pour les anciens.
-     - FORMAT PUCES : Utilise IMPÉRATIVEMENT des tirets "-" pour chaque puce dans la description (ex: "- Action 1...").
-  6. COMPÉTENCES : Groupe-les par catégories (Techniques, Langues, Métiers).
-  7. TRADUCTION STRICTE :
-     - Si Langue de sortie = "English" : TOUT le contenu (résumé, expériences, compétences, titre) DOIT être en ANGLAIS. Aucune phrase en français.
-     - Si Langue de sortie = "French" : TOUT le contenu DOIT être en FRANÇAIS.
-     - NE MÉLANGE PAS LES LANGUES. C'est CRITIQUE.
+  RÈGLES D'OR "BIG FOUR / MBB" (NON NÉGOCIABLES) :
+  1. STRUCTURE & LISIBILITÉ (Règle des 6 secondes) :
+     - Le CV DOIT tenir sur UNE SEULE PAGE (A4). C'est impératif.
+     - Utilise des BULLET POINTS (Listes à puces) pour TOUTES les expériences.
+     - Limite à 3-5 puces par expérience pertinente.
+     - Pas de blocs de texte compacts. Aère le contenu.
+
+  2. CONTENU "IMPACT & CONSULTING" :
+     - Chaque puce doit suivre la structure : "Verbe d'action fort + Contexte/Tâche + RÉSULTAT CHIFFRÉ (Impact)".
+     - Ex: "Piloté (Verbe) la migration de données (Contexte), réduisant les erreurs de 15% (Résultat)."
+     - Utilise des verbes de "Leader" : Dirigé, Piloté, Conçu, Optimisé, Transformé (pas de "Participation à" ou "Responsable de").
+     - Supprime les pronoms "Je", "Mon", "Ma".
+
+  3. CHRONOLOGIE & CLARTÉ (Éviter les Red Flags) :
+     - Si des dates se chevauchent (ex: 2 postes en même temps), précise le contexte : "Alternance", "Projet Académique", "Side Project" ou "Freelance".
+     - Ne laisse aucune ambiguïté sur la nature du contrat.
+
+  4. ÉDUCATION (Critère N°1) :
+     - Affiche CLAIREMENT : Nom de l'école (en premier), Ville, Diplôme, Dates.
+     - Ajoute la Mention ou le GPA si c'est un atout.
+
+  5. COMPÉTENCES & LANGUES :
+     - Sépare les "Hard Skills" (Outils, Tech) des "Soft Skills" (Comportemental).
+     - LANGUES : Indique TOUJOURS le niveau (ex: "Anglais : Courant / C1"). C'est éliminatoire sinon.
+
+  7. OPTIMISATION DE L'ESPACE & MARGES (CRITIQUE - NON NÉGOCIABLE) :
+     - LE CV DOIT TENIR SUR UNE PAGE. C'est la priorité absolue.
+     - HEADLINE : MAX 90 caractères. Si c'est plus long, COUPE ou REFORMULE. Doit tenir sur 1 ligne.
+     - SUMMARY : MAX 350 caractères (environ 3 lignes).
+     - BULLET POINTS : MAX 130 caractères par puce. Une puce = 1 ligne (exceptionnellement 2).
+     - Si un texte dépasse, tu DOIS le résumer de manière agressive.
+     - Supprime les mots de liaison inutiles (ex: "en charge de", "responsable de", "afin de"). Utilise un style télégraphique.
 
   Tâche :
   1. Calcule un score de compatibilité (0-100).
   2. Identifie les points forts, points faibles, et mots-clés manquants.
   3. Évalue le fit culturel.
-  4. GÉNÈRE LE CV OPTIMISÉ (optimizedCV) :
-     - Ajoute le champ "headline" avec le format demandé.
-     - Réécris le "summary" pour qu'il soit une proposition de valeur unique.
-     - Réécris TOUTES les descriptions d'expérience en mode S.T.A.R.
-     - Organise les "skills" de manière logique.
-  5. Donne des recommandations concrètes.
+  4. GÉNÈRE LE CV OPTIMISÉ (optimizedCV) en respectant scrupuleusement les limites de caractères.
+     - Headline : "[Poste] | [Expertise]" (Court et percutant, < 90 chars)
+     - Summary : Pitch ultra-court (< 350 chars).
+     - Experience : 3-4 puces max par poste. Chaque puce < 130 chars.
+     - Education : Complète mais concise.
+     - Skills : Liste de mots-clés pertinents uniquement.
+     - Interests : Court.
 
   Structure JSON attendue (MatchResult) :
   {
@@ -168,7 +185,25 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
       "missingKeywords": ["..."],
       "cultureFit": "..."
     },
-    "optimizedCV": { ... (Structure complète du CV mis à jour) },
+    "optimizedCV": {
+      "contact": { ... },
+      "headline": "...",
+      "summary": "...",
+      "skills": ["..."],
+      "softSkills": ["..."],
+      "languages": ["Anglais (C1)", "Français (Natif)"],
+      "interests": ["Passion 1", "Passion 2"],
+      "experience": [
+        {
+          "company": "...",
+          "role": "...",
+          "dates": "...",
+          "description": "- Puce 1 (Action + Résultat)\n- Puce 2 (Action + Résultat)\n- Puce 3 (Action + Résultat)"
+        }
+      ],
+      "education": [ ... ],
+      "certifications": [ ... ]
+    },
     "recommendations": ["..."]
   }
   `;
@@ -207,6 +242,65 @@ export async function generateJSON<T = any>(prompt: string): Promise<T> {
     return JSON.parse(text) as T;
   } catch (error) {
     console.error("❌ Erreur Génération JSON Gemini:", error);
+    throw error;
+  }
+}
+
+/**
+ * Generate smart networking search queries using AI
+ * Returns optimized LinkedIn search queries based on company, role, and location
+ */
+export async function generateNetworkingQueries(
+  company: string,
+  role: string,
+  location: string = ""
+): Promise<{ queries: string[] }> {
+  console.log("🚀 Génération de requêtes de recherche intelligentes...");
+
+  if (!apiKey || !genAI) {
+    throw new Error("Clé API manquante.");
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    generationConfig: { responseMimeType: "application/json" }
+  });
+
+  const prompt = `
+  Rôle : Expert en recherche LinkedIn et networking professionnel.
+  Action : Génère 3-5 requêtes de recherche optimisées pour trouver des contacts pertinents sur LinkedIn.
+  
+  Paramètres de recherche :
+  - Entreprise cible : ${company || "Non spécifié"}
+  - Rôle/Fonction : ${role || "Non spécifié"}
+  - Localisation : ${location || "Non spécifié"}
+  
+  RÈGLES IMPORTANTES :
+  1. Toutes les requêtes doivent commencer par "site:linkedin.com/in/"
+  2. Utilise des guillemets pour les noms d'entreprise exacts : "${company}"
+  3. Utilise OR pour les variations de titres (ex: "Recruiter OR Talent Acquisition")
+  4. Combine intelligemment les mots-clés pour maximiser la pertinence
+  5. Génère des variantes pour couvrir différents profils (seniors, juniors, managers, etc.)
+  
+  Structure JSON attendue :
+  {
+    "queries": [
+      "site:linkedin.com/in/ \"${company}\" ${role} ${location}",
+      "site:linkedin.com/in/ \"${company}\" (${role} OR variation) ${location}",
+      ...
+    ]
+  }
+  
+  Génère entre 3 et 5 requêtes variées et pertinentes.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    return JSON.parse(text) as { queries: string[] };
+  } catch (error) {
+    console.error("❌ Erreur Génération Requêtes Networking:", error);
     throw error;
   }
 }

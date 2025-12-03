@@ -21,7 +21,7 @@ const steps = [
 
 function App() {
   console.log("App.tsx rendering");
-  const { step, setStep, cvData, jobData, analysisResults, setCvData } = useAppStore();
+  const { step, setStep, cvData, jobData, analysisResults, setCvData, language } = useAppStore();
 
   const handleStepClick = (stepId: number) => {
     // Prevent jumping ahead without data
@@ -70,7 +70,7 @@ function App() {
               <ArrowLeft className="h-4 w-4" /> Back to Dashboard
             </Button>
             <div className="bg-white shadow-xl rounded-lg overflow-hidden my-8">
-              <PrintableCV data={analysisResults.optimizedCV} />
+              <PrintableCV data={analysisResults.optimizedCV} language={language} />
             </div>
           </div>
         ) : <MatchingDashboard />;

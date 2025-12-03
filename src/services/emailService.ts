@@ -82,12 +82,20 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
  * @param domain Company domain
  * @returns The generated email
  */
-export function generateEmail(firstName: string, lastName: string, pattern: string, domain: string): string {
-    if (!pattern || !domain) return "";
+export function generateEmail(firstName: string, lastName: string, pattern: string, domain: string): string | null {
+    if (!pattern || !domain || !firstName || !lastName) return null;
+
+    // Basic validation: names shouldn't be too long or contain suspicious characters for a person name
+    if (firstName.length > 30 || lastName.length > 30) return null;
+    // If name contains comma, it's likely a title/sentence
+    if (firstName.includes(",") || lastName.includes(",")) return null;
 
     // Normalize names: lowercase, remove accents, remove spaces
     const cleanFirst = firstName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
     const cleanLast = lastName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+
+    if (!cleanFirst || !cleanLast) return null;
+
     const firstInitial = cleanFirst.charAt(0);
     const lastInitial = cleanLast.charAt(0);
 
@@ -115,4 +123,50 @@ export function formatEmailPattern(pattern: string): string {
         .replace("{last}", "{Nom}")
         .replace("{f}", "{P}")
         .replace("{l}", "{N}");
+}
+
+export interface VerificationResponse {
+    data: {
+        status: 'valid' | 'invalid' | 'accept_all' | 'webmail' | 'disposable' | 'unknown';
+        result: string;
+        score: number;
+        email: string;
+        regexp: boolean;
+        gibberish: boolean;
+        disposable: boolean;
+        webmail: boolean;
+        mx_records: boolean;
+        smtp_server: boolean;
+        smtp_check: boolean;
+        accept_all: boolean;
+        block: boolean;
+        sources: any[];
+    };
+}
+
+/**
+ * Verifies an email address using Hunter.io
+ * @param email The email to verify
+ * @returns The verification result
+ */
+export async function verifyEmail(email: string): Promise<VerificationResponse['data'] | null> {
+    if (!HUNTER_API_KEY) {
+        console.error("Hunter API Key is missing");
+        return null;
+    }
+
+    try {
+        const response = await fetch(`https://api.hunter.io/v2/email-verifier?email=${email}&api_key=${HUNTER_API_KEY}`);
+
+        if (!response.ok) {
+            console.error(`Hunter API Error: ${response.status} ${response.statusText}`);
+            return null;
+        }
+
+        const data: VerificationResponse = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error("Error verifying email:", error);
+        return null;
+    }
 }

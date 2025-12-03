@@ -14,6 +14,7 @@ export const CVSchema = z.object({
     headline: z.string().optional(), // [Poste] | [Expertise] | [Différenciant]
     summary: z.string().optional(),
     skills: z.array(z.string()),
+    softSkills: z.array(z.string()).optional(), // Behavioral competencies for ATS
     experience: z.array(
         z.object({
             company: z.string(),
@@ -32,6 +33,7 @@ export const CVSchema = z.object({
     ).optional(),
     languages: z.array(z.string()).optional(),
     certifications: z.array(z.string()).optional(),
+    interests: z.array(z.string()).optional(),
 });
 
 export type ParsedCV = z.infer<typeof CVSchema>;
