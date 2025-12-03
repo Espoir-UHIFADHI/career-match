@@ -10,7 +10,7 @@ import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertC
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { useUserStore } from "../../store/useUserStore";
 import { optimizeCVContent } from "../../services/ai/gemini";
-import { AuthModal } from "../auth/AuthModal";
+import { useUser } from "@clerk/clerk-react";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -21,7 +21,7 @@ interface CVReviewProps {
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const [formData, setFormData] = useState<ParsedCV>(initialData);
     const [isOptimizing, setIsOptimizing] = useState(false);
-    const [showAuthModal, setShowAuthModal] = useState(false);
+    const { user, isSignedIn } = useUser();
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -111,21 +111,22 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
     const handleOptimize = async () => {
         console.log("handleOptimize called");
-        // Check Credits
-        const { useCredit, credits, session } = useUserStore.getState();
-        console.log("Session:", session?.user?.email, "Credits:", credits);
 
-        const success = await useCredit(1);
+        if (!isSignedIn || !user) {
+            alert("Veuillez vous connecter pour optimiser votre CV.");
+            return;
+        }
+
+        // Check Credits
+        const { useCredit, credits } = useUserStore.getState();
+        console.log("User:", user.id, "Credits:", credits);
+
+        const success = await useCredit(user.id, 1);
         console.log("useCredit result:", success);
 
         if (!success) {
-            if (!session) {
-                console.log("No session, showing auth modal");
-                setShowAuthModal(true);
-            } else {
-                console.log("Not enough credits");
-                alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
-            }
+            console.log("Not enough credits");
+            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
             return;
         }
 
@@ -578,7 +579,6 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     </Card>
                 </div>
             </div>
-            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div >
     );
 }

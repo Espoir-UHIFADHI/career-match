@@ -1,10 +1,9 @@
 
-import { useAppStore } from "../store/useAppStore";
+import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "./ui/Button";
 import { ArrowRight, FileText, Users, Mail, Sparkles, CheckCircle2 } from "lucide-react";
 
 export function LandingPage() {
-    const { openAuthModal } = useAppStore();
 
     return (
         <div className="min-h-[calc(100vh-4rem)] flex flex-col">
@@ -25,13 +24,14 @@ export function LandingPage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                        <Button
-                            onClick={openAuthModal}
-                            className="h-14 px-8 text-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/25 rounded-full transition-all hover:scale-105"
-                        >
-                            Commencer Gratuitement
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
+                        <SignInButton mode="modal">
+                            <Button
+                                className="h-14 px-8 text-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/25 rounded-full transition-all hover:scale-105"
+                            >
+                                Commencer Gratuitement
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                        </SignInButton>
                         <p className="text-sm text-slate-500 mt-4 sm:mt-0 sm:ml-4">
                             5 crédits offerts à l'inscription
                         </p>

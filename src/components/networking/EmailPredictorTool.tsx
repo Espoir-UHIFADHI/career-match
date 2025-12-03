@@ -7,11 +7,10 @@ import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
+import { SignInButton, useUser } from "@clerk/clerk-react";
 
-import { AuthModal } from "../auth/AuthModal";
 
 export function EmailPredictorTool() {
-    const [showAuthModal, setShowAuthModal] = useState(false);
     const [company, setCompany] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -19,6 +18,7 @@ export function EmailPredictorTool() {
     const [result, setResult] = useState<{ email?: string, domain: string, pattern: string } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const { isSignedIn, user } = useUser();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
@@ -28,20 +28,23 @@ export function EmailPredictorTool() {
         if (!company) return;
 
         // Check Credits
-        const { useCredit, credits, session } = useUserStore.getState();
+        const { useCredit, credits } = useUserStore.getState();
+
+        if (!isSignedIn || !user) {
+            return;
+        }
+
         // Cost is 2 credits for email discovery
-        const success = await useCredit(2);
+        const success = await useCredit(user.id, 2);
 
         if (!success) {
-            if (!session) {
-                setShowAuthModal(true);
-            } else {
-                alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
-            }
+            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
             return;
         }
 
         setStatus('loading');
+        // ... rest of the function
+
         setError(null);
         setResult(null);
         setVerificationStatus('idle');
@@ -183,23 +186,34 @@ export function EmailPredictorTool() {
                         </div>
                     </div>
 
-                    <Button
-                        onClick={handlePredict}
-                        disabled={status === 'loading' || !company}
-                        className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.01] text-lg"
-                    >
-                        {status === 'loading' ? (
-                            <>
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                Analyzing Patterns...
-                            </>
-                        ) : (
-                            <>
-                                <Mail className="mr-2 h-5 w-5" />
-                                {firstName && lastName ? "Find Email" : "Find Format"}
-                            </>
-                        )}
-                    </Button>
+                    {isSignedIn ? (
+                        <Button
+                            onClick={handlePredict}
+                            disabled={status === 'loading' || !company}
+                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.01] text-lg"
+                        >
+                            {status === 'loading' ? (
+                                <>
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Analyzing Patterns...
+                                </>
+                            ) : (
+                                <>
+                                    <Mail className="mr-2 h-5 w-5" />
+                                    {firstName && lastName ? "Find Email" : "Find Format"}
+                                </>
+                            )}
+                        </Button>
+                    ) : (
+                        <SignInButton mode="modal">
+                            <Button
+                                className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-lg shadow-slate-900/25 transition-all duration-300 hover:scale-[1.01] text-lg"
+                            >
+                                <User className="mr-2 h-5 w-5" />
+                                Se connecter pour utiliser l'outil
+                            </Button>
+                        </SignInButton>
+                    )}
                 </CardContent>
             </Card>
 
@@ -287,7 +301,6 @@ export function EmailPredictorTool() {
                     </div>
                 </div>
             )}
-            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
     );
 }
