@@ -9,4 +9,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 console.log("Supabase URL:", supabaseUrl); // Debug: Check if URL is loaded
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Fallback to prevent crash if env vars are missing
+// This allows the app to load and show a UI, even if auth fails
+const validUrl = supabaseUrl || "https://placeholder.supabase.co";
+const validKey = supabaseAnonKey || "placeholder-key";
+
+export const supabase = createClient(validUrl, validKey);
