@@ -1,20 +1,16 @@
 import React, { useState } from "react";
-import { Briefcase, FileText, User, Mail, Menu, X, Coins, LogOut } from "lucide-react";
+import { Briefcase, FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { supabase } from "../services/supabase";
-import { AuthModal } from "./auth/AuthModal";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
 
 
 export function Layout({ children }: { children: React.ReactNode }) {
-    const { step, isAuthModalOpen, openAuthModal, closeAuthModal } = useAppStore();
-    const { credits, session } = useUserStore();
+    const { step } = useAppStore();
+    const { credits } = useUserStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
-    };
+    const { isSignedIn } = useUser();
 
     const navItems = [
         { id: 1, name: "Upload CV", icon: FileText, activeSteps: [1, 2, 3, 4] },
@@ -44,7 +40,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 
                     {/* Desktop Navigation */}
-                    {session && (
+                    <SignedIn>
                         <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200">
                             {navItems.map((item, i) => {
                                 const isActive = item.activeSteps.includes(step);
@@ -69,7 +65,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 );
                             })}
                         </nav>
-                    )}
+                    </SignedIn>
 
                     <div className="flex items-center gap-4 ml-4">
                         {/* Credits Display */}
@@ -79,22 +75,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         </div>
 
                         {/* Auth Button */}
-                        {session ? (
-                            <button
-                                onClick={handleLogout}
-                                className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Se déconnecter"
-                            >
-                                <LogOut className="h-5 w-5" />
-                            </button>
-                        ) : (
-                            <button
-                                onClick={openAuthModal}
-                                className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
-                            >
-                                Connexion
-                            </button>
-                        )}
+                        <SignedOut>
+                            <SignInButton mode="modal">
+                                <button className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
+                                    Connexion
+                                </button>
+                            </SignInButton>
+                        </SignedOut>
+                        <SignedIn>
+                            <UserButton />
+                        </SignedIn>
                     </div>
 
                     {/* Mobile Menu Toggle */}
@@ -149,7 +139,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <p>© 2024 CV Match & Optimize AI. <span className="text-indigo-600">Client-Side Processing Only.</span></p>
                 </div>
             </footer>
-            <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
         </div>
     );
 }

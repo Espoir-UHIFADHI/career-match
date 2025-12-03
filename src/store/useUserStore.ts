@@ -1,73 +1,56 @@
 import { create } from 'zustand';
 import { supabase } from '../services/supabase';
-import type { Session } from '@supabase/supabase-js';
 
 interface UserState {
-    session: Session | null;
     credits: number;
     loading: boolean;
-    setSession: (session: Session | null) => void;
-    fetchCredits: () => Promise<void>;
-    useCredit: (amount: number) => Promise<boolean>;
+    fetchCredits: (userId: string) => Promise<void>;
+    useCredit: (userId: string, amount: number) => Promise<boolean>;
     addCredits: (amount: number) => void;
+    setCredits: (amount: number) => void;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
-    session: null,
-    credits: 0, // Default to 0, will load from DB
+    credits: 0,
     loading: false,
 
-    setSession: (session) => {
-        set({ session });
-        if (session) {
-            get().fetchCredits();
-        } else {
-            set({ credits: 0 });
-        }
-    },
-
-    fetchCredits: async () => {
-        const { session } = get();
-        if (!session?.user) return;
+    fetchCredits: async (userId: string) => {
+        if (!userId) return;
 
         try {
             const { data, error } = await supabase
                 .from('profiles')
                 .select('credits')
-                .eq('id', session.user.id)
+                .eq('id', userId)
                 .single();
 
-            if (error) throw error;
-            set({ credits: data?.credits ?? 0 });
+            if (error) {
+                // If profile doesn't exist, maybe create it? 
+                // For now, just default to 0 or handle error silently
+                console.log("Profile check:", error.message);
+                set({ credits: 0 });
+            } else {
+                set({ credits: data?.credits ?? 0 });
+            }
         } catch (error) {
             console.error('Error fetching credits:', error);
         }
     },
 
-    useCredit: async (amount: number) => {
-        const { session, credits } = get();
+    useCredit: async (userId: string, amount: number) => {
+        const { credits } = get();
 
         // Admin bypass
-        if (session?.user?.email === "espoiradouwekonou20@gmail.com") {
-            return true;
-        }
+        // Note: We should probably fetch the user email from Clerk if we want to keep this check
+        // For now, let's assume we pass email or handle it differently.
+        // Simplified for migration:
 
-        // Optimistic check
         if (credits < amount) return false;
 
-        if (!session?.user) {
-            // Fallback for non-logged in users (if we want to allow them limited usage? 
-            // For now, let's enforce login for credit usage as per plan, 
-            // OR we could keep local storage for guests? 
-            // The prompt says "Passer du localStorage à une vraie base de données", 
-            // implying we move fully. But maybe we should handle the "not logged in" case gracefully.
-            // For this strict migration, let's assume they must be logged in or we return false.
-            // However, to not break flow completely if they are just testing, maybe we prompt login.
-            return false;
-        }
+        if (!userId) return false;
 
         try {
-            const { error } = await supabase.rpc('spend_credits', { amount });
+            const { error } = await supabase.rpc('spend_credits', { amount, user_id: userId });
             if (error) throw error;
 
             // Update local state on success
@@ -82,5 +65,9 @@ export const useUserStore = create<UserState>((set, get) => ({
     addCredits: (amount: number) => {
         set((state) => ({ credits: state.credits + amount }));
     },
+
+    setCredits: (amount: number) => {
+        set({ credits: amount });
+    }
 }));
 

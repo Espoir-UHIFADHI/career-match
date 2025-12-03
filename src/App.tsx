@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
 import { useUserStore } from "./store/useUserStore";
-import { supabase } from "./services/supabase";
+import { useUser } from "@clerk/clerk-react";
 import { Button } from "./components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { Steps } from "./components/ui/Steps";
@@ -29,21 +29,15 @@ import { LandingPage } from "./components/LandingPage";
 function App() {
   console.log("App.tsx rendering");
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language } = useAppStore();
-  const { setSession, session } = useUserStore();
+  const { fetchCredits } = useUserStore();
+  const { user, isSignedIn } = useUser();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [setSession]);
+    if (isSignedIn && user) {
+      // Sync user with Supabase (fetch credits)
+      fetchCredits(user.id);
+    }
+  }, [isSignedIn, user, fetchCredits]);
 
 
   const handleStepClick = (stepId: number) => {
@@ -102,7 +96,7 @@ function App() {
 
   return (
     <Layout>
-      {!session ? (
+      {!isSignedIn ? (
         <LandingPage />
       ) : (
         <div className="space-y-8">
