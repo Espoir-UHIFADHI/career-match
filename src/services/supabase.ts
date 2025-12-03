@@ -15,6 +15,12 @@ console.log("Supabase URL:", supabaseUrl); // Debug: Check if URL is loaded
 const validUrl = supabaseUrl || "https://placeholder.supabase.co";
 const validKey = supabaseAnonKey || "placeholder-key";
 
+// Debug logging to help identify Vercel issues
+console.log("🔍 Supabase Config Check:");
+console.log("- VITE_SUPABASE_URL:", supabaseUrl ? "Defined (Starts with " + supabaseUrl.substring(0, 8) + "...)" : "MISSING");
+console.log("- VITE_SUPABASE_ANON_KEY:", supabaseAnonKey ? "Defined (Length: " + supabaseAnonKey.length + ")" : "MISSING");
+console.log("- isSupabaseConfigured:", !!supabaseUrl && !!supabaseAnonKey);
+
 export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
 
 export const supabase = createClient(validUrl, validKey);
