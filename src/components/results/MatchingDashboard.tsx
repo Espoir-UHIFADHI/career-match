@@ -163,7 +163,7 @@ export function MatchingDashboard() {
             <NetworkingSection />
 
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 glass-panel bg-white border border-slate-200 rounded-lg shadow-sm">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <span className="text-sm font-medium text-slate-900">CV Language:</span>
                     <div className="flex gap-2">
                         <Button
@@ -185,16 +185,16 @@ export function MatchingDashboard() {
                     </div>
                 </div>
 
-                <div className="flex gap-4">
-                    <Button variant="outline" onClick={runAnalysis} className="gap-2 hover:bg-slate-100 text-slate-700 border-slate-300">
+                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <Button variant="outline" onClick={runAnalysis} className="w-full sm:w-auto gap-2 hover:bg-slate-100 text-slate-700 border-slate-300">
                         <Loader2 className="h-4 w-4" />
                         Regenerate Analysis
                     </Button>
-                    <Button variant="outline" onClick={() => setShowPreview(!showPreview)} className="gap-2 hover:bg-slate-100 text-slate-700 border-slate-300">
+                    <Button variant="outline" onClick={() => setShowPreview(!showPreview)} className="w-full sm:w-auto gap-2 hover:bg-slate-100 text-slate-700 border-slate-300">
                         <Eye className="h-4 w-4" />
                         {showPreview ? "Hide Preview" : "Preview Optimized CV"}
                     </Button>
-                    <Button size="lg" onClick={() => handlePrint()} className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25">
+                    <Button size="lg" onClick={() => handlePrint()} className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25">
                         <Download className="h-4 w-4" /> Download PDF
                     </Button>
                 </div>
