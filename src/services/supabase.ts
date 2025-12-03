@@ -15,4 +15,6 @@ console.log("Supabase URL:", supabaseUrl); // Debug: Check if URL is loaded
 const validUrl = supabaseUrl || "https://placeholder.supabase.co";
 const validKey = supabaseAnonKey || "placeholder-key";
 
+export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
+
 export const supabase = createClient(validUrl, validKey);

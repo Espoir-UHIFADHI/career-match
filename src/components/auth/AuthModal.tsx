@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { supabase } from '../../services/supabase';
+import { supabase, isSupabaseConfigured } from '../../services/supabase';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
@@ -25,6 +25,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
+        // Check for valid configuration first
+        if (!isSupabaseConfigured) {
+            setError("Configuration manquante : Vérifiez les variables VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY dans le fichier .env");
+            setLoading(false);
+            return;
+        }
 
         try {
             if (isLogin) {
