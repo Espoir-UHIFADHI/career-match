@@ -36,15 +36,15 @@ export const useUserStore = create<UserState>((set, get) => ({
                     const { error: insertError } = await client
                         .from('profiles')
                         .insert([
-                            { id: userId, credits: 20 } // Default to 20 credits
+                            { id: userId, credits: 7 } // Default to 7 credits
                         ]);
 
                     if (insertError) {
                         console.error("Error creating profile:", insertError);
                         set({ credits: 0 });
                     } else {
-                        console.log("Profile created successfully with 20 credits");
-                        set({ credits: 20 });
+                        console.log("Profile created successfully with 7 credits");
+                        set({ credits: 7 });
                     }
                 } else {
                     set({ credits: 0 });

@@ -270,32 +270,34 @@ export function MatchingDashboard() {
             {/* Action Bar */}
             <div className="sticky bottom-6 z-10">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 glass-panel bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-2xl shadow-slate-200/50">
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg">
-                            <Globe className="h-4 w-4 text-slate-500" />
-                            <span className="text-sm font-medium text-slate-700">CV Language</span>
-                        </div>
-                        <div className="flex p-1 bg-slate-100 rounded-lg">
-                            <button
-                                onClick={() => setLanguage("French")}
-                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${language === "French"
+                    {!isLowMatch && (
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg">
+                                <Globe className="h-4 w-4 text-slate-500" />
+                                <span className="text-sm font-medium text-slate-700">CV Language</span>
+                            </div>
+                            <div className="flex p-1 bg-slate-100 rounded-lg">
+                                <button
+                                    onClick={() => setLanguage("French")}
+                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${language === "French"
                                         ? "bg-white text-indigo-600 shadow-sm"
                                         : "text-slate-500 hover:text-slate-700"
-                                    }`}
-                            >
-                                Français
-                            </button>
-                            <button
-                                onClick={() => setLanguage("English")}
-                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${language === "English"
+                                        }`}
+                                >
+                                    Français
+                                </button>
+                                <button
+                                    onClick={() => setLanguage("English")}
+                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${language === "English"
                                         ? "bg-white text-indigo-600 shadow-sm"
                                         : "text-slate-500 hover:text-slate-700"
-                                    }`}
-                            >
-                                English
-                            </button>
+                                        }`}
+                                >
+                                    English
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                         <Button

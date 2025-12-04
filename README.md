@@ -25,6 +25,10 @@ Career Match est une application web moderne conçue pour optimiser votre recher
     - Messages de relance.
 - **Personnalisation Facile** : Remplissage automatique des champs (Nom, Entreprise) et copie en un clic.
 
+### 4. Gestion de Données et Persistance
+- **Sauvegarde Automatique** : Vos données de CV sont sauvegardées localement dans votre navigateur, vous permettant de reprendre votre travail même après un rafraîchissement de la page.
+- **Base de Données Supabase** : (En cours d'intégration) Stockage sécurisé des profils utilisateurs et des crédits.
+
 ## 🛠 Technologies Utilisées
 
 Ce projet est construit avec une stack moderne et performante :
@@ -33,6 +37,8 @@ Ce projet est construit avec une stack moderne et performante :
 - **Build Tool** : [Vite](https://vitejs.dev/) pour un développement rapide.
 - **Styling** : [Tailwind CSS](https://tailwindcss.com/) pour un design responsive et élégant.
 - **IA** : [Google Gemini API](https://ai.google.dev/) pour l'analyse de texte et la génération de contenu.
+- **Backend/Auth** : [Supabase](https://supabase.com/) & [Clerk](https://clerk.com/).
+- **State Management** : [Zustand](https://github.com/pmndrs/zustand) avec persistance locale.
 - **Icônes** : [Lucide React](https://lucide.dev/).
 
 ## 📦 Installation et Démarrage

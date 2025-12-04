@@ -6,7 +6,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { searchGoogle } from "../../services/search/serper";
-import { findCompanyDomain, getEmailPattern, generateEmail } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, generateEmail, findEmail, cleanName, formatEmailPattern } from "../../services/emailService";
 import { generateNetworkingQueries } from "../../services/ai/gemini";
 import { Mail, Copy, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
@@ -21,6 +21,8 @@ interface Contact {
     email?: string;
     emailStatus?: 'idle' | 'loading' | 'success' | 'error';
     emailConfidence?: number;
+    emailPattern?: string;
+    domain?: string;
 }
 
 export function NetworkingSearch() {
@@ -132,7 +134,7 @@ export function NetworkingSearch() {
                 if (searchResults && searchResults.length > 0) {
                     const contacts = searchResults.map(r => {
                         const titleParts = r.title.split(" - ");
-                        const name = titleParts[0] || "Unknown Name";
+                        const name = cleanName(titleParts[0] || "Unknown Name");
                         const jobTitle = titleParts[1] || "Unknown Title";
                         return {
                             name: name,
@@ -197,30 +199,45 @@ export function NetworkingSearch() {
             const domain = await findCompanyDomain(company);
             if (!domain) throw new Error("Domaine introuvable");
 
-            // 2. Get pattern
-            const pattern = await getEmailPattern(domain);
-            if (!pattern) throw new Error("Pattern email introuvable");
-
-            // 3. Generate email
+            // 3. Find Email using Hunter.io (Priority)
             // Split name into first and last
             const nameParts = contact.name.split(" ");
             const firstName = nameParts[0];
             const lastName = nameParts.slice(1).join(" ");
 
-            const email = generateEmail(firstName, lastName, pattern, domain);
+            let email: string | undefined;
+            let confidence: number | undefined;
+            let emailPattern: string | undefined;
 
-            if (!email) {
-                throw new Error("Impossible de générer l'email (nom invalide ou pattern manquant)");
+            // Try to find verified email first
+            const finderResult = await findEmail(firstName, lastName, domain);
+
+            if (finderResult) {
+                email = finderResult.email;
+                confidence = finderResult.score;
+            } else {
+                // Fallback: Get pattern but do NOT generate email
+                const pattern = await getEmailPattern(domain);
+                if (pattern) {
+                    emailPattern = pattern;
+                }
+            }
+
+            if (!email && !emailPattern) {
+                throw new Error("Impossible de trouver l'email ou le pattern");
             }
 
             // Update result
-            console.log(`Setting email for contact ${contactIndex}: ${email}`);
+            console.log(`Setting result for contact ${contactIndex}: email=${email}, pattern=${emailPattern}`);
             setResults(prev => {
                 const newResults = [...prev];
                 newResults[contactIndex] = {
                     ...newResults[contactIndex],
                     email: email,
-                    emailStatus: 'success'
+                    emailPattern: emailPattern,
+                    domain: domain,
+                    emailStatus: 'success',
+                    emailConfidence: confidence
                 };
                 return newResults;
             });
@@ -385,6 +402,11 @@ export function NetworkingSearch() {
                                                     <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-green-100">
                                                         <Mail className="h-4 w-4" />
                                                         {contact.email}
+                                                        {contact.emailConfidence !== undefined && (
+                                                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${contact.emailConfidence > 80 ? 'bg-green-200 text-green-800' : 'bg-amber-200 text-amber-800'}`}>
+                                                                {contact.emailConfidence}%
+                                                            </span>
+                                                        )}
                                                         <button
                                                             onClick={() => copyToClipboard(contact.email!)}
                                                             className="ml-2 p-1 hover:bg-green-100 rounded-md transition-colors"
@@ -392,6 +414,11 @@ export function NetworkingSearch() {
                                                         >
                                                             <Copy className="h-3 w-3" />
                                                         </button>
+                                                    </div>
+                                                ) : contact.emailPattern ? (
+                                                    <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-100">
+                                                        <Sparkles className="h-4 w-4" />
+                                                        <span>Pattern: {formatEmailPattern(contact.emailPattern)}@{contact.domain}</span>
                                                     </div>
                                                 ) : (
                                                     <Button

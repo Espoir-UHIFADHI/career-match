@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { type ParsedCV, type JobAnalysis, type MatchResult } from "../types";
 
 export interface AppState {
@@ -16,17 +17,31 @@ export interface AppState {
     reset: () => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-    step: 1,
-    cvData: null,
-    jobData: null,
-    analysisResults: null,
-    language: "French",
+export const useAppStore = create<AppState>()(
+    persist(
+        (set) => ({
+            step: 1,
+            cvData: null,
+            jobData: null,
+            analysisResults: null,
+            language: "French",
 
-    setStep: (step) => set({ step }),
-    setCvData: (cvData) => set({ cvData }),
-    setJobData: (jobData) => set({ jobData }),
-    setAnalysisResults: (analysisResults) => set({ analysisResults }),
-    setLanguage: (language) => set({ language }),
-    reset: () => set({ step: 1, cvData: null, jobData: null, analysisResults: null, language: "French" }),
-}));
+            setStep: (step) => set({ step }),
+            setCvData: (cvData) => set({ cvData }),
+            setJobData: (jobData) => set({ jobData, analysisResults: null }),
+            setAnalysisResults: (analysisResults) => set({ analysisResults }),
+            setLanguage: (language) => set({ language }),
+            reset: () => set({ step: 1, cvData: null, jobData: null, analysisResults: null, language: "French" }),
+        }),
+        {
+            name: "career-match-storage",
+            partialize: (state) => ({
+                step: state.step,
+                cvData: state.cvData,
+                jobData: state.jobData,
+                analysisResults: state.analysisResults,
+                language: state.language
+            }),
+        }
+    )
+);

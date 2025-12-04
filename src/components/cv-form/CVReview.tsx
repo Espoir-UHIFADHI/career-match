@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, Loader2, Sparkles } from "lucide-react";
+import { Save, Upload } from "lucide-react";
 import type { ParsedCV } from "../../types";
 import { Button } from "../ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
@@ -8,8 +8,7 @@ import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
 import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
-import { useUserStore } from "../../store/useUserStore";
-import { optimizeCVContent } from "../../services/ai/gemini";
+
 import { useUser, useAuth } from "@clerk/clerk-react";
 
 interface CVReviewProps {
@@ -20,9 +19,7 @@ interface CVReviewProps {
 
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const [formData, setFormData] = useState<ParsedCV>(initialData);
-    const [isOptimizing, setIsOptimizing] = useState(false);
-    const { user, isSignedIn } = useUser();
-    const { getToken } = useAuth();
+
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -110,56 +107,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
         });
     };
 
-    const handleOptimize = async () => {
-        console.log("handleOptimize called");
 
-        if (!isSignedIn || !user) {
-            alert("Veuillez vous connecter pour optimiser votre CV.");
-            return;
-        }
-
-        // Check Credits
-        const { useCredit, credits } = useUserStore.getState();
-        console.log("User:", user.id, "Credits:", credits);
-
-        let token: string | null = null;
-        try {
-            token = await getToken({ template: 'supabase' });
-        } catch (error) {
-            console.error("Error getting Supabase token:", error);
-            if (error instanceof Error && error.message.includes("No JWT template exists")) {
-                alert("Configuration Error: Missing 'supabase' JWT template in Clerk Dashboard. Please contact the administrator.");
-                return;
-            }
-        }
-
-        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
-        console.log("useCredit result:", result);
-
-        if (!result.success) {
-            console.log("Not enough credits or error");
-            if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
-                alert(`Crédits épuisés (${credits}). Passez à la version Pro pour continuer.`);
-            } else {
-                alert(`Erreur lors de l'utilisation des crédits: ${result.error}`);
-            }
-            return;
-        }
-
-        setIsOptimizing(true);
-        try {
-            console.log("Starting optimization...");
-            const optimizedCV = await optimizeCVContent(formData);
-            console.log("Optimization result:", optimizedCV);
-            setFormData(optimizedCV);
-            alert("CV Optimisé avec succès !");
-        } catch (error) {
-            console.error("Optimization failed:", error);
-            alert("Erreur lors de l'optimisation.");
-        } finally {
-            setIsOptimizing(false);
-        }
-    };
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
@@ -185,24 +133,8 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         onClick={onCancel}
                         className="flex-1 md:flex-none hover:bg-slate-100 text-slate-700 border-slate-300"
                     >
-                        Back
-                    </Button>
-                    <Button
-                        onClick={handleOptimize}
-                        disabled={isOptimizing}
-                        className="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg shadow-purple-500/25"
-                    >
-                        {isOptimizing ? (
-                            <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Optimizing...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles className="h-4 w-4 mr-2" />
-                                Optimiser avec l'IA (1 Crédit)
-                            </>
-                        )}
+                        <Upload className="h-4 w-4 mr-2" />
+                        Re-upload CV
                     </Button>
                     <Button
                         onClick={handleSave}

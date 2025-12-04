@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, findEmail, getCachedEmail, type VerificationResponse, type EmailFinderResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 
@@ -14,7 +14,7 @@ export function EmailPredictorTool() {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [result, setResult] = useState<{ email?: string, domain: string, pattern: string } | null>(null);
+    const [result, setResult] = useState<{ email?: string, domain: string, pattern: string, score?: number, source: 'finder' | 'pattern' | 'cache' } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const { isSignedIn, user } = useUser();
@@ -43,7 +43,7 @@ export function EmailPredictorTool() {
             }
         }
 
-        const result = await useCredit(user.id, 2, token || undefined, user.primaryEmailAddress?.emailAddress);
+        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
 
         if (!result.success) {
             if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
@@ -70,14 +70,28 @@ export function EmailPredictorTool() {
             const pattern = await getEmailPattern(domain);
             if (!pattern) throw new Error(`Impossible de trouver un pattern email pour ${domain}`);
 
-            // 3. Generate email if names provided
+            // 3. Find or Generate email
             let email: string | undefined;
+            let score: number | undefined;
+            let source: 'finder' | 'pattern' | 'cache' = 'pattern';
+
             if (firstName && lastName) {
-                const generated = generateEmail(firstName, lastName, pattern, domain);
-                email = generated || undefined;
+                // 1. Check Cache first (Free for us)
+                const cached = await getCachedEmail(firstName, lastName, domain);
+
+                if (cached) {
+                    email = cached.email;
+                    score = cached.score;
+                    source = 'cache';
+                } else {
+                    // 2. Generate Pattern Suggestion (No API call yet)
+                    const generated = generateEmail(firstName, lastName, pattern, domain);
+                    email = generated || undefined;
+                    source = 'pattern';
+                }
             }
 
-            setResult({ email, domain, pattern });
+            setResult({ email, domain, pattern, score, source });
             setStatus('success');
         } catch (err) {
             console.error("Prediction failed:", err);
@@ -108,6 +122,49 @@ export function EmailPredictorTool() {
             }
         } catch (e) {
             setVerificationStatus('error');
+        }
+    };
+
+    const handleConfirm = async () => {
+        if (!company || !firstName || !lastName || !result?.domain) return;
+
+        if (!isSignedIn || !user) return;
+
+        // Deduct 1 credit for confirmation
+        let token: string | null = null;
+        try {
+            token = await getToken({ template: 'supabase' });
+        } catch (error) {
+            console.error("Error getting token:", error);
+        }
+
+        const creditResult = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
+
+        if (!creditResult.success) {
+            alert(`Crédits insuffisants pour la confirmation.`);
+            return;
+        }
+
+        setStatus('loading');
+
+        try {
+            const finderResult = await findEmail(firstName, lastName, result.domain);
+            if (finderResult) {
+                setResult({
+                    email: finderResult.email,
+                    domain: result.domain,
+                    pattern: result.pattern,
+                    score: finderResult.score,
+                    source: 'finder'
+                });
+            } else {
+                setError("Email introuvable dans la base de données officielle.");
+                // Keep the pattern result but maybe show a message
+            }
+            setStatus('success');
+        } catch (e) {
+            console.error("Confirmation failed:", e);
+            setStatus('error');
         }
     };
 
@@ -234,43 +291,79 @@ export function EmailPredictorTool() {
                     {result.email ? (
                         <Card className="glass-panel bg-gradient-to-br from-indigo-50 to-white border-indigo-100 shadow-md overflow-hidden">
                             <CardContent className="p-8 text-center space-y-6">
-                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Check className="w-8 h-8 text-green-600" />
+                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Mail className="w-8 h-8 text-indigo-600" />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-slate-900">Email Found!</h3>
-                                    <p className="text-slate-600">
-                                        We found a pattern <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-800 text-sm">{formatEmailPattern(result.pattern)}@{result.domain}</code>
-                                    </p>
-                                </div>
+                                    <h3 className="text-2xl font-bold text-slate-900">
+                                        {result.source === 'finder' || result.source === 'cache' ? 'Email Found' : 'Email Suggestion'}
+                                    </h3>
 
-                                <div className="flex items-center justify-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                    <span className="text-xl font-mono text-slate-900 select-all">{result.email}</span>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={copyToClipboard}
-                                        className="hover:bg-white hover:shadow-sm"
-                                    >
-                                        {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-slate-500" />}
-                                    </Button>
-                                </div>
-
-                                <div className="flex justify-center">
-                                    {verificationStatus === 'idle' && (
-                                        <Button variant="outline" onClick={handleVerify} className="gap-2">
-                                            <CheckCircle2 className="w-4 h-4" />
-                                            Verify Email
+                                    <div className="flex items-center justify-center gap-3 my-4">
+                                        <code className="text-2xl font-mono font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
+                                            {result.email}
+                                        </code>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={copyToClipboard}
+                                            className="h-10 w-10 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                                            title="Copy email"
+                                        >
+                                            {copied ? <Check className="h-5 w-5 text-green-600" /> : <Copy className="h-5 w-5" />}
                                         </Button>
-                                    )}
-                                    {verificationStatus === 'verifying' && (
-                                        <div className="flex items-center gap-2 text-slate-500">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Verifying...
+                                    </div>
+
+                                    {result.score !== undefined && (
+                                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${result.score > 80 ? 'bg-green-100 text-green-700' : result.score > 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                            {result.source === 'finder' || result.source === 'cache' ? 'Confidence Score' : 'Pattern Confidence'}: {result.score}%
                                         </div>
                                     )}
-                                    {getVerificationBadge()}
+
+                                    {result.source === 'pattern' && (
+                                        <div className="flex flex-col items-center justify-center gap-4 mt-6">
+                                            {verificationStatus === 'idle' && (
+                                                <div className="flex flex-col gap-3 w-full">
+                                                    <Button
+                                                        onClick={handleConfirm}
+                                                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                    >
+                                                        Confirm with Hunter (1 Credit)
+                                                    </Button>
+                                                    <Button
+                                                        onClick={handleVerify}
+                                                        variant="outline"
+                                                        className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                                    >
+                                                        Verify Format Only
+                                                    </Button>
+                                                </div>
+                                            )}
+
+                                            {verificationStatus === 'verifying' && (
+                                                <div className="flex items-center gap-2 text-slate-500">
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Verifying...
+                                                </div>
+                                            )}
+
+                                            {verificationStatus === 'verified' && getVerificationBadge()}
+
+                                            {verificationStatus === 'error' && (
+                                                <div className="text-red-500 text-sm flex items-center gap-1">
+                                                    <AlertCircle className="w-4 h-4" />
+                                                    Verification failed
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="pt-4 border-t border-slate-100 mt-4">
+                                        <p className="text-slate-500 text-sm">
+                                            Pattern used: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700 text-xs">{formatEmailPattern(result.pattern)}@{result.domain}</code>
+                                        </p>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Search, FileText, Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight, Link as LinkIcon } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
+import { useUserStore } from "../../store/useUserStore";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { searchGoogle } from "../../services/search/serper";
@@ -16,12 +18,41 @@ export function JobInput() {
     const [error, setError] = useState<string | null>(null);
     const [previewData, setPreviewData] = useState<(JobAnalysis & { url?: string }) | null>(null);
 
+    const { user, isSignedIn } = useUser();
+    const { getToken } = useAuth();
+    const { useCredit, credits } = useUserStore();
+
     const analyzeJob = async () => {
         const contentToAnalyze = mode === "url" ? url : description;
         if (!contentToAnalyze.trim()) return;
 
+        if (!isSignedIn || !user) {
+            alert("Veuillez vous connecter pour analyser un job.");
+            return;
+        }
+
         setIsProcessing(true);
         setError(null);
+
+        // Deduct Credit
+        let token: string | null = null;
+        try {
+            token = await getToken({ template: 'supabase' });
+        } catch (error) {
+            console.error("Error getting Supabase token:", error);
+        }
+
+        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
+
+        if (!result.success) {
+            setIsProcessing(false);
+            if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
+                setError(`Crédits épuisés (${credits}). Passez à la version Pro pour continuer.`);
+            } else {
+                setError(`Erreur lors de l'utilisation des crédits: ${result.error}`);
+            }
+            return;
+        }
 
         try {
             let jobText = contentToAnalyze;

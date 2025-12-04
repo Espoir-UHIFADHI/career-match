@@ -73,6 +73,39 @@ const TEMPLATES: Template[] = [
         category: 'followup',
         subject: "Re: Question sur [Sujet/Entreprise]...",
         content: "Bonjour [Prénom],\n\nJe me permets de faire remonter ce message au cas où il vous aurait échappé.\n\nJe reste très intéressé par votre retour d'expérience sur [Sujet].\n\nBien cordialement,\n[Votre Nom]"
+    },
+    {
+        id: 'linkedin-event',
+        title: "Connexion LinkedIn (Suite à un événement)",
+        category: 'linkedin',
+        content: "Bonjour [Prénom],\n\nJ'ai beaucoup apprécié notre échange lors de [Sujet] hier. Votre point de vue m'a beaucoup intéressé.\n\nJ'aimerais beaucoup rester en contact et poursuivre cette discussion.\n\nBien à vous,\n[Votre Nom]"
+    },
+    {
+        id: 'linkedin-recruiter',
+        title: "Connexion LinkedIn (Recruteur)",
+        category: 'linkedin',
+        content: "Bonjour [Prénom],\n\nJe suis actuellement [Votre Rôle] et j'ai vu que vous recrutiez pour [Entreprise].\n\nJe suis très intéressé par les opportunités en [Domaine/Rôle]. Seriez-vous ouvert à une brève connexion ?\n\nCordialement,\n[Votre Nom]"
+    },
+    {
+        id: 'email-mentor',
+        title: "Email - Admiration / Mentor",
+        category: 'email',
+        subject: "Question sur [Sujet] - [Votre Nom]",
+        content: "Bonjour [Prénom],\n\nJe suis votre travail depuis un moment, notamment vos interventions sur [Sujet].\n\nJe suis actuellement [Votre Rôle] et je cherche à progresser dans ce domaine. Auriez-vous un moment pour partager quelques conseils ?\n\nMerci,\n[Votre Nom]"
+    },
+    {
+        id: 'email-job',
+        title: "Email - Candidature Spontanée",
+        category: 'email',
+        subject: "Candidature spontanée - [Votre Rôle]",
+        content: "Bonjour [Prénom],\n\nJe suis avec intérêt les activités de [Entreprise] et je suis impressionné par vos récents projets.\n\nEn tant que [Votre Rôle], je pense pouvoir apporter de la valeur à votre équipe. Seriez-vous disponible pour en discuter ?\n\nBien cordialement,\n[Votre Nom]"
+    },
+    {
+        id: 'followup-no-response',
+        title: "Relance (Pas de réponse)",
+        category: 'followup',
+        subject: "Re: [Sujet]",
+        content: "Bonjour [Prénom],\n\nJe me permets de revenir vers vous concernant mon précédent message sur [Sujet].\n\nJe reste très intéressé par une opportunité d'échange.\n\nBien à vous,\n[Votre Nom]"
     }
 ];
 
@@ -84,6 +117,10 @@ export function NetworkingGuide() {
     const [userName, setUserName] = useState('');
     const [targetName, setTargetName] = useState('');
     const [company, setCompany] = useState('');
+    const [currentRole, setCurrentRole] = useState('');
+    const [targetRole, setTargetRole] = useState('');
+    const [school, setSchool] = useState('');
+    const [subject, setSubject] = useState('');
 
     const handleCopy = (text: string, id: string) => {
         // Replace placeholders if values are provided
@@ -91,6 +128,10 @@ export function NetworkingGuide() {
         if (userName) finalText = finalText.replace(/\[Votre Nom\]/g, userName);
         if (targetName) finalText = finalText.replace(/\[Prénom\]/g, targetName);
         if (company) finalText = finalText.replace(/\[Entreprise\]/g, company);
+        if (currentRole) finalText = finalText.replace(/\[Votre Rôle\/Situation\]|\[Votre Situation\]|\[Votre Rôle\]/g, currentRole);
+        if (targetRole) finalText = finalText.replace(/\[Domaine\/Rôle\]/g, targetRole);
+        if (school) finalText = finalText.replace(/\[École\]/g, school);
+        if (subject) finalText = finalText.replace(/\[Sujet\]|\[Sujet Spécifique\]|\[Question Spécifique\]/g, subject);
 
         navigator.clipboard.writeText(finalText);
         setCopiedId(id);
@@ -152,13 +193,40 @@ export function NetworkingGuide() {
 
                 <Card className="glass-panel bg-slate-50 border-slate-200">
                     <CardContent className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                             <div className="space-y-2">
                                 <Label>Votre Nom</Label>
                                 <Input
                                     placeholder="Jean Dupont"
                                     value={userName}
                                     onChange={(e) => setUserName(e.target.value)}
+                                    className="bg-white text-slate-900"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Votre Poste Actuel</Label>
+                                <Input
+                                    placeholder="Étudiant / Développeur"
+                                    value={currentRole}
+                                    onChange={(e) => setCurrentRole(e.target.value)}
+                                    className="bg-white text-slate-900"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Poste Visé / Domaine</Label>
+                                <Input
+                                    placeholder="Product Manager"
+                                    value={targetRole}
+                                    onChange={(e) => setTargetRole(e.target.value)}
+                                    className="bg-white text-slate-900"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>École (si applicable)</Label>
+                                <Input
+                                    placeholder="HEC / 42 / ..."
+                                    value={school}
+                                    onChange={(e) => setSchool(e.target.value)}
                                     className="bg-white text-slate-900"
                                 />
                             </div>
@@ -177,6 +245,15 @@ export function NetworkingGuide() {
                                     placeholder="Google"
                                     value={company}
                                     onChange={(e) => setCompany(e.target.value)}
+                                    className="bg-white text-slate-900"
+                                />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label>Sujet / Question</Label>
+                                <Input
+                                    placeholder="L'IA dans le recrutement / Votre transition vers..."
+                                    value={subject}
+                                    onChange={(e) => setSubject(e.target.value)}
                                     className="bg-white text-slate-900"
                                 />
                             </div>
@@ -210,6 +287,10 @@ export function NetworkingGuide() {
                                                     .replace(/\[Votre Nom\]/g, userName || '[Votre Nom]')
                                                     .replace(/\[Prénom\]/g, targetName || '[Prénom]')
                                                     .replace(/\[Entreprise\]/g, company || '[Entreprise]')
+                                                    .replace(/\[Votre Rôle\/Situation\]|\[Votre Situation\]|\[Votre Rôle\]/g, currentRole || '[Votre Situation]')
+                                                    .replace(/\[Domaine\/Rôle\]/g, targetRole || '[Domaine]')
+                                                    .replace(/\[École\]/g, school || '[École]')
+                                                    .replace(/\[Sujet\]|\[Sujet Spécifique\]|\[Question Spécifique\]/g, subject || '[Sujet]')
                                                 }
                                             </div>
                                             <Button
