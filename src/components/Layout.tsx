@@ -32,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             <Briefcase className="h-5 w-5" />
                         </div>
                         <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 hidden sm:inline-block">
-                            CV Match AI
+                            Career Match
                         </span>
                     </div>
 
@@ -68,7 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                     <div className="flex items-center gap-4 ml-4">
                         {/* Credits Display */}
-                        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full border border-amber-200 text-sm font-medium">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full border border-amber-200 text-sm font-medium">
                             <Coins className="h-4 w-4" />
                             <span>{credits} Crédits</span>
                         </div>
@@ -135,7 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Footer */}
             <footer className="border-t border-slate-200 bg-slate-50 py-8 mt-auto">
                 <div className="container mx-auto px-4 text-center text-sm text-slate-600">
-                    <p>© 2024 CV Match & Optimize AI. <span className="text-indigo-600">Client-Side Processing Only.</span></p>
+                    <p>© 2024 Career Match. <span className="text-indigo-600">Client-Side Processing Only.</span></p>
                 </div>
             </footer>
         </div>

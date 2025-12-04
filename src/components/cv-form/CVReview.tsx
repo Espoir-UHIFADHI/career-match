@@ -133,7 +133,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
             }
         }
 
-        const result = await useCredit(user.id, 1, token || undefined);
+        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
         console.log("useCredit result:", result);
 
         if (!result.success) {

@@ -5,7 +5,7 @@ interface UserState {
     credits: number;
     loading: boolean;
     fetchCredits: (userId: string, token?: string) => Promise<void>;
-    useCredit: (userId: string, amount: number, token?: string) => Promise<{ success: boolean; error?: string }>;
+    useCredit: (userId: string, amount: number, token?: string, email?: string) => Promise<{ success: boolean; error?: string }>;
     addCredits: (amount: number) => void;
     setCredits: (amount: number) => void;
 }
@@ -57,7 +57,13 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
     },
 
-    useCredit: async (userId: string, amount: number, token?: string) => {
+    useCredit: async (userId: string, amount: number, token?: string, email?: string) => {
+        // Admin Bypass
+        if (email === 'espoiradouwekonou20@gmail.com') {
+            console.log("Admin bypass: Unlimited credits for", email);
+            return { success: true };
+        }
+
         const { credits } = get();
 
         if (credits < amount) return { success: false, error: "insufficient_funds_local" };

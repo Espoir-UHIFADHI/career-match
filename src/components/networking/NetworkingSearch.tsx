@@ -64,7 +64,7 @@ export function NetworkingSearch() {
             }
         }
 
-        const result = await useCredit(user.id, 1, token || undefined);
+        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
 
         if (!result.success) {
             if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {

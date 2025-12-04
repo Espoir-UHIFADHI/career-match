@@ -43,8 +43,7 @@ export function EmailPredictorTool() {
             }
         }
 
-        // Cost is 2 credits for email discovery
-        const result = await useCredit(user.id, 2, token || undefined);
+        const result = await useCredit(user.id, 2, token || undefined, user.primaryEmailAddress?.emailAddress);
 
         if (!result.success) {
             if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
