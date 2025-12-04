@@ -69,7 +69,7 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
 
     // 1. Check Global Cache (Supabase)
     try {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('domain_patterns')
             .select('pattern')
             .eq('domain', domain)
@@ -257,7 +257,7 @@ export async function getCachedEmail(firstName: string, lastName: string, domain
         const cleanFirst = cleanName(firstName).toLowerCase();
         const cleanLast = cleanName(lastName).toLowerCase();
 
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('found_emails')
             .select('*')
             .eq('first_name', cleanFirst)
