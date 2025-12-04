@@ -9,8 +9,6 @@ import { Label } from "../ui/Label";
 import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 
-import { useUser, useAuth } from "@clerk/clerk-react";
-
 interface CVReviewProps {
     initialData: ParsedCV;
     onSave: (data: ParsedCV) => void;

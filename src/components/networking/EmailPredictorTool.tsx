@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, findEmail, getCachedEmail, type VerificationResponse, type EmailFinderResponse } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, findEmail, getCachedEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 

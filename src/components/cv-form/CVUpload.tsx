@@ -7,7 +7,6 @@ import { parseCV } from "../../services/ai/gemini";
 import { useAppStore } from "../../store/useAppStore";
 import type { ParsedCV } from "../../types";
 import { CVReview } from "./CVReview";
-import { useUser, useAuth } from "@clerk/clerk-react";
 
 export function CVUpload() {
     const [isProcessing, setIsProcessing] = useState(false);
@@ -51,9 +50,6 @@ export function CVUpload() {
         },
         maxFiles: 1,
     });
-
-    const { user } = useUser();
-    const { getToken } = useAuth();
 
     const handleSaveReview = (data: ParsedCV) => {
         setCvData(data);

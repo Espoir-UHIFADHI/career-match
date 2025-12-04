@@ -6,7 +6,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { searchGoogle } from "../../services/search/serper";
-import { findCompanyDomain, getEmailPattern, generateEmail, findEmail, cleanName, formatEmailPattern } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, findEmail, cleanName, formatEmailPattern } from "../../services/emailService";
 import { generateNetworkingQueries } from "../../services/ai/gemini";
 import { Mail, Copy, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
