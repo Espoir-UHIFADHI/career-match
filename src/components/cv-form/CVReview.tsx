@@ -10,7 +10,7 @@ import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertC
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { useUserStore } from "../../store/useUserStore";
 import { optimizeCVContent } from "../../services/ai/gemini";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -22,6 +22,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const [formData, setFormData] = useState<ParsedCV>(initialData);
     const [isOptimizing, setIsOptimizing] = useState(false);
     const { user, isSignedIn } = useUser();
+    const { getToken } = useAuth();
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -121,12 +122,27 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
         const { useCredit, credits } = useUserStore.getState();
         console.log("User:", user.id, "Credits:", credits);
 
-        const success = await useCredit(user.id, 1);
-        console.log("useCredit result:", success);
+        let token: string | null = null;
+        try {
+            token = await getToken({ template: 'supabase' });
+        } catch (error) {
+            console.error("Error getting Supabase token:", error);
+            if (error instanceof Error && error.message.includes("No JWT template exists")) {
+                alert("Configuration Error: Missing 'supabase' JWT template in Clerk Dashboard. Please contact the administrator.");
+                return;
+            }
+        }
 
-        if (!success) {
-            console.log("Not enough credits");
-            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+        const result = await useCredit(user.id, 1, token || undefined);
+        console.log("useCredit result:", result);
+
+        if (!result.success) {
+            console.log("Not enough credits or error");
+            if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
+                alert(`Crédits épuisés (${credits}). Passez à la version Pro pour continuer.`);
+            } else {
+                alert(`Erreur lors de l'utilisation des crédits: ${result.error}`);
+            }
             return;
         }
 

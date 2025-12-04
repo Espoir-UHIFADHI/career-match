@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Briefcase, FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
 
 
@@ -10,7 +10,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const { step } = useAppStore();
     const { credits } = useUserStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { isSignedIn } = useUser();
 
     const navItems = [
         { id: 1, name: "Upload CV", icon: FileText, activeSteps: [1, 2, 3, 4] },

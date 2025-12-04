@@ -25,3 +25,13 @@ console.log("- isSupabaseConfigured:", !!supabaseUrl && !!supabaseAnonKey);
 export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
 
 export const supabase = createClient(validUrl, validKey);
+
+export const createClerkSupabaseClient = (clerkToken: string) => {
+    return createClient(validUrl, validKey, {
+        global: {
+            headers: {
+                Authorization: `Bearer ${clerkToken}`,
+            },
+        },
+    });
+};

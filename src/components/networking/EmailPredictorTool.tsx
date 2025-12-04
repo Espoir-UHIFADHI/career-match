@@ -7,8 +7,7 @@ import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
-import { SignInButton, useUser } from "@clerk/clerk-react";
-
+import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 
 export function EmailPredictorTool() {
     const [company, setCompany] = useState("");
@@ -19,6 +18,8 @@ export function EmailPredictorTool() {
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const { isSignedIn, user } = useUser();
+    const { getToken } = useAuth();
+    const { useCredit, credits } = useUserStore();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
@@ -27,24 +28,35 @@ export function EmailPredictorTool() {
     const handlePredict = async () => {
         if (!company) return;
 
-        // Check Credits
-        const { useCredit, credits } = useUserStore.getState();
-
         if (!isSignedIn || !user) {
             return;
         }
 
-        // Cost is 2 credits for email discovery
-        const success = await useCredit(user.id, 2);
+        let token: string | null = null;
+        try {
+            token = await getToken({ template: 'supabase' });
+        } catch (error) {
+            console.error("Error getting Supabase token:", error);
+            if (error instanceof Error && error.message.includes("No JWT template exists")) {
+                alert("Configuration Error: Missing 'supabase' JWT template in Clerk Dashboard. Please contact the administrator.");
+                return;
+            }
+        }
 
-        if (!success) {
-            alert(`Crédits épuisés (${credits}/5). Passez à la version Pro pour continuer.`);
+        // Cost is 2 credits for email discovery
+        const result = await useCredit(user.id, 2, token || undefined);
+
+        if (!result.success) {
+            if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
+                alert(`Crédits épuisés (${credits}). Passez à la version Pro pour continuer.`);
+            } else {
+                console.error("Credit error:", result.error);
+                alert(`Une erreur est survenue lors de la vérification des crédits (${result.error}). Veuillez réessayer.`);
+            }
             return;
         }
 
         setStatus('loading');
-        // ... rest of the function
-
         setError(null);
         setResult(null);
         setVerificationStatus('idle');
@@ -230,75 +242,65 @@ export function EmailPredictorTool() {
                                 <div className="space-y-2">
                                     <h3 className="text-2xl font-bold text-slate-900">Email Found!</h3>
                                     <p className="text-slate-600">
-                                        We found a pattern <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-800 text-sm">{result.pattern}</code> for <span className="font-medium text-indigo-700">{result.domain}</span>
+                                        We found a pattern <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-800 text-sm">{formatEmailPattern(result.pattern)}@{result.domain}</code>
                                     </p>
                                 </div>
 
-                                <div className="flex items-center justify-center gap-3 max-w-md mx-auto">
-                                    <div className="flex-1 bg-white border border-slate-200 rounded-xl p-4 text-lg font-mono text-slate-800 shadow-inner select-all">
-                                        {result.email}
-                                    </div>
+                                <div className="flex items-center justify-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span className="text-xl font-mono text-slate-900 select-all">{result.email}</span>
                                     <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={copyToClipboard}
-                                        variant="outline"
-                                        className={`h-14 w-14 rounded-xl border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all ${copied ? 'bg-green-50 text-green-600 border-green-200' : ''}`}
+                                        className="hover:bg-white hover:shadow-sm"
                                     >
-                                        {copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
+                                        {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-slate-500" />}
                                     </Button>
                                 </div>
 
-                                {/* Verification Section */}
-                                <div className="flex flex-col items-center gap-4 pt-4 border-t border-slate-100 w-full max-w-md mx-auto">
+                                <div className="flex justify-center">
                                     {verificationStatus === 'idle' && (
-                                        <Button
-                                            onClick={handleVerify}
-                                            variant="outline"
-                                            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
-                                        >
-                                            Verify Email Existence
+                                        <Button variant="outline" onClick={handleVerify} className="gap-2">
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            Verify Email
                                         </Button>
                                     )}
-
                                     {verificationStatus === 'verifying' && (
                                         <div className="flex items-center gap-2 text-slate-500">
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                             Verifying...
                                         </div>
                                     )}
-
-                                    {verificationStatus === 'verified' && getVerificationBadge()}
-
-                                    {verificationStatus === 'error' && (
-                                        <div className="flex items-center gap-2 text-red-500 text-sm">
-                                            <AlertCircle className="w-4 h-4" />
-                                            Verification failed
-                                        </div>
-                                    )}
+                                    {getVerificationBadge()}
                                 </div>
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 text-center shadow-sm">
-                            <h3 className="font-bold text-xl text-blue-800 mb-2">Format d'email identifié</h3>
-                            <div className="bg-white/60 inline-block px-4 py-2 rounded-lg border border-blue-100 mb-3">
-                                <p className="text-lg font-mono text-slate-700">
-                                    {formatEmailPattern(result.pattern)}@{result.domain}
+                        <Card className="glass-panel bg-white border-slate-200 shadow-sm">
+                            <CardContent className="p-8 text-center space-y-4">
+                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Mail className="w-8 h-8 text-indigo-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900">Pattern Found</h3>
+                                <p className="text-slate-600">
+                                    The email pattern for <span className="font-medium text-indigo-700">{result.domain}</span> is:
                                 </p>
-                            </div>
-                            <p className="text-sm text-blue-600">
-                                Basé sur les données publiques de {company}
-                            </p>
-                        </div>
+                                <code className="block bg-slate-100 p-3 rounded-lg text-lg font-mono text-slate-900 border border-slate-200">
+                                    {formatEmailPattern(result.pattern)}@{result.domain}
+                                </code>
+                                <p className="text-sm text-slate-500">
+                                    Enter a first and last name to generate the exact email address.
+                                </p>
+                            </CardContent>
+                        </Card>
                     )}
                 </div>
             )}
 
-            {status === 'error' && error && (
-                <div className="animate-slide-up">
-                    <div className="bg-red-50 border border-red-100 rounded-xl p-6 text-center text-red-800">
-                        <p className="font-medium text-lg mb-2">❌ Prediction Failed</p>
-                        <p className="text-red-600">{error}</p>
-                    </div>
+            {error && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg text-center animate-fade-in border border-red-100 flex items-center justify-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    {error}
                 </div>
             )}
         </div>

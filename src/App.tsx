@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
 import { useUserStore } from "./store/useUserStore";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { Button } from "./components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { Steps } from "./components/ui/Steps";
@@ -26,18 +26,37 @@ import { LandingPage } from "./components/LandingPage";
 
 // ... existing imports
 
+
+
 function App() {
   console.log("App.tsx rendering");
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language } = useAppStore();
   const { fetchCredits } = useUserStore();
   const { user, isSignedIn } = useUser();
+  const { getToken } = useAuth();
 
   useEffect(() => {
-    if (isSignedIn && user) {
-      // Sync user with Supabase (fetch credits)
-      fetchCredits(user.id);
-    }
-  }, [isSignedIn, user, fetchCredits]);
+    const syncUser = async () => {
+      if (isSignedIn && user) {
+        try {
+          // Get Supabase token from Clerk
+          const token = await getToken({ template: 'supabase' });
+          // Sync user with Supabase (fetch credits) using the token
+          fetchCredits(user.id, token || undefined);
+        } catch (error) {
+          console.error("Error getting Supabase token:", error);
+          // Check if it's the specific template error
+          if (error instanceof Error && error.message.includes("No JWT template exists")) {
+            console.error("CRITICAL: You must create a JWT template named 'supabase' in your Clerk Dashboard.");
+          }
+          // Fallback to unauthenticated fetch (might fail RLS but better than crashing)
+          fetchCredits(user.id, undefined);
+        }
+      }
+    };
+
+    syncUser();
+  }, [isSignedIn, user, fetchCredits, getToken]);
 
 
   const handleStepClick = (stepId: number) => {

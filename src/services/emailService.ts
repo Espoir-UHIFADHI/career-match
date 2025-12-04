@@ -27,7 +27,15 @@ interface HunterResponse {
  */
 export async function findCompanyDomain(companyName: string): Promise<string | null> {
     try {
-        const query = `Site officiel ${companyName}`;
+        // 1. Check if input is already a domain (e.g. "google.com")
+        if (companyName.includes(".") && !companyName.includes(" ")) {
+            return companyName.toLowerCase();
+        }
+
+        // 2. Search for the domain
+        // Use English query to prioritize global domains (e.g. "Google official website" -> google.com)
+        // instead of "Site officiel Google" which might return google.fr
+        const query = `"${companyName}" official website`;
         const results = await searchGoogle(query, 1);
 
         if (results && results.length > 0) {
