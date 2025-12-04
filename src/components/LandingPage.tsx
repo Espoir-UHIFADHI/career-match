@@ -1,7 +1,7 @@
 
 import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "./ui/Button";
-import { ArrowRight, FileText, Users, Mail, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, FileText, Users, Mail, CheckCircle2 } from "lucide-react";
 
 export function LandingPage() {
 
@@ -10,13 +10,10 @@ export function LandingPage() {
             {/* Hero Section */}
             <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20 bg-gradient-to-b from-white to-indigo-50/50">
                 <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-medium text-sm mb-4">
-                        <Sparkles className="w-4 h-4" />
-                        <span>Nouvelle IA Générative 2.0</span>
-                    </div>
+
 
                     <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
-                        Décrochez votre Job de Rêve avec <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">l'Intelligence Artificielle</span>
+                        Décrochez votre Job de Rêve avec <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Career Match</span>
                     </h1>
 
                     <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -33,7 +30,7 @@ export function LandingPage() {
                             </Button>
                         </SignInButton>
                         <p className="text-sm text-slate-500 mt-4 sm:mt-0 sm:ml-4">
-                            5 crédits offerts à l'inscription
+                            7 crédits offerts à l'inscription
                         </p>
                     </div>
                 </div>
