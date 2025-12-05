@@ -1,6 +1,6 @@
 import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "./ui/Button";
-import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, CheckCircle, Smartphone, Globe, Shield, User } from "lucide-react";
+import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, CheckCircle, User } from "lucide-react";
 
 export function LandingPage() {
 
