@@ -1,6 +1,6 @@
 import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "./ui/Button";
-import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, CheckCircle, User } from "lucide-react";
+import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, StarHalf, CheckCircle, User } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
@@ -21,12 +21,7 @@ export function LandingPage() {
                     <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
                         {/* Left Column: Content */}
                         <div className="flex-1 text-center lg:text-left">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/80 border border-indigo-100 shadow-sm backdrop-blur-md text-indigo-600 text-sm font-semibold animate-fade-in group hover:scale-105 transition-transform cursor-pointer">
-                                <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse relative">
-                                    <span className="absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75 animate-ping"></span>
-                                </span>
-                                <span className="tracking-wide">{t('hero.newVersion')}</span>
-                            </div>
+
 
                             <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-8 animate-slide-up">
                                 {t('hero.titleLine1')} <br className="hidden lg:block" />
@@ -58,20 +53,40 @@ export function LandingPage() {
                                     {t('hero.ctaDemo')}
                                 </Button>
                             </div>
+                            <p className="mt-3 text-sm font-medium text-indigo-600 animate-fade-in animation-delay-500">
+                                {t('hero.freeCreditsOffer')}
+                            </p>
 
-                            <div className="mt-10 flex items-center justify-center lg:justify-start gap-4 text-sm text-slate-500 animate-fade-in animation-delay-500">
-                                <div className="flex -space-x-3">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center overflow-hidden shadow-md relative">
-                                            <User className="w-5 h-5 text-slate-400" />
+                            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 animate-fade-in animation-delay-500">
+                                <div className="flex -space-x-4">
+                                    {[
+                                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64",
+                                        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=64&h=64",
+                                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=64&h=64",
+                                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=64&h=64"
+                                    ].map((src, i) => (
+                                        <div key={i} className="h-12 w-12 rounded-full border-2 border-white ring-2 ring-indigo-50 shadow-md relative z-10 hover:scale-110 hover:z-20 transition-all duration-300">
+                                            <img
+                                                src={src}
+                                                alt={`User ${i + 1}`}
+                                                className="w-full h-full rounded-full object-cover"
+                                            />
                                         </div>
                                     ))}
                                 </div>
-                                <div className="flex flex-col items-start bg-white/50 px-3 py-1 rounded-lg backdrop-blur-sm border border-slate-100">
-                                    <div className="flex text-amber-400 mb-0.5">
-                                        {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
+                                <div className="flex flex-col gap-1 bg-white/60 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex text-amber-400">
+                                            {[1, 2, 3, 4].map(i => (
+                                                <Star key={i} className="w-4 h-4 fill-current drop-shadow-sm" />
+                                            ))}
+                                            <StarHalf className="w-4 h-4 fill-current drop-shadow-sm" />
+                                        </div>
+                                        <span className="font-bold text-slate-800">4.6/5</span>
                                     </div>
-                                    <span className="font-semibold text-slate-700 text-xs">{t('hero.socialProof')}</span>
+                                    <p className="text-sm font-medium text-slate-600">
+                                        par <span className="text-indigo-600 font-bold">+1000 pros</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>

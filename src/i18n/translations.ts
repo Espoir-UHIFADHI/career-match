@@ -11,7 +11,9 @@ export const translations = {
             rights: "© 2024 Career Match. All rights reserved.",
             jobDetails: "Job Details",
             analysis: "Analysis",
-            results: "Results"
+            results: "Results",
+            pricing: "Pricing"
+
         },
         hero: {
             newVersion: "New AI 2.0 Version",
@@ -21,7 +23,8 @@ export const translations = {
             ctaStart: "Start for Free",
             ctaDemo: "View Demo",
             socialProof: "4.9/5 by +1000 pros",
-            joinedTeams: "THEY JOINED THE BEST TEAMS"
+            joinedTeams: "THEY JOINED THE BEST TEAMS",
+            freeCreditsOffer: "(7 credits offered on signup)"
         },
         features: {
             title: "Everything you need.",
@@ -234,17 +237,20 @@ export const translations = {
             rights: "© 2024 Career Match. Tous droits réservés.",
             jobDetails: "Détails du Poste",
             analysis: "Analyse",
-            results: "Résultats"
+            results: "Résultats",
+            pricing: "Tarifs"
+
         },
         hero: {
             newVersion: "Nouvelle version AI 2.0",
             titleLine1: "Votre Carrière",
             titleLine2: "Mérite L'Excellence",
-            subtitle: "La première plateforme IA qui transforme votre CV anonyme en opportunité concrète. Optimisez, ciblez, et connectez-vous aux recruteurs en un clic.",
+            subtitle: "La première plateforme qui transforme votre CV anonyme en opportunité concrète. Optimisez, ciblez, et connectez-vous aux recruteurs en un clic.",
             ctaStart: "Commencer Gratuitement",
             ctaDemo: "Voir la démo",
             socialProof: "4.9/5 par +1000 pros",
-            joinedTeams: "Ils ont rejoint les meilleures équipes"
+            joinedTeams: "Ils ont rejoint les meilleures équipes",
+            freeCreditsOffer: "(7 crédits offerts à l'inscription)"
         },
         features: {
             title: "Tout ce dont vous avez besoin.",

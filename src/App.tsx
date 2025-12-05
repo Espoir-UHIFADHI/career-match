@@ -16,6 +16,7 @@ import { MatchingDashboard } from "./components/results/MatchingDashboard";
 import { PrintableCV } from "./components/results/PrintableCV";
 import { NetworkingSearch } from "./components/networking/NetworkingSearch";
 import { EmailPredictorTool } from "./components/networking/EmailPredictorTool";
+import { PricingPage } from "./components/PricingPage";
 
 import { LandingPage } from "./components/LandingPage";
 
@@ -112,6 +113,7 @@ function App() {
         ) : <MatchingDashboard />;
       case 5: return <NetworkingSearch />;
       case 6: return <EmailPredictorTool />;
+      case 7: return <PricingPage />;
       default: return <CVUpload />;
     }
   };

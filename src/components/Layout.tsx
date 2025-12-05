@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Briefcase, FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "../hooks/useTranslation";
@@ -17,6 +17,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         { id: 1, name: t('nav.uploadCV'), icon: FileText, activeSteps: [1, 2, 3, 4] },
         { id: 5, name: t('nav.networking'), icon: User, activeSteps: [5] },
         { id: 6, name: t('nav.emailPredictor'), icon: Mail, activeSteps: [6] },
+        { id: 7, name: t('nav.pricing'), icon: Coins, activeSteps: [7] },
     ];
 
     const handleNavClick = (id: number) => {
@@ -67,18 +68,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <LanguageSwitcher />
 
                         {/* Credits Display */}
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm">
+                        <div
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
+                            onClick={() => useAppStore.getState().setStep(7)}
+                        >
                             <Coins className="h-4 w-4 text-amber-500" />
-                            <span className="text-sm font-semibold text-slate-700">{credits}</span>
+                            <span className="text-sm font-bold text-slate-900">{credits}</span>
                         </div>
 
                         {/* Auth Button */}
                         <SignedOut>
-                            <SignInButton mode="modal">
-                                <button className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
-                                    {t('nav.signIn')}
-                                </button>
-                            </SignInButton>
+                            <div className="flex items-center gap-4">
+                                <SignInButton mode="modal">
+                                    <button className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
+                                        Se connecter
+                                    </button>
+                                </SignInButton>
+                                <SignUpButton mode="modal">
+                                    <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 hover:shadow-slate-900/30">
+                                        S'inscrire
+                                    </button>
+                                </SignUpButton>
+                            </div>
                         </SignedOut>
                         <SignedIn>
                             <UserButton
