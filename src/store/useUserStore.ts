@@ -21,39 +21,21 @@ export const useUserStore = create<UserState>((set, get) => ({
         const client = token ? createClerkSupabaseClient(token) : supabase;
 
         try {
-            const { data, error } = await client
-                .from('profiles')
-                .select('credits')
-                .eq('id', userId)
-                .single();
+            // Call the RPC function which handles "get or create" logic atomically on the server
+            // entirely bypassing potential API schema cache issues
+            const { data, error } = await client.rpc('get_user_credits', {
+                p_user_id: userId
+            });
 
             if (error) {
-                console.log("Profile check error:", error.message, error.code);
-
-                // If profile not found (PGRST116), create it
-                if (error.code === 'PGRST116') {
-                    console.log("Creating new profile for user:", userId);
-                    const { error: insertError } = await client
-                        .from('profiles')
-                        .insert([
-                            { id: userId, credits: 7 } // Default to 7 credits
-                        ]);
-
-                    if (insertError) {
-                        console.error("Error creating profile:", insertError);
-                        set({ credits: 0 });
-                    } else {
-                        console.log("Profile created successfully with 7 credits");
-                        set({ credits: 7 });
-                    }
-                } else {
-                    set({ credits: 0 });
-                }
+                console.error("Error fetching credits (RPC):", error);
+                set({ credits: 0 });
             } else {
-                set({ credits: data?.credits ?? 0 });
+                set({ credits: data ?? 0 });
             }
         } catch (error) {
             console.error('Error fetching credits:', error);
+            set({ credits: 0 });
         }
     },
 
@@ -73,7 +55,6 @@ export const useUserStore = create<UserState>((set, get) => ({
         const client = token ? createClerkSupabaseClient(token) : supabase;
 
         try {
-            // DIRECT UPDATE: Bypass RPC to avoid potential type mismatch issues
             // We first verify we have enough credits (double check)
             const { data: currentProfile, error: fetchError } = await client
                 .from('profiles')
@@ -94,10 +75,10 @@ export const useUserStore = create<UserState>((set, get) => ({
             }
 
             // Perform the update
-            // Using upsert (POST) instead of update (PATCH) to avoid CORS issues with PATCH method
             const { error: updateError } = await client
                 .from('profiles')
-                .upsert({ id: userId, credits: currentProfile.credits - amount });
+                .update({ credits: currentProfile.credits - amount })
+                .eq('id', userId);
 
             if (updateError) {
                 console.error("Error updating credits:", updateError);
