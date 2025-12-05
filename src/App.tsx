@@ -115,7 +115,7 @@ function App() {
 
   return (
     <Layout>
-      {!isSignedIn ? (
+      {!isSignedIn || step === 0 ? (
         <LandingPage />
       ) : (
         <div className="space-y-8">

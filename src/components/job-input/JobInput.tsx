@@ -132,82 +132,82 @@ export function JobInput() {
     if (previewData) {
         return (
             <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
-                <div className="text-center space-y-3">
-                    <h2 className="text-3xl font-bold text-slate-900">Job Summary</h2>
-                    <p className="text-slate-600 text-lg">
+                <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Job Summary</h2>
+                    <p className="text-slate-500">
                         Please review the extracted job details.
                     </p>
                 </div>
 
-                <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-xl text-slate-900">
-                            <div className="p-2 bg-indigo-100 rounded-lg">
-                                <Briefcase className="h-6 w-6 text-indigo-600" />
+                <Card className="border-slate-200 shadow-sm overflow-hidden">
+                    <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
+                        <CardTitle className="flex items-center gap-3 text-lg text-slate-900">
+                            <div className="p-2 bg-indigo-600 rounded-lg text-white">
+                                <Briefcase className="h-5 w-5" />
                             </div>
                             {previewData.title || "Untitled Job"}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-6 pt-6">
                         <div className="flex items-center gap-2 text-slate-600">
                             <Building2 className="h-5 w-5 text-indigo-600" />
-                            <span className="font-medium text-lg">{previewData.company || "Unknown Company"}</span>
+                            <span className="font-semibold text-slate-900">{previewData.company || "Unknown Company"}</span>
                         </div>
 
                         {previewData.url && (
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <Globe className="h-4 w-4" />
-                                <span>Source: {new URL(previewData.url).hostname}</span>
+                                <span className="underline decoration-slate-300 underline-offset-4">Source: {new URL(previewData.url).hostname}</span>
                             </div>
                         )}
 
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                            <h4 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wider">Description</h4>
-                            <p className="text-slate-600 leading-relaxed">
+                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Description</h4>
+                            <p className="text-slate-700 leading-relaxed text-sm">
                                 {previewData.description || "No description available."}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wider">Hard Skills</h4>
+                                <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">Hard Skills</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {(previewData.requirements?.hardSkills || []).map((skill, i) => (
-                                        <span key={i} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm rounded-lg border border-indigo-200">
+                                        <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-medium rounded-md border border-slate-200 shadow-sm">
                                             {skill}
                                         </span>
                                     ))}
                                     {(!previewData.requirements?.hardSkills || previewData.requirements.hardSkills.length === 0) && (
-                                        <span className="text-sm text-slate-500 italic">None detected</span>
+                                        <span className="text-sm text-slate-400 italic">None detected</span>
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-emerald-700 mb-3 uppercase tracking-wider">Soft Skills</h4>
+                                <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">Soft Skills</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {(previewData.requirements?.softSkills || []).map((skill, i) => (
-                                        <span key={i} className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm rounded-lg border border-emerald-200">
+                                        <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-medium rounded-md border border-slate-200 shadow-sm">
                                             {skill}
                                         </span>
                                     ))}
                                     {(!previewData.requirements?.softSkills || previewData.requirements.softSkills.length === 0) && (
-                                        <span className="text-sm text-slate-500 italic">None detected</span>
+                                        <span className="text-sm text-slate-400 italic">None detected</span>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="pt-6 flex gap-4">
+                        <div className="pt-6 flex gap-3">
                             <Button
                                 variant="outline"
                                 onClick={() => setPreviewData(null)}
-                                className="flex-1 hover:bg-slate-100 text-slate-700 border-slate-300 h-12"
+                                className="flex-1"
                             >
                                 Back to Edit
                             </Button>
                             <Button
                                 onClick={handleProceed}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-12 shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.02]"
+                                className="flex-1"
                             >
                                 Analyze Compatibility <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -220,21 +220,21 @@ export function JobInput() {
 
     return (
         <div className="max-w-xl mx-auto space-y-8 animate-fade-in">
-            <div className="text-center mb-10 space-y-3">
-                <h2 className="text-3xl font-bold text-slate-900">Target Job</h2>
-                <p className="text-slate-600 text-lg">
+            <div className="text-center mb-10 space-y-2">
+                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Target Job</h2>
+                <p className="text-slate-500 text-lg">
                     Paste the job description or URL to match against.
                 </p>
             </div>
 
-            <Card className="glass-panel bg-white border-slate-200 shadow-sm overflow-hidden">
+            <Card className="overflow-hidden bg-white shadow-sm border-slate-200">
                 <CardContent className="p-0">
-                    <div className="flex gap-6 border-b border-slate-200">
+                    <div className="flex border-b border-slate-200">
                         <button
                             onClick={() => setMode("url")}
-                            className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all duration-300 ${mode === "url"
-                                ? "border-indigo-600 text-indigo-600 bg-indigo-50/50"
-                                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                            className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all duration-200 ${mode === "url"
+                                ? "text-indigo-600 bg-indigo-50/50 border-b-2 border-indigo-600"
+                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                                 }`}
                         >
                             <LinkIcon className="h-4 w-4" />
@@ -242,9 +242,9 @@ export function JobInput() {
                         </button>
                         <button
                             onClick={() => setMode("text")}
-                            className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all duration-300 ${mode === "text"
-                                ? "border-indigo-600 text-indigo-600 bg-indigo-50/50"
-                                : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                            className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all duration-200 ${mode === "text"
+                                ? "text-indigo-600 bg-indigo-50/50 border-b-2 border-indigo-600"
+                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                                 }`}
                         >
                             <FileText className="h-4 w-4" />
@@ -256,18 +256,18 @@ export function JobInput() {
                         {mode === "url" ? (
                             <div className="space-y-4">
                                 <div className="relative">
-                                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                     <input
                                         type="url"
                                         value={url}
                                         onChange={(e) => setUrl(e.target.value)}
                                         placeholder="https://linkedin.com/jobs/..."
-                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none"
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none shadow-sm"
                                     />
                                 </div>
-                                <p className="text-xs text-slate-500 flex items-center gap-1">
+                                <p className="text-xs text-slate-500 flex items-center gap-1.5">
                                     <Search className="h-3 w-3" />
-                                    We'll use Google Search to find details about this link.
+                                    Powered by Google Search & Jina AI
                                 </p>
                             </div>
                         ) : (
@@ -275,14 +275,14 @@ export function JobInput() {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Paste the full job description here..."
-                                rows={12}
-                                className="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none resize-none"
+                                rows={10}
+                                className="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none shadow-sm text-sm leading-relaxed"
                             />
                         )}
 
                         {error && (
-                            <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3 animate-slide-up">
-                                <AlertCircle className="h-5 w-5 text-red-600" />
+                            <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-lg flex items-center gap-3 text-sm">
+                                <AlertCircle className="h-4 w-4 text-red-600" />
                                 {error}
                             </div>
                         )}
@@ -290,11 +290,11 @@ export function JobInput() {
                         <Button
                             onClick={analyzeJob}
                             disabled={isProcessing || (mode === "url" ? !url : !description)}
-                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+                            className="w-full h-11 text-base shadow-lg shadow-indigo-500/20"
                         >
                             {isProcessing ? (
                                 <>
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Analyzing Job...
                                 </>
                             ) : (

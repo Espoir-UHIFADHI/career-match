@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useUserStore } from "../../store/useUserStore";
-import { Mail, Loader2, Building2, User, Copy, Check } from "lucide-react";
+import { Mail, Loader2, Building2, User, Copy, Check, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, findEmail, getCachedEmail, type VerificationResponse } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 
@@ -47,10 +47,10 @@ export function EmailPredictorTool() {
 
         if (!result.success) {
             if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
-                alert(`Crédits épuisés (${credits}). Passez à la version Pro pour continuer.`);
+                alert(`Credits exhausted (${credits}). Upgrade to Pro to continue.`);
             } else {
                 console.error("Credit error:", result.error);
-                alert(`Une erreur est survenue lors de la vérification des crédits (${result.error}). Veuillez réessayer.`);
+                alert(`An error occurred while checking credits (${result.error}). Please try again.`);
             }
             return;
         }
@@ -64,11 +64,11 @@ export function EmailPredictorTool() {
         try {
             // 1. Find domain
             const domain = await findCompanyDomain(company);
-            if (!domain) throw new Error(`Impossible de trouver le domaine pour "${company}"`);
+            if (!domain) throw new Error(`Could not find domain for "${company}"`);
 
             // 2. Get pattern
             const pattern = await getEmailPattern(domain);
-            if (!pattern) throw new Error(`Impossible de trouver un pattern email pour ${domain}`);
+            if (!pattern) throw new Error(`Could not find email pattern for ${domain}`);
 
             // 3. Find or Generate email
             let email: string | undefined;
@@ -95,7 +95,7 @@ export function EmailPredictorTool() {
             setStatus('success');
         } catch (err) {
             console.error("Prediction failed:", err);
-            setError(err instanceof Error ? err.message : "Une erreur est survenue");
+            setError(err instanceof Error ? err.message : "An error occurred");
             setStatus('error');
         }
     };
@@ -125,48 +125,9 @@ export function EmailPredictorTool() {
         }
     };
 
-    const handleConfirm = async () => {
-        if (!company || !firstName || !lastName || !result?.domain) return;
+    // handleConfirm removed as it was unused and deduplicated logic exists elsewhere
 
-        if (!isSignedIn || !user) return;
 
-        // Deduct 1 credit for confirmation
-        let token: string | null = null;
-        try {
-            token = await getToken({ template: 'supabase' });
-        } catch (error) {
-            console.error("Error getting token:", error);
-        }
-
-        const creditResult = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
-
-        if (!creditResult.success) {
-            alert(`Crédits insuffisants pour la confirmation.`);
-            return;
-        }
-
-        setStatus('loading');
-
-        try {
-            const finderResult = await findEmail(firstName, lastName, result.domain);
-            if (finderResult) {
-                setResult({
-                    email: finderResult.email,
-                    domain: result.domain,
-                    pattern: result.pattern,
-                    score: finderResult.score,
-                    source: 'finder'
-                });
-            } else {
-                setError("Email introuvable dans la base de données officielle.");
-                // Keep the pattern result but maybe show a message
-            }
-            setStatus('success');
-        } catch (e) {
-            console.error("Confirmation failed:", e);
-            setStatus('error');
-        }
-    };
 
     const getVerificationBadge = () => {
         if (!verificationResult) return null;
@@ -175,7 +136,7 @@ export function EmailPredictorTool() {
 
         if (status === 'valid') {
             return (
-                <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1 rounded-full text-sm font-medium border border-green-200">
+                <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium border border-emerald-200">
                     <CheckCircle2 className="w-4 h-4" />
                     Valid (Score: {score}%)
                 </div>
@@ -198,201 +159,189 @@ export function EmailPredictorTool() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8 p-6 animate-fade-in">
-            <div className="text-center space-y-4 mb-8">
-                <h1 className="text-4xl md:text-5xl font-bold text-slate-900">
-                    Email Predictor
-                </h1>
-                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Find any professional email address in seconds using company name and full name.
-                </p>
+        <div className="w-full max-w-none mx-auto space-y-8 animate-fade-in">
+            <div className="text-center space-y-3">
+                <h2 className="text-3xl font-bold text-slate-900">Email Predictor</h2>
+                <p className="text-slate-600 text-lg">Find any professional email address in seconds.</p>
             </div>
 
-            <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl text-slate-900 flex items-center gap-2">
-                        <Mail className="w-5 h-5 text-indigo-600" />
-                        Enter Details
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label className="text-slate-600">Company Name</Label>
-                            <div className="relative group">
-                                <Building2 className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                                <Input
-                                    placeholder="e.g. Google"
-                                    value={company}
-                                    onChange={(e) => setCompany(e.target.value)}
-                                    className="pl-10 glass-input bg-slate-50 border-slate-200 focus:bg-white h-11 transition-all duration-300"
-                                />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-slate-600">First Name <span className="text-slate-400 text-xs">(Optional)</span></Label>
-                                <div className="relative group">
-                                    <User className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                                    <Input
-                                        placeholder="e.g. Jean"
-                                        value={firstName}
-                                        onChange={(e) => setFirstName(e.target.value)}
-                                        className="pl-10 glass-input bg-slate-50 border-slate-200 focus:bg-white h-11 transition-all duration-300"
-                                    />
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+                {/* Input Panel */}
+                <div className="md:col-span-3 space-y-6">
+                    <Card className="bg-white border-slate-200 shadow-sm h-full">
+                        <CardHeader className="border-b border-slate-100 pb-4">
+                            <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
+                                <div className="p-2 bg-indigo-100 rounded-lg">
+                                    <Search className="w-5 h-5 text-indigo-600" />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-slate-600">Last Name <span className="text-slate-400 text-xs">(Optional)</span></Label>
-                                <Input
-                                    placeholder="e.g. Dupont"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                    className="glass-input bg-slate-50 border-slate-200 focus:bg-white h-11 transition-all duration-300"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {isSignedIn ? (
-                        <Button
-                            onClick={handlePredict}
-                            disabled={status === 'loading' || !company}
-                            className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.01] text-lg"
-                        >
-                            {status === 'loading' ? (
-                                <>
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    Analyzing Patterns...
-                                </>
-                            ) : (
-                                <>
-                                    <Mail className="mr-2 h-5 w-5" />
-                                    {firstName && lastName ? "Find Email" : "Find Format"}
-                                </>
-                            )}
-                        </Button>
-                    ) : (
-                        <SignInButton mode="modal">
-                            <Button
-                                className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-lg shadow-slate-900/25 transition-all duration-300 hover:scale-[1.01] text-lg"
-                            >
-                                <User className="mr-2 h-5 w-5" />
-                                Se connecter pour utiliser l'outil
-                            </Button>
-                        </SignInButton>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Results Section */}
-            {status === 'success' && result && (
-                <div className="animate-slide-up">
-                    {result.email ? (
-                        <Card className="glass-panel bg-gradient-to-br from-indigo-50 to-white border-indigo-100 shadow-md overflow-hidden">
-                            <CardContent className="p-8 text-center space-y-6">
-                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Mail className="w-8 h-8 text-indigo-600" />
-                                </div>
-
+                                Search Criteria
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-6">
+                            <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-slate-900">
-                                        {result.source === 'finder' || result.source === 'cache' ? 'Email Found' : 'Email Suggestion'}
-                                    </h3>
-
-                                    <div className="flex items-center justify-center gap-3 my-4">
-                                        <code className="text-2xl font-mono font-semibold text-indigo-700 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
-                                            {result.email}
-                                        </code>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={copyToClipboard}
-                                            className="h-10 w-10 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
-                                            title="Copy email"
-                                        >
-                                            {copied ? <Check className="h-5 w-5 text-green-600" /> : <Copy className="h-5 w-5" />}
-                                        </Button>
+                                    <Label className="text-slate-700 font-medium">Company Name</Label>
+                                    <div className="relative group">
+                                        <Building2 className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                                        <Input
+                                            placeholder="e.g. Google"
+                                            value={company}
+                                            onChange={(e) => setCompany(e.target.value)}
+                                            className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                        />
                                     </div>
-
-                                    {result.score !== undefined && (
-                                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${result.score > 80 ? 'bg-green-100 text-green-700' : result.score > 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                            {result.source === 'finder' || result.source === 'cache' ? 'Confidence Score' : 'Pattern Confidence'}: {result.score}%
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-700 font-medium">First Name</Label>
+                                        <div className="relative group">
+                                            <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                                            <Input
+                                                placeholder="e.g. Jean"
+                                                value={firstName}
+                                                onChange={(e) => setFirstName(e.target.value)}
+                                                className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                            />
                                         </div>
-                                    )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-700 font-medium">Last Name</Label>
+                                        <Input
+                                            placeholder="e.g. Dupont"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            className="h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
 
-                                    {result.source === 'pattern' && (
-                                        <div className="flex flex-col items-center justify-center gap-4 mt-6">
-                                            {verificationStatus === 'idle' && (
-                                                <div className="flex flex-col gap-3 w-full">
-                                                    <Button
-                                                        onClick={handleConfirm}
-                                                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                                                    >
-                                                        Confirm with Hunter (1 Credit)
-                                                    </Button>
+                            {isSignedIn ? (
+                                <Button
+                                    onClick={handlePredict}
+                                    disabled={status === 'loading' || !company}
+                                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all text-base"
+                                >
+                                    {status === 'loading' ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            Analyzing Patterns...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mail className="mr-2 h-5 w-5" />
+                                            {firstName && lastName ? "Find Email" : "Find Pattern"}
+                                        </>
+                                    )}
+                                </Button>
+                            ) : (
+                                <SignInButton mode="modal">
+                                    <Button
+                                        className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-sm transition-all text-base"
+                                    >
+                                        <User className="mr-2 h-5 w-5" />
+                                        Sign in to use tool
+                                    </Button>
+                                </SignInButton>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Results Panel */}
+                <div className="md:col-span-2 space-y-6">
+                    {status === 'success' && result ? (
+                        <Card className="bg-white border-slate-200 shadow-sm h-full animate-slide-up">
+                            <CardHeader className="border-b border-slate-100 pb-4">
+                                <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
+                                    <div className="p-2 bg-emerald-100 rounded-lg">
+                                        <Check className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    Result
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6 h-[calc(100%-80px)]">
+                                {result.email ? (
+                                    <>
+                                        <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center border border-indigo-100">
+                                            <Mail className="w-10 h-10 text-indigo-600" />
+                                        </div>
+
+                                        <div className="w-full text-center space-y-2">
+                                            <h3 className="font-semibold text-slate-900">
+                                                {result.source === 'finder' || result.source === 'cache' ? 'Verified Email' : 'Suggestion'}
+                                            </h3>
+                                            <div className="flex items-center justify-center gap-2 w-full">
+                                                <code className="text-lg font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded border border-indigo-100 break-all">
+                                                    {result.email}
+                                                </code>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={copyToClipboard}
+                                                    className="h-9 w-9 p-0 text-slate-500 hover:text-indigo-600"
+                                                >
+                                                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {result.source === 'pattern' && (
+                                            <div className="w-full space-y-3 pt-4 border-t border-slate-100">
+                                                {verificationStatus === 'idle' && (
                                                     <Button
                                                         onClick={handleVerify}
                                                         variant="outline"
-                                                        className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                                        className="w-full text-xs"
+                                                        size="sm"
                                                     >
-                                                        Verify Format Only
+                                                        Verify Format
                                                     </Button>
-                                                </div>
-                                            )}
-
-                                            {verificationStatus === 'verifying' && (
-                                                <div className="flex items-center gap-2 text-slate-500">
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                    Verifying...
-                                                </div>
-                                            )}
-
-                                            {verificationStatus === 'verified' && getVerificationBadge()}
-
-                                            {verificationStatus === 'error' && (
-                                                <div className="text-red-500 text-sm flex items-center gap-1">
-                                                    <AlertCircle className="w-4 h-4" />
-                                                    Verification failed
-                                                </div>
-                                            )}
+                                                )}
+                                                {verificationStatus === 'verifying' && (
+                                                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+                                                        <Loader2 className="h-3 w-3 animate-spin" /> Verifying...
+                                                    </div>
+                                                )}
+                                                {verificationStatus !== 'idle' && verificationStatus !== 'verifying' && getVerificationBadge()}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="p-4 bg-slate-50 rounded-xl w-full text-center border border-slate-100">
+                                            <p className="text-sm text-slate-500 font-medium mb-2">Pattern Found</p>
+                                            <code className="text-slate-900 font-mono font-bold">
+                                                {formatEmailPattern(result.pattern)}@{result.domain}
+                                            </code>
                                         </div>
-                                    )}
-
-                                    <div className="pt-4 border-t border-slate-100 mt-4">
-                                        <p className="text-slate-500 text-sm">
-                                            Pattern used: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700 text-xs">{formatEmailPattern(result.pattern)}@{result.domain}</code>
+                                        <p className="text-xs text-slate-400 text-center px-4">
+                                            Enter a name to generate the specific email address.
                                         </p>
-                                    </div>
-                                </div>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                            <CardContent className="p-8 text-center space-y-4">
-                                <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Mail className="w-8 h-8 text-indigo-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-slate-900">Pattern Found</h3>
-                                <p className="text-slate-600">
-                                    The email pattern for <span className="font-medium text-indigo-700">{result.domain}</span> is:
+                        <Card className="bg-slate-50 border-dashed border-2 border-slate-200 shadow-none h-full flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-75">
+                            <div className="p-4 bg-white rounded-full shadow-sm">
+                                <Search className="h-8 w-8 text-slate-300" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-slate-900">No prediction yet</h3>
+                                <p className="text-slate-500 text-sm mt-1">
+                                    Enter company details to find email patterns or addresses.
                                 </p>
-                                <code className="block bg-slate-100 p-3 rounded-lg text-lg font-mono text-slate-900 border border-slate-200">
-                                    {formatEmailPattern(result.pattern)}@{result.domain}
-                                </code>
-                                <p className="text-sm text-slate-500">
-                                    Enter a first and last name to generate the exact email address.
-                                </p>
-                            </CardContent>
+                            </div>
                         </Card>
                     )}
                 </div>
-            )}
+            </div>
 
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg text-center animate-fade-in border border-red-100 flex items-center justify-center gap-2">
-                    <AlertCircle className="h-5 w-5" />
-                    {error}
+                <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 flex items-center gap-3 shadow-sm max-w-2xl mx-auto">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                    <p className="text-sm font-medium">{error}</p>
                 </div>
             )}
         </div>

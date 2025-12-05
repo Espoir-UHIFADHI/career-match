@@ -333,3 +333,57 @@ export async function optimizeCVContent(cv: ParsedCV): Promise<ParsedCV> {
     throw error;
   }
 }
+
+/**
+ * Generates a personalized networking message
+ */
+export async function generateNetworkingMessage(
+  cvData: any, // Can be null if not available
+  jobDescription: string,
+  contactRole: string,
+  contactCompany: string,
+  templateType: string = "cold-outreach"
+): Promise<string> {
+  console.log("🚀 Génération message networking avec Gemini Flash...");
+
+  if (!apiKey || !genAI) {
+    throw new Error("Clé API manquante.");
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    generationConfig: { responseMimeType: "text/plain", temperature: 0.7 }
+  });
+
+  const prompt = `
+  Rôle : Expert en Networking et Copywriting.
+  Action : Rédige un message court, percutant et ultra-personnalisé pour contacter un professionnel sur LinkedIn ou par email.
+  
+  Contexte :
+  - Candidat (Moi) : ${cvData ? JSON.stringify(cvData.summary) : "Un professionnel motivé"}
+  - Cible : ${contactRole} chez ${contactCompany}
+  - Contexte Job/Intérêt : ${jobDescription}
+  - Type d'approche : ${templateType} (ex: cold-outreach, alumni, feedback, referral)
+
+  RÈGLES D'OR :
+  1. Le message doit faire moins de 100 mots (court et direct).
+  2. Pas de formules pompeuses ("J'ai l'honneur de..."). Sois conversationnel et pro.
+  3. La première phrase doit accrocher (Hook). Parle D'EUX, pas de moi.
+  4. Finis par un Call to Action clair et sans pression (ex: "Ouvert pour échanger 5 min ?").
+  5. ADAPTE LE TON au type d'approche (${templateType}).
+
+  Exemple de structure :
+  "Bonjour [Prénom], j'ai vu votre parcours chez [Boite]... [Lien avec mon profil/job]... Seriez-vous dispo pour..."
+
+  Génère UNIQUEMENT le corps du message (pas d'objet, pas de placeholders [Prénom] si possible, fais un texte générique mais chaud).
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("❌ Erreur Génération Message Networking:", error);
+    throw error;
+  }
+}

@@ -144,7 +144,7 @@ export function NetworkingGuide() {
 
     return (
         <div className="space-y-8 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4">
                 {STRATEGIES.map((strategy, idx) => (
                     <Card key={idx} className="glass-panel bg-white/50 border-slate-200 hover:border-indigo-200 transition-all hover:shadow-md">
                         <CardHeader>
@@ -170,20 +170,20 @@ export function NetworkingGuide() {
                 ))}
             </div>
 
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        <MessageSquare className="w-6 h-6 text-indigo-600" />
+            <div className="space-y-4">
+                <div className="flex flex-col gap-3">
+                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5 text-indigo-600" />
                         Modèles de Messages
                     </h2>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {['all', 'linkedin', 'email', 'followup'].map((cat) => (
                             <Button
                                 key={cat}
                                 variant={activeCategory === cat ? 'primary' : 'outline'}
                                 size="sm"
                                 onClick={() => setActiveCategory(cat)}
-                                className={`capitalize ${activeCategory === cat ? 'bg-indigo-600' : 'text-slate-600'}`}
+                                className={`capitalize text-xs h-8 ${activeCategory === cat ? 'bg-indigo-600' : 'text-slate-600'}`}
                             >
                                 {cat === 'all' ? 'Tous' : cat}
                             </Button>
@@ -193,7 +193,7 @@ export function NetworkingGuide() {
 
                 <Card className="glass-panel bg-slate-50 border-slate-200">
                     <CardContent className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div className="grid grid-cols-1 gap-4 mb-6">
                             <div className="space-y-2">
                                 <Label>Votre Nom</Label>
                                 <Input
@@ -259,7 +259,7 @@ export function NetworkingGuide() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-4">
                             {filteredTemplates.map((template) => (
                                 <Card key={template.id} className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-all">
                                     <CardHeader className="pb-3">

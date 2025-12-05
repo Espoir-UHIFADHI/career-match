@@ -109,18 +109,18 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-900">Review Extracted Data</h2>
-                    <p className="text-slate-600">Verify and edit the information extracted from your CV.</p>
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Review Extraction</h2>
+                    <p className="text-slate-500 text-sm">Verify and edit the information extracted from your CV.</p>
                 </div>
                 {errors.length > 0 && (
                     <div className="w-full md:w-auto mb-4 md:mb-0 order-last md:order-none">
-                        <Alert variant="destructive" className="border-red-500 bg-red-50">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Missing Information</AlertTitle>
-                            <AlertDescription>
-                                Please fill in the required fields below to proceed.
+                        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-900">
+                            <AlertCircle className="h-4 w-4 text-red-600" />
+                            <AlertTitle className="text-red-900 font-semibold">Missing Information</AlertTitle>
+                            <AlertDescription className="text-red-700">
+                                Please fill in the required fields below.
                             </AlertDescription>
                         </Alert>
                     </div>
@@ -129,14 +129,14 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     <Button
                         variant="outline"
                         onClick={onCancel}
-                        className="flex-1 md:flex-none hover:bg-slate-100 text-slate-700 border-slate-300"
+                        className="flex-1 md:flex-none"
                     >
                         <Upload className="h-4 w-4 mr-2" />
                         Re-upload CV
                     </Button>
                     <Button
                         onClick={handleSave}
-                        className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25"
+                        className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20"
                     >
                         <Save className="h-4 w-4 mr-2" />
                         Save & Continue
@@ -146,60 +146,53 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Contact & Summary */}
-                <div className="space-y-8 lg:col-span-1">
+                <div className="space-y-6 lg:col-span-1">
                     {/* Personal Info Section */}
-                    <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-900 flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600">
-                                    <User className="h-5 w-5" />
-                                </div>
+                    <Card className="bg-white border-slate-200 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <User className="h-4 w-4 text-indigo-600" />
                                 Personal Information
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             <div className="space-y-2">
-                                <Label className="text-slate-600">First Name</Label>
+                                <Label>First Name</Label>
                                 <Input
                                     value={formData.contact.firstName}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, firstName: e.target.value } })}
-                                    className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
                                     placeholder="First Name"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-600">Last Name</Label>
+                                <Label>Last Name</Label>
                                 <Input
                                     value={formData.contact.lastName}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, lastName: e.target.value } })}
-                                    className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
                                     placeholder="Last Name"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-600">Email</Label>
+                                <Label>Email</Label>
                                 <Input
                                     value={formData.contact.email}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, email: e.target.value } })}
-                                    className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
                                     placeholder="Email Address"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-600">Phone</Label>
+                                <Label>Phone</Label>
                                 <Input
                                     value={formData.contact.phone}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, phone: e.target.value } })}
-                                    className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
                                     placeholder="Phone Number"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-600">Location</Label>
+                                <Label>Location</Label>
                                 <Input
                                     value={formData.contact.location}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, location: e.target.value } })}
-                                    className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
                                     placeholder="City, Country"
                                 />
                             </div>
@@ -207,20 +200,18 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     </Card>
 
                     {/* Professional Summary */}
-                    <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-900 flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
-                                    <FileText className="h-5 w-5" />
-                                </div>
+                    <Card className="bg-white border-slate-200 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <FileText className="h-4 w-4 text-indigo-600" />
                                 Professional Summary
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             <Textarea
                                 value={formData.summary}
                                 onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                                className="min-h-[150px] glass-input bg-slate-50 border-slate-200 focus:bg-white"
+                                className="min-h-[150px] resize-none"
                                 placeholder="Brief professional summary..."
                             />
                         </CardContent>
@@ -228,28 +219,26 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                 </div>
 
                 {/* Right Column: Experience, Education, Skills */}
-                <div className="space-y-8 lg:col-span-2">
+                <div className="space-y-6 lg:col-span-2">
                     {/* Skills & Languages */}
-                    <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-900 flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600">
-                                    <Code className="h-5 w-5" />
-                                </div>
+                    <Card className="bg-white border-slate-200 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <Code className="h-4 w-4 text-indigo-600" />
                                 Skills & Languages
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-8 pt-6">
                             <div className="space-y-3">
-                                <Label className="text-slate-600">Skills</Label>
+                                <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Technical Skills</Label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {formData.skills.map((skill, idx) => (
                                         <div key={idx} className="flex gap-2">
                                             <Input
                                                 value={skill}
                                                 onChange={(e) => updateArrayItem("skills", idx, e.target.value)}
-                                                className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
-                                                placeholder="Skill (e.g. React, Python)"
+                                                placeholder="Skill (e.g. React)"
+                                                className="bg-slate-50 border-slate-200"
                                             />
                                             <Button
                                                 variant="ghost"
@@ -265,23 +254,23 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => addArrayItem("skills")}
-                                        className="col-span-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+                                        className="col-span-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
                                     >
-                                        <Plus className="h-4 w-4 mr-2" /> Add Skill
+                                        <Plus className="h-3 w-3 mr-2" /> Add Skill
                                     </Button>
                                 </div>
                             </div>
 
-                            <div className="space-y-3 pt-4 border-t border-slate-200">
-                                <Label className="text-slate-600">Languages</Label>
+                            <div className="space-y-3 pt-6 border-t border-slate-100">
+                                <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Languages</Label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {(formData.languages || []).map((lang, idx) => (
                                         <div key={idx} className="flex gap-2">
                                             <Input
                                                 value={lang}
                                                 onChange={(e) => updateArrayItem("languages", idx, e.target.value)}
-                                                className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
                                                 placeholder="Language (e.g. English C1)"
+                                                className="bg-slate-50 border-slate-200"
                                             />
                                             <Button
                                                 variant="ghost"
@@ -297,23 +286,23 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => addArrayItem("languages")}
-                                        className="col-span-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+                                        className="col-span-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
                                     >
-                                        <Plus className="h-4 w-4 mr-2" /> Add Language
+                                        <Plus className="h-3 w-3 mr-2" /> Add Language
                                     </Button>
                                 </div>
                             </div>
 
-                            <div className="space-y-3 pt-4 border-t border-slate-200">
-                                <Label className="text-slate-600">Interests (Airport Test)</Label>
+                            <div className="space-y-3 pt-6 border-t border-slate-100">
+                                <Label className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Interests</Label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {(formData.interests || []).map((interest, idx) => (
                                         <div key={idx} className="flex gap-2">
                                             <Input
                                                 value={interest}
                                                 onChange={(e) => updateArrayItem("interests", idx, e.target.value)}
-                                                className="glass-input bg-slate-50 border-slate-200 focus:bg-white"
-                                                placeholder="Interest (e.g. Marathon, Chess)"
+                                                placeholder="Interest"
+                                                className="bg-slate-50 border-slate-200"
                                             />
                                             <Button
                                                 variant="ghost"
@@ -329,9 +318,9 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => addArrayItem("interests")}
-                                        className="col-span-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+                                        className="col-span-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
                                     >
-                                        <Plus className="h-4 w-4 mr-2" /> Add Interest
+                                        <Plus className="h-3 w-3 mr-2" /> Add Interest
                                     </Button>
                                 </div>
                             </div>
@@ -339,18 +328,16 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     </Card>
 
                     {/* Experience */}
-                    <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-900 flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                                    <Briefcase className="h-5 w-5" />
-                                </div>
+                    <Card className="bg-white border-slate-200 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <Briefcase className="h-4 w-4 text-indigo-600" />
                                 Experience
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             {formData.experience.map((exp, idx) => (
-                                <div key={idx} className="p-6 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative group hover:border-indigo-300 transition-colors">
+                                <div key={idx} className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative group hover:border-indigo-200 transition-colors">
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -366,7 +353,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Company</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Company</Label>
                                             <Input
                                                 value={exp.company}
                                                 onChange={(e) => {
@@ -374,12 +361,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newExp[idx].company = e.target.value;
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
-                                                className="glass-input bg-white"
                                                 placeholder="Company Name"
+                                                className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Role</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Role</Label>
                                             <Input
                                                 value={exp.role}
                                                 onChange={(e) => {
@@ -387,12 +374,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newExp[idx].role = e.target.value;
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
-                                                className="glass-input bg-white"
                                                 placeholder="Job Title"
+                                                className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Dates</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Dates</Label>
                                             <Input
                                                 value={exp.dates}
                                                 onChange={(e) => {
@@ -400,12 +387,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newExp[idx].dates = e.target.value;
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
-                                                className="glass-input bg-white"
                                                 placeholder="e.g. Jan 2020 - Present"
+                                                className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Description</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Description</Label>
                                             <Textarea
                                                 value={exp.description}
                                                 onChange={(e) => {
@@ -413,8 +400,8 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newExp[idx].description = e.target.value;
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
-                                                className="glass-input bg-white min-h-[100px]"
-                                                placeholder="Job description..."
+                                                className="min-h-[100px] bg-white resize-y"
+                                                placeholder="Describe your responsibilities..."
                                             />
                                         </div>
                                     </div>
@@ -424,7 +411,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setFormData(prev => ({ ...prev, experience: [...prev.experience, { company: "", role: "", dates: "", description: "" }] }))}
-                                className="w-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 py-4"
+                                className="w-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200 py-6"
                             >
                                 <Plus className="h-4 w-4 mr-2" /> Add Experience
                             </Button>
@@ -432,18 +419,16 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                     </Card>
 
                     {/* Education */}
-                    <Card className="glass-panel bg-white border-slate-200 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-900 flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-pink-100 text-pink-600">
-                                    <GraduationCap className="h-5 w-5" />
-                                </div>
+                    <Card className="bg-white border-slate-200 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <GraduationCap className="h-4 w-4 text-indigo-600" />
                                 Education
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 pt-6">
                             {(formData.education || []).map((edu, idx) => (
-                                <div key={idx} className="p-6 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative group hover:border-indigo-300 transition-colors">
+                                <div key={idx} className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative group hover:border-indigo-200 transition-colors">
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -459,7 +444,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">School</Label>
+                                            <Label className="text-xs uppercase text-slate-500">School</Label>
                                             <Input
                                                 value={edu.school}
                                                 onChange={(e) => {
@@ -467,12 +452,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newEdu[idx].school = e.target.value;
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
-                                                className="glass-input bg-white"
                                                 placeholder="School Name"
+                                                className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Degree</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Degree</Label>
                                             <Input
                                                 value={edu.degree}
                                                 onChange={(e) => {
@@ -480,12 +465,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newEdu[idx].degree = e.target.value;
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
-                                                className="glass-input bg-white"
                                                 placeholder="Degree"
+                                                className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Dates</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Dates</Label>
                                             <Input
                                                 value={edu.dates}
                                                 onChange={(e) => {
@@ -493,12 +478,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newEdu[idx].dates = e.target.value;
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
-                                                className="glass-input bg-white"
                                                 placeholder="e.g. 2016 - 2020"
+                                                className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-slate-500 text-xs uppercase tracking-wider">Description</Label>
+                                            <Label className="text-xs uppercase text-slate-500">Description</Label>
                                             <Textarea
                                                 value={edu.description}
                                                 onChange={(e) => {
@@ -506,7 +491,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newEdu[idx].description = e.target.value;
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
-                                                className="glass-input bg-white min-h-[100px]"
+                                                className="min-h-[100px] bg-white resize-y"
                                                 placeholder="Education description..."
                                             />
                                         </div>
@@ -517,7 +502,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setFormData(prev => ({ ...prev, education: [...(prev.education || []), { school: "", degree: "", dates: "", description: "" }] }))}
-                                className="w-full border-dashed border-slate-300 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 py-4"
+                                className="w-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200 py-6"
                             >
                                 <Plus className="h-4 w-4 mr-2" /> Add Education
                             </Button>
