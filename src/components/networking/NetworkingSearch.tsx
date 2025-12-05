@@ -11,7 +11,7 @@ import { findCompanyDomain, getEmailPattern, findEmail, cleanName, generateEmail
 import { generateNetworkingQueries, generateNetworkingMessage } from "../../services/ai/gemini";
 import { NetworkingGuide } from "./NetworkingGuide";
 import { Modal } from "../ui/Modal";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useTranslation } from "../../hooks/useTranslation";
 
 interface Contact {
@@ -37,7 +37,8 @@ export function NetworkingSearch() {
     // Local UI state
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { isSignedIn, user, getToken } = useUser();
+    const { isSignedIn, user } = useUser();
+    const { getToken } = useAuth();
 
     // Ensure results is treated as typed array even if store has any[]
     const typedResults = (results || []) as Contact[];
