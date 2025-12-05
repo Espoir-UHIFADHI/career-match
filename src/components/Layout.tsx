@@ -1,20 +1,22 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Briefcase, FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
-
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useTranslation } from "../hooks/useTranslation";
 
 export function Layout({ children }: { children: React.ReactNode }) {
     const { step } = useAppStore();
     const { credits } = useUserStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { t } = useTranslation();
 
     const navItems = [
-        { id: 1, name: "Upload CV", icon: FileText, activeSteps: [1, 2, 3, 4] },
-        { id: 5, name: "Networking", icon: User, activeSteps: [5] },
-        { id: 6, name: "Email Predictor", icon: Mail, activeSteps: [6] },
+        { id: 1, name: t('nav.uploadCV'), icon: FileText, activeSteps: [1, 2, 3, 4] },
+        { id: 5, name: t('nav.networking'), icon: User, activeSteps: [5] },
+        { id: 6, name: t('nav.emailPredictor'), icon: Mail, activeSteps: [6] },
     ];
 
     const handleNavClick = (id: number) => {
@@ -62,6 +64,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </SignedIn>
 
                     <div className="flex items-center gap-4">
+                        <LanguageSwitcher />
+
                         {/* Credits Display */}
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm">
                             <Coins className="h-4 w-4 text-amber-500" />
@@ -72,7 +76,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <SignedOut>
                             <SignInButton mode="modal">
                                 <button className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
-                                    Connexion
+                                    {t('nav.signIn')}
                                 </button>
                             </SignInButton>
                         </SignedOut>
@@ -131,11 +135,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Footer */}
             <footer className="border-t border-slate-200 bg-white py-8 mt-auto">
                 <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-                    <p>© 2024 Career Match. All rights reserved.</p>
+                    <p>{t('nav.rights')}</p>
                     <div className="flex gap-6">
-                        <a href="#" className="hover:text-slate-900 transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-slate-900 transition-colors">Terms of Service</a>
-                        <a href="#" className="hover:text-slate-900 transition-colors">Contact</a>
+                        <a href="#" className="hover:text-slate-900 transition-colors">{t('nav.privacyPolicy')}</a>
+                        <a href="#" className="hover:text-slate-900 transition-colors">{t('nav.termsOfService')}</a>
+                        <a href="#" className="hover:text-slate-900 transition-colors">{t('nav.contact')}</a>
                     </div>
                 </div>
             </footer>

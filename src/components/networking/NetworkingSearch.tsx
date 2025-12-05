@@ -10,6 +10,7 @@ import { generateNetworkingQueries, generateNetworkingMessage } from "../../serv
 import { NetworkingGuide } from "./NetworkingGuide";
 import { Modal } from "../ui/Modal";
 import { useUser } from "@clerk/clerk-react";
+import { useTranslation } from "../../hooks/useTranslation";
 
 interface Contact {
     name: string;
@@ -31,6 +32,7 @@ export function NetworkingSearch() {
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { isSignedIn, user } = useUser();
+    const { t } = useTranslation();
 
     // Modal State
     const [showGuide, setShowGuide] = useState(false);
@@ -48,7 +50,7 @@ export function NetworkingSearch() {
         // Check API key before attempting search
         const apiKey = import.meta.env.VITE_SERPER_API_KEY;
         if (!apiKey) {
-            setError("⚠️ Clé API Serper manquante. Veuillez ajouter VITE_SERPER_API_KEY dans votre fichier .env et redémarrer le serveur.");
+            setError(t('networking.apiKeyError') || "⚠️ Clé API Serper manquante. Veuillez ajouter VITE_SERPER_API_KEY dans votre fichier .env et redémarrer le serveur.");
             setHasSearched(true);
             setResults([]);
             return;
@@ -99,7 +101,7 @@ export function NetworkingSearch() {
 
         } catch (error) {
             console.error("Search failed:", error);
-            setError("Une erreur s'est produite lors de la recherche.");
+            setError(t('networking.searchError') || "Une erreur s'est produite lors de la recherche.");
         } finally {
             setIsSearching(false);
         }
@@ -110,7 +112,7 @@ export function NetworkingSearch() {
         if (!contact || !company) return;
 
         if (!isSignedIn || !user) {
-            alert("Veuillez vous connecter pour utiliser cette fonctionnalité.");
+            alert(t('common.signInRequired') || "Veuillez vous connecter pour utiliser cette fonctionnalité.");
             return;
         }
 
@@ -179,7 +181,7 @@ export function NetworkingSearch() {
             );
             setGeneratedMessage(msg);
         } catch (e) {
-            setGeneratedMessage("Error generating message. Please try again.");
+            setGeneratedMessage(t('networking.genError') || "Error generating message. Please try again.");
         } finally {
             setIsGeneratingMessage(false);
         }
@@ -195,8 +197,8 @@ export function NetworkingSearch() {
         <div className="w-full max-w-none mx-auto space-y-8 animate-fade-in p-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="text-center md:text-left space-y-3">
-                    <h2 className="text-3xl font-bold text-slate-900">Enterprise Networking</h2>
-                    <p className="text-slate-600 text-lg">Find the right people and connect with confidence.</p>
+                    <h2 className="text-3xl font-bold text-slate-900">{t('networking.title')}</h2>
+                    <p className="text-slate-600 text-lg">{t('networking.subtitle')}</p>
                 </div>
                 <Button
                     variant="outline"
@@ -204,7 +206,7 @@ export function NetworkingSearch() {
                     className="flex items-center gap-2"
                 >
                     <Sparkles className="w-4 h-4 text-amber-500" />
-                    Networking Guide
+                    {t('networking.guideBtn')}
                 </Button>
             </div>
 
@@ -214,17 +216,17 @@ export function NetworkingSearch() {
                     <CardHeader className="border-b border-slate-100 pb-4">
                         <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
                             <Search className="w-5 h-5 text-indigo-600" />
-                            Search Criteria
+                            {t('networking.searchCriteria')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-slate-700 font-medium">Target Company</Label>
+                                <Label className="text-slate-700 font-medium">{t('networking.companyLabel')}</Label>
                                 <div className="relative group">
                                     <Building2 className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                                     <Input
-                                        placeholder="e.g. Netflix"
+                                        placeholder={t('networking.companyPlaceholder')}
                                         value={company}
                                         onChange={(e) => setCompany(e.target.value)}
                                         className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all"
@@ -232,11 +234,11 @@ export function NetworkingSearch() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-slate-700 font-medium">Target Role / Keyword</Label>
+                                <Label className="text-slate-700 font-medium">{t('networking.roleLabel')}</Label>
                                 <div className="relative group">
                                     <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                                     <Input
-                                        placeholder="e.g. Recruiter, Engineering Manager"
+                                        placeholder={t('networking.rolePlaceholder')}
                                         value={role}
                                         onChange={(e) => setRole(e.target.value)}
                                         className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all"
@@ -250,14 +252,14 @@ export function NetworkingSearch() {
                             className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm"
                         >
                             {isSearching ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Search className="h-5 w-5 mr-2" />}
-                            {isSearching ? "Searching..." : "Find Key Contacts"}
+                            {isSearching ? t('networking.searching') : t('networking.searchBtn')}
                         </Button>
 
                         {/* Results List */}
                         <div className="space-y-4 pt-2">
                             {hasSearched && results.length === 0 && !isSearching ? (
                                 <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                    <p className="text-slate-500">No results found. Try broader terms.</p>
+                                    <p className="text-slate-500">{t('networking.noResults')}</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -272,7 +274,7 @@ export function NetworkingSearch() {
                                                         <h4 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">{contact.name}</h4>
                                                         <p className="text-sm text-slate-600 line-clamp-2">{contact.title}</p>
                                                         <a href={contact.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-1">
-                                                            <Linkedin className="h-3 w-3" /> View Profile
+                                                            <Linkedin className="h-3 w-3" /> {t('networking.viewProfile')}
                                                         </a>
                                                     </div>
                                                 </div>
@@ -287,7 +289,7 @@ export function NetworkingSearch() {
                                                         </div>
                                                     ) : contact.emailStatus === 'loading' ? (
                                                         <span className="flex items-center text-slate-400 text-xs">
-                                                            <Loader2 className="h-3 w-3 animate-spin mr-1" /> Finding email...
+                                                            <Loader2 className="h-3 w-3 animate-spin mr-1" /> {t('networking.findingEmail')}
                                                         </span>
                                                     ) : (
                                                         <Button
@@ -296,7 +298,7 @@ export function NetworkingSearch() {
                                                             onClick={() => handleGuessEmail(idx)}
                                                             className="text-xs text-slate-500 h-7"
                                                         >
-                                                            Find Email
+                                                            {t('networking.findEmail')}
                                                         </Button>
                                                     )}
                                                 </div>
@@ -306,7 +308,7 @@ export function NetworkingSearch() {
                                                     className="h-8 text-xs border-slate-200 hover:bg-slate-50"
                                                     onClick={() => handleGenerateMessage(contact)}
                                                 >
-                                                    Draft Message
+                                                    {t('networking.draftMessage')}
                                                 </Button>
                                             </div>
                                         </div>
@@ -329,7 +331,7 @@ export function NetworkingSearch() {
             <Modal
                 isOpen={showGuide}
                 onClose={() => setShowGuide(false)}
-                title="Networking Guide & Templates"
+                title={t('networking.guideTitle')}
                 className="max-w-4xl"
             >
                 <NetworkingGuide />
@@ -339,20 +341,20 @@ export function NetworkingSearch() {
             <Modal
                 isOpen={showDraft}
                 onClose={() => setShowDraft(false)}
-                title={selectedContact ? `Draft Message for ${selectedContact.name}` : "Draft Message"}
+                title={selectedContact ? `${t('networking.draftFor')} ${selectedContact.name}` : t('networking.draftTitle')}
                 className="max-w-2xl"
             >
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                     {selectedContact && (
                         <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-sm text-indigo-800">
-                            Drafting for: <span className="font-bold">{selectedContact.name}</span>
+                            {t('networking.draftingFor')} <span className="font-bold">{selectedContact.name}</span>
                         </div>
                     )}
 
                     {isGeneratingMessage ? (
                         <div className="py-8 text-center text-slate-500">
                             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-indigo-500" />
-                            <p>Writing personalized message...</p>
+                            <p>{t('networking.writing')}</p>
                         </div>
                     ) : generatedMessage ? (
                         <>
@@ -361,16 +363,16 @@ export function NetworkingSearch() {
                             </div>
                             <Button onClick={copyToClipboard} className="w-full gap-2 bg-slate-900 text-white hover:bg-slate-800">
                                 {copySuccess ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                                {copySuccess ? "Copied!" : "Copy to Clipboard"}
+                                {copySuccess ? t('networking.copied') : t('networking.copyClipboard')}
                             </Button>
                             <Button variant="ghost" onClick={() => setShowDraft(false)} className="w-full text-xs text-slate-400">
-                                Close
+                                {t('networking.close')}
                             </Button>
                         </>
                     ) : (
                         <div className="text-center py-8">
                             {selectedContact && (
-                                <Button onClick={() => handleGenerateMessage(selectedContact)}>Generate Now</Button>
+                                <Button onClick={() => handleGenerateMessage(selectedContact)}>{t('networking.generateNow')}</Button>
                             )}
                         </div>
                     )}

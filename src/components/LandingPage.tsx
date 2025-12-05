@@ -1,8 +1,10 @@
 import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "./ui/Button";
 import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, CheckCircle, User } from "lucide-react";
+import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
+    const { t } = useTranslation();
 
     return (
         <div className="flex flex-col bg-slate-50 overflow-x-hidden">
@@ -23,18 +25,18 @@ export function LandingPage() {
                                 <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse relative">
                                     <span className="absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75 animate-ping"></span>
                                 </span>
-                                <span className="tracking-wide">Nouvelle version AI 2.0</span>
+                                <span className="tracking-wide">{t('hero.newVersion')}</span>
                             </div>
 
                             <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-8 animate-slide-up">
-                                Votre Carrière <br className="hidden lg:block" />
+                                {t('hero.titleLine1')} <br className="hidden lg:block" />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x">
-                                    Mérite L'Excellence
+                                    {t('hero.titleLine2')}
                                 </span>
                             </h1>
 
                             <p className="text-xl text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-10 animate-slide-up animation-delay-200">
-                                La première plateforme IA qui transforme votre CV anonyme en opportunité concrète. Optimisez, ciblez, et connectez-vous aux recruteurs en un clic.
+                                {t('hero.subtitle')}
                             </p>
 
                             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-slide-up animation-delay-400">
@@ -44,7 +46,7 @@ export function LandingPage() {
                                     >
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 backdrop-blur-sm" />
                                         <span className="relative flex items-center">
-                                            Commencer Gratuitement
+                                            {t('hero.ctaStart')}
                                             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </span>
                                     </Button>
@@ -53,7 +55,7 @@ export function LandingPage() {
                                     variant="outline"
                                     className="h-14 px-8 text-lg bg-white/60 hover:bg-white border-slate-200 text-slate-700 rounded-2xl backdrop-blur-sm transition-all hover:shadow-lg hover:border-indigo-200"
                                 >
-                                    Voir la démo
+                                    {t('hero.ctaDemo')}
                                 </Button>
                             </div>
 
@@ -69,7 +71,7 @@ export function LandingPage() {
                                     <div className="flex text-amber-400 mb-0.5">
                                         {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-current" />)}
                                     </div>
-                                    <span className="font-semibold text-slate-700 text-xs">4.9/5 par +1000 pros</span>
+                                    <span className="font-semibold text-slate-700 text-xs">{t('hero.socialProof')}</span>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +108,7 @@ export function LandingPage() {
                                                     <h4 className="text-sm font-bold text-slate-800">Senior Product Designer</h4>
                                                     <p className="text-xs text-slate-500">Google • Paris, France</p>
                                                 </div>
-                                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="G" className="w-6 h-6" />
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" className="w-6 h-6" />
                                             </div>
 
                                             <div className="flex items-center gap-3 bg-white/50 rounded-lg p-2 border border-blue-100/50">
@@ -184,136 +186,150 @@ export function LandingPage() {
             <section className="py-10 border-y border-slate-100 bg-white/50 backdrop-blur-sm">
                 <div className="container mx-auto px-6 text-center">
                     <p className="text-sm font-medium text-slate-400 uppercase tracking-widest mb-8">
-                        Ils ont rejoint les meilleures équipes
+                        {t('hero.joinedTeams')}
                     </p>
                     {/* Scrolling Marquee Container */}
                     <div className="relative w-full overflow-hidden mask-linear-fade">
                         {/* Inner Sliding Track */}
                         <div className="flex gap-16 animate-marquee items-center py-4">
                             {/* First set of logos */}
-                            <div className="flex items-center gap-16 shrink-0 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
+                            <div className="flex items-center gap-16 shrink-0 transition-all duration-300">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" alt="Microsoft" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" className="h-8 md:h-10 w-auto object-contain mt-2" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" className="h-6 md:h-8 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg" alt="Airbnb" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://static.cdnlogo.com/logos/c/68/capgemini-2017.svg" alt="Capgemini" className="h-6 md:h-8 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Sopra_Steria_logo.svg" alt="Sopra Steria" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/CIMPA_logo.svg" alt="CIMPA" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/%C3%89lectricit%C3%A9_de_France_logo.svg" alt="EDF" className="h-8 md:h-12 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM" className="h-8 md:h-12 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/2560px-Salesforce.com_logo.svg.png" alt="Salesforce" className="h-8 md:h-16 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/2560px-Oracle_logo.svg.png" alt="Oracle" className="h-6 md:h-8 w-auto object-contain" />
                             </div>
 
-                            {/* Duplicate set for seamless loop */}
-                            <div className="flex items-center gap-16 shrink-0 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100" aria-hidden="true">
+                            <div className="flex items-center gap-16 shrink-0 transition-all duration-300" aria-hidden="true">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" alt="Microsoft" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" className="h-8 md:h-10 w-auto object-contain mt-2" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" className="h-6 md:h-8 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg" alt="Airbnb" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://static.cdnlogo.com/logos/c/68/capgemini-2017.svg" alt="Capgemini" className="h-6 md:h-8 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Sopra_Steria_logo.svg" alt="Sopra Steria" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/CIMPA_logo.svg" alt="CIMPA" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/%C3%89lectricit%C3%A9_de_France_logo.svg" alt="EDF" className="h-8 md:h-12 w-auto object-contain" />
+                                <img src="https://static.cdnlogo.com/logos/s/54/samsung.svg" alt="Samsung" className="h-8 md:h-12 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM" className="h-8 md:h-12 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/2560px-Salesforce.com_logo.svg.png" alt="Salesforce" className="h-8 md:h-16 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/2560px-Oracle_logo.svg.png" alt="Oracle" className="h-6 md:h-8 w-auto object-contain" />
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Features layout (Bento Grid) */}
             <section className="py-24 bg-white relative">
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-slate-50/50 rounded-full blur-[120px] pointer-events-none" />
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center max-w-3xl mx-auto mb-16">
                         <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4">
-                            Tout ce dont vous avez besoin.
+                            {t('features.title')}
                         </h2>
                         <p className="text-lg text-slate-600">
-                            Une suite d'outils puissants pour maximiser vos chances de réussite.
+                            {t('features.subtitle')}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
                         {/* Feature 1 - Large */}
-                        <div className="md:col-span-2 p-10 rounded-[2rem] bg-white border border-slate-200 hover:border-indigo-200 shadow-sm hover:shadow-2xl transition-all duration-300 group relative overflow-hidden">
-                            <div className="absolute -right-20 -top-20 w-96 h-96 bg-indigo-50/80 rounded-full blur-3xl group-hover:bg-indigo-100/50 transition-colors" />
+                        <div className="md:col-span-2 p-10 rounded-[2rem] bg-white border border-slate-100 hover:border-indigo-100 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 group relative overflow-hidden">
+                            <div className="absolute -right-20 -top-20 w-96 h-96 bg-indigo-50/50 rounded-full blur-3xl group-hover:bg-indigo-50 transition-colors" />
+                            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10" />
 
-                            <div className="relative z-10">
-                                <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-8 text-indigo-600 group-hover:scale-110 transition-transform">
-                                    <FileText className="w-8 h-8" />
+                            <div className="relative z-20">
+                                <div className="flex items-start justify-between mb-8">
+                                    <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm">
+                                        <FileText className="w-8 h-8" />
+                                    </div>
+                                    <div className="hidden sm:flex px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold border border-emerald-100 items-center gap-1.5">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                        </span>
+                                        {t('features.cvOptimizer.badge')}
+                                    </div>
                                 </div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-4">CV Optimizer Pro</h3>
-                                <p className="text-slate-600 mb-8 text-lg max-w-md leading-relaxed">
-                                    Notre IA analyse votre CV contre les descriptions de poste et le réécrit pour passer les filtres ATS.
+
+                                <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">{t('features.cvOptimizer.title')}</h3>
+                                <p className="text-slate-600 mb-8 text-lg max-w-md leading-relaxed font-medium">
+                                    {t('features.cvOptimizer.description')}
                                 </p>
-                                <div className="flex flex-wrap gap-3">
-                                    <span className="px-4 py-2 rounded-full bg-white border border-slate-200 text-sm font-semibold text-slate-700 shadow-sm group-hover:border-indigo-200 transition-colors">
-                                        Analyse ATS
-                                    </span>
-                                    <span className="px-4 py-2 rounded-full bg-white border border-slate-200 text-sm font-semibold text-slate-700 shadow-sm group-hover:border-indigo-200 transition-colors">
-                                        Mots-clés Intelligents
-                                    </span>
-                                    <span className="px-4 py-2 rounded-full bg-white border border-slate-200 text-sm font-semibold text-slate-700 shadow-sm group-hover:border-indigo-200 transition-colors">
-                                        Réécriture Auto
-                                    </span>
+                                <div className="flex flex-wrap gap-2.5">
+                                    {t('features.cvOptimizer.tags').map((tag: string, i: number) => (
+                                        <span key={i} className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 shadow-sm group-hover:border-indigo-200 group-hover:bg-white group-hover:text-indigo-600 transition-all duration-300 cursor-default">
+                                            {tag}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Feature 2 - Tall */}
-                        <div className="md:row-span-2 p-10 rounded-[2rem] bg-slate-900 text-white hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-300 group overflow-hidden relative">
-                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-indigo-500 rounded-full blur-[100px] opacity-20 group-hover:opacity-40 transition-opacity" />
-                            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
+                        {/* Feature 2 - Tall (Dark) */}
+                        <div className="md:row-span-2 p-10 rounded-[2rem] bg-slate-900 text-white shadow-2xl shadow-slate-900/20 hover:shadow-indigo-900/20 transition-all duration-300 group overflow-hidden relative flex flex-col justify-between">
+                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-indigo-600/30 rounded-full blur-[80px] group-hover:opacity-60 transition-opacity" />
+                            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/90 z-10" />
 
-                            <div className="relative z-10 h-full flex flex-col">
-                                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-lg flex items-center justify-center mb-8 text-indigo-300 group-hover:bg-indigo-500/20 transition-colors">
+                            <div className="relative z-20">
+                                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center mb-8 text-indigo-300 group-hover:bg-indigo-500/20 group-hover:border-indigo-500/30 transition-all duration-300 shadow-inner">
                                     <Sparkles className="w-8 h-8" />
                                 </div>
-                                <h3 className="text-2xl font-bold mb-4">Networking AI</h3>
-                                <p className="text-slate-300 mb-8 leading-relaxed">
-                                    Ne postulez plus dans le vide. Trouvez la bonne personne à contacter et laissez l'IA rédiger le message d'approche parfait.
+                                <h3 className="text-2xl font-bold mb-4 text-white">{t('features.networking.title')}</h3>
+                                <p className="text-slate-300 mb-8 leading-relaxed font-medium opacity-90">
+                                    {t('features.networking.description')}
                                 </p>
+                            </div>
 
-                                <div className="mt-auto space-y-4">
-                                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-                                            <div className="text-xs text-indigo-300 font-medium uppercase tracking-wider">Cible</div>
+                            <div className="relative z-20 space-y-4 mt-auto">
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group/card">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-1.5 rounded-lg bg-indigo-500/20">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
                                         </div>
-                                        <div className="font-semibold text-lg">Recruteurs & Hiring Managers</div>
+                                        <div className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">{t('features.networking.target')}</div>
                                     </div>
-                                    <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                                            <div className="text-xs text-indigo-300 font-medium uppercase tracking-wider">Action</div>
+                                    <div className="font-semibold text-lg text-white group-hover/card:text-indigo-200 transition-colors">{t('features.networking.targetVal')}</div>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group/card">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-1.5 rounded-lg bg-emerald-500/20">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                                         </div>
-                                        <div className="font-semibold text-lg">Draft Message Personnalisé</div>
+                                        <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest">{t('features.networking.action')}</div>
                                     </div>
+                                    <div className="font-semibold text-lg text-white group-hover/card:text-emerald-200 transition-colors">{t('features.networking.actionVal')}</div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Feature 3 */}
-                        <div className="p-10 rounded-[2rem] bg-white border border-slate-200 hover:border-indigo-200 hover:shadow-2xl transition-all duration-300 group">
-                            <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                <Mail className="w-8 h-8" />
+                        <div className="p-10 rounded-[2rem] bg-white border border-slate-100 hover:border-purple-200 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50/50 rounded-bl-[4rem] -mr-8 -mt-8 transition-all group-hover:scale-110" />
+
+                            <div className="relative z-10">
+                                <div className="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                                    <Mail className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-purple-700 transition-colors">{t('features.emailFinder.title')}</h3>
+                                <p className="text-slate-600 leading-relaxed font-medium">
+                                    {t('features.emailFinder.description')}
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Email Finder</h3>
-                            <p className="text-slate-600 leading-relaxed">
-                                Algorithme de prédiction d'emails professionnels vérifié à 98% pour contacter directement les décideurs.
-                            </p>
                         </div>
 
                         {/* Feature 4 */}
-                        <div className="p-10 rounded-[2rem] bg-gradient-to-br from-indigo-50/50 to-white border border-slate-200 hover:shadow-xl transition-all duration-300 group">
-                            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform">
+                        <div className="p-10 rounded-[2rem] bg-gradient-to-br from-indigo-50/80 to-white border border-indigo-100 hover:border-indigo-200 hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
+                            <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+
+                            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-indigo-50 flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                                 <Zap className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Rapidité Éclair</h3>
-                            <p className="text-slate-600 leading-relaxed">
-                                Générez, optimisez et envoyez. Ce qui prenait des heures ne prend plus que quelques minutes.
+                            <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-700 transition-colors">{t('features.speed.title')}</h3>
+                            <p className="text-slate-600 leading-relaxed font-medium">
+                                {t('features.speed.description')}
                             </p>
                         </div>
                     </div>
@@ -326,15 +342,15 @@ export function LandingPage() {
 
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center mb-20">
-                        <h2 className="text-3xl font-bold text-slate-900 mb-4">Comment ça marche ?</h2>
-                        <p className="text-slate-500">3 étapes simples vers votre nouveau job</p>
+                        <h2 className="text-3xl font-bold text-slate-900 mb-4">{t('howItWorks.title')}</h2>
+                        <p className="text-slate-500">{t('howItWorks.subtitle')}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
                         {[
-                            { step: "01", title: "Analysez", desc: "Uploadez votre CV et une offre d'emploi.", icon: FileText },
-                            { step: "02", title: "Optimisez", desc: "Obtenez un CV sur-mesure et un score de match.", icon: Sparkles },
-                            { step: "03", title: "Connectez", desc: "Identifiez et contactez les recruteurs clés.", icon: Mail }
+                            { step: "01", title: t('howItWorks.step1.title'), desc: t('howItWorks.step1.desc'), icon: FileText },
+                            { step: "02", title: t('howItWorks.step2.title'), desc: t('howItWorks.step2.desc'), icon: Sparkles },
+                            { step: "03", title: t('howItWorks.step3.title'), desc: t('howItWorks.step3.desc'), icon: Mail }
                         ].map((item, idx) => (
                             <div key={idx} className="relative flex flex-col items-center text-center group">
                                 <div className="w-20 h-20 rounded-[2rem] bg-white border border-slate-200 shadow-lg flex items-center justify-center text-indigo-600 mb-8 group-hover:scale-110 group-hover:border-indigo-500 group-hover:shadow-indigo-500/20 transition-all duration-300 z-10 relative">
@@ -356,3 +372,4 @@ export function LandingPage() {
         </div>
     );
 }
+

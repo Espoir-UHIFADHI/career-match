@@ -8,8 +8,10 @@ import { Button } from "../ui/Button";
 import { searchGoogle } from "../../services/search/serper";
 import { generateJSON } from "../../services/ai/gemini";
 import type { JobAnalysis } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export function JobInput() {
+    const { t } = useTranslation();
     const { setJobData, setStep } = useAppStore();
     const [mode, setMode] = useState<"url" | "text">("url");
     const [url, setUrl] = useState("");
@@ -133,9 +135,9 @@ export function JobInput() {
         return (
             <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
                 <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Job Summary</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t('jobInput.summaryTitle')}</h2>
                     <p className="text-slate-500">
-                        Please review the extracted job details.
+                        {t('jobInput.summarySubtitle')}
                     </p>
                 </div>
 
@@ -151,18 +153,18 @@ export function JobInput() {
                     <CardContent className="space-y-6 pt-6">
                         <div className="flex items-center gap-2 text-slate-600">
                             <Building2 className="h-5 w-5 text-indigo-600" />
-                            <span className="font-semibold text-slate-900">{previewData.company || "Unknown Company"}</span>
+                            <span className="font-semibold text-slate-900">{previewData.company || t('jobInput.unknownCompany')}</span>
                         </div>
 
                         {previewData.url && (
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <Globe className="h-4 w-4" />
-                                <span className="underline decoration-slate-300 underline-offset-4">Source: {new URL(previewData.url).hostname}</span>
+                                <span className="underline decoration-slate-300 underline-offset-4">{t('jobInput.source')}: {new URL(previewData.url).hostname}</span>
                             </div>
                         )}
 
                         <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
-                            <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Description</h4>
+                            <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">{t('cvReview.description')}</h4>
                             <p className="text-slate-700 leading-relaxed text-sm">
                                 {previewData.description || "No description available."}
                             </p>
@@ -170,7 +172,7 @@ export function JobInput() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">Hard Skills</h4>
+                                <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">{t('jobInput.hardSkills')}</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {(previewData.requirements?.hardSkills || []).map((skill, i) => (
                                         <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-medium rounded-md border border-slate-200 shadow-sm">
@@ -178,12 +180,12 @@ export function JobInput() {
                                         </span>
                                     ))}
                                     {(!previewData.requirements?.hardSkills || previewData.requirements.hardSkills.length === 0) && (
-                                        <span className="text-sm text-slate-400 italic">None detected</span>
+                                        <span className="text-sm text-slate-400 italic">{t('jobInput.noneDetected')}</span>
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">Soft Skills</h4>
+                                <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">{t('jobInput.softSkills')}</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {(previewData.requirements?.softSkills || []).map((skill, i) => (
                                         <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-medium rounded-md border border-slate-200 shadow-sm">
@@ -191,7 +193,7 @@ export function JobInput() {
                                         </span>
                                     ))}
                                     {(!previewData.requirements?.softSkills || previewData.requirements.softSkills.length === 0) && (
-                                        <span className="text-sm text-slate-400 italic">None detected</span>
+                                        <span className="text-sm text-slate-400 italic">{t('jobInput.noneDetected')}</span>
                                     )}
                                 </div>
                             </div>
@@ -203,13 +205,13 @@ export function JobInput() {
                                 onClick={() => setPreviewData(null)}
                                 className="flex-1"
                             >
-                                Back to Edit
+                                {t('jobInput.backToEdit')}
                             </Button>
                             <Button
                                 onClick={handleProceed}
                                 className="flex-1"
                             >
-                                Analyze Compatibility <ArrowRight className="ml-2 h-4 w-4" />
+                                {t('jobInput.analyzeMatch')} <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </div>
                     </CardContent>
@@ -221,9 +223,9 @@ export function JobInput() {
     return (
         <div className="max-w-xl mx-auto space-y-8 animate-fade-in">
             <div className="text-center mb-10 space-y-2">
-                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Target Job</h2>
+                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{t('jobInput.title')}</h2>
                 <p className="text-slate-500 text-lg">
-                    Paste the job description or URL to match against.
+                    {t('jobInput.subtitle')}
                 </p>
             </div>
 
@@ -238,7 +240,7 @@ export function JobInput() {
                                 }`}
                         >
                             <LinkIcon className="h-4 w-4" />
-                            Job URL
+                            {t('jobInput.tabUrl')}
                         </button>
                         <button
                             onClick={() => setMode("text")}
@@ -248,7 +250,7 @@ export function JobInput() {
                                 }`}
                         >
                             <FileText className="h-4 w-4" />
-                            Job Description
+                            {t('jobInput.tabText')}
                         </button>
                     </div>
 
@@ -261,20 +263,20 @@ export function JobInput() {
                                         type="url"
                                         value={url}
                                         onChange={(e) => setUrl(e.target.value)}
-                                        placeholder="https://linkedin.com/jobs/..."
+                                        placeholder={t('jobInput.placeholderUrl')}
                                         className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none shadow-sm"
                                     />
                                 </div>
                                 <p className="text-xs text-slate-500 flex items-center gap-1.5">
                                     <Search className="h-3 w-3" />
-                                    Powered by Google Search & Jina AI
+                                    {t('jobInput.poweredBy')}
                                 </p>
                             </div>
                         ) : (
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Paste the full job description here..."
+                                placeholder={t('jobInput.placeholderText')}
                                 rows={10}
                                 className="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none shadow-sm text-sm leading-relaxed"
                             />
@@ -295,10 +297,10 @@ export function JobInput() {
                             {isProcessing ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Analyzing Job...
+                                    {t('jobInput.analyzing')}
                                 </>
                             ) : (
-                                "Analyze Job"
+                                t('jobInput.analyze')
                             )}
                         </Button>
                     </div>

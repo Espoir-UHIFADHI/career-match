@@ -8,6 +8,7 @@ import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
 import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
+import { useTranslation } from "../../hooks/useTranslation";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -16,6 +17,7 @@ interface CVReviewProps {
 }
 
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState<ParsedCV>(initialData);
 
 
@@ -111,16 +113,16 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
         <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Review Extraction</h2>
-                    <p className="text-slate-500 text-sm">Verify and edit the information extracted from your CV.</p>
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t('cvReview.title')}</h2>
+                    <p className="text-slate-500 text-sm">{t('cvReview.subtitle')}</p>
                 </div>
                 {errors.length > 0 && (
                     <div className="w-full md:w-auto mb-4 md:mb-0 order-last md:order-none">
                         <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-900">
                             <AlertCircle className="h-4 w-4 text-red-600" />
-                            <AlertTitle className="text-red-900 font-semibold">Missing Information</AlertTitle>
+                            <AlertTitle className="text-red-900 font-semibold">{t('cvReview.missingInfo')}</AlertTitle>
                             <AlertDescription className="text-red-700">
-                                Please fill in the required fields below.
+                                {t('cvReview.fillRequired')}
                             </AlertDescription>
                         </Alert>
                     </div>
@@ -132,14 +134,14 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         className="flex-1 md:flex-none"
                     >
                         <Upload className="h-4 w-4 mr-2" />
-                        Re-upload CV
+                        {t('cvReview.reupload')}
                     </Button>
                     <Button
                         onClick={handleSave}
                         className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20"
                     >
                         <Save className="h-4 w-4 mr-2" />
-                        Save & Continue
+                        {t('cvReview.saveContinue')}
                     </Button>
                 </div>
             </div>
@@ -152,48 +154,48 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
                             <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
                                 <User className="h-4 w-4 text-indigo-600" />
-                                Personal Information
+                                {t('cvReview.personalInfo')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
                             <div className="space-y-2">
-                                <Label>First Name</Label>
+                                <Label>{t('cvReview.firstName')}</Label>
                                 <Input
                                     value={formData.contact.firstName}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, firstName: e.target.value } })}
-                                    placeholder="First Name"
+                                    placeholder={t('cvReview.firstName')}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Last Name</Label>
+                                <Label>{t('cvReview.lastName')}</Label>
                                 <Input
                                     value={formData.contact.lastName}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, lastName: e.target.value } })}
-                                    placeholder="Last Name"
+                                    placeholder={t('cvReview.lastName')}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Email</Label>
+                                <Label>{t('cvReview.email')}</Label>
                                 <Input
                                     value={formData.contact.email}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, email: e.target.value } })}
-                                    placeholder="Email Address"
+                                    placeholder={t('cvReview.email')}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Phone</Label>
+                                <Label>{t('cvReview.phone')}</Label>
                                 <Input
                                     value={formData.contact.phone}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, phone: e.target.value } })}
-                                    placeholder="Phone Number"
+                                    placeholder={t('cvReview.phone')}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Location</Label>
+                                <Label>{t('cvReview.location')}</Label>
                                 <Input
                                     value={formData.contact.location}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, location: e.target.value } })}
-                                    placeholder="City, Country"
+                                    placeholder={t('cvReview.location')}
                                 />
                             </div>
                         </CardContent>
@@ -204,7 +206,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
                             <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
                                 <FileText className="h-4 w-4 text-indigo-600" />
-                                Professional Summary
+                                {t('cvReview.summary')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -212,7 +214,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                 value={formData.summary}
                                 onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                                 className="min-h-[150px] resize-none"
-                                placeholder="Brief professional summary..."
+                                placeholder={t('cvReview.summaryPlaceholder')}
                             />
                         </CardContent>
                     </Card>
@@ -225,7 +227,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
                             <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
                                 <Code className="h-4 w-4 text-indigo-600" />
-                                Skills & Languages
+                                {t('cvReview.skillsLanguages')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-8 pt-6">
@@ -237,7 +239,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                             <Input
                                                 value={skill}
                                                 onChange={(e) => updateArrayItem("skills", idx, e.target.value)}
-                                                placeholder="Skill (e.g. React)"
+                                                placeholder={t('cvReview.skillPlaceholder')}
                                                 className="bg-slate-50 border-slate-200"
                                             />
                                             <Button
@@ -256,7 +258,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         onClick={() => addArrayItem("skills")}
                                         className="col-span-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
                                     >
-                                        <Plus className="h-3 w-3 mr-2" /> Add Skill
+                                        <Plus className="h-3 w-3 mr-2" /> {t('cvReview.addSkill')}
                                     </Button>
                                 </div>
                             </div>
@@ -269,7 +271,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                             <Input
                                                 value={lang}
                                                 onChange={(e) => updateArrayItem("languages", idx, e.target.value)}
-                                                placeholder="Language (e.g. English C1)"
+                                                placeholder={t('cvReview.langPlaceholder')}
                                                 className="bg-slate-50 border-slate-200"
                                             />
                                             <Button
@@ -288,7 +290,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         onClick={() => addArrayItem("languages")}
                                         className="col-span-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
                                     >
-                                        <Plus className="h-3 w-3 mr-2" /> Add Language
+                                        <Plus className="h-3 w-3 mr-2" /> {t('cvReview.addLanguage')}
                                     </Button>
                                 </div>
                             </div>
@@ -301,7 +303,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                             <Input
                                                 value={interest}
                                                 onChange={(e) => updateArrayItem("interests", idx, e.target.value)}
-                                                placeholder="Interest"
+                                                placeholder={t('cvReview.interestPlaceholder')}
                                                 className="bg-slate-50 border-slate-200"
                                             />
                                             <Button
@@ -320,7 +322,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                         onClick={() => addArrayItem("interests")}
                                         className="col-span-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200"
                                     >
-                                        <Plus className="h-3 w-3 mr-2" /> Add Interest
+                                        <Plus className="h-3 w-3 mr-2" /> {t('cvReview.addInterest')}
                                     </Button>
                                 </div>
                             </div>
@@ -332,7 +334,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
                             <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
                                 <Briefcase className="h-4 w-4 text-indigo-600" />
-                                Experience
+                                {t('cvReview.experience')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
@@ -353,7 +355,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">Company</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.company')}</Label>
                                             <Input
                                                 value={exp.company}
                                                 onChange={(e) => {
@@ -361,12 +363,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newExp[idx].company = e.target.value;
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
-                                                placeholder="Company Name"
+                                                placeholder={t('cvReview.company')}
                                                 className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">Role</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.role')}</Label>
                                             <Input
                                                 value={exp.role}
                                                 onChange={(e) => {
@@ -374,12 +376,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newExp[idx].role = e.target.value;
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
-                                                placeholder="Job Title"
+                                                placeholder={t('cvReview.role')}
                                                 className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">Dates</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.dates')}</Label>
                                             <Input
                                                 value={exp.dates}
                                                 onChange={(e) => {
@@ -392,7 +394,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">Description</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.description')}</Label>
                                             <Textarea
                                                 value={exp.description}
                                                 onChange={(e) => {
@@ -401,7 +403,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
                                                 className="min-h-[100px] bg-white resize-y"
-                                                placeholder="Describe your responsibilities..."
+                                                placeholder={t('cvReview.description')}
                                             />
                                         </div>
                                     </div>
@@ -413,7 +415,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                 onClick={() => setFormData(prev => ({ ...prev, experience: [...prev.experience, { company: "", role: "", dates: "", description: "" }] }))}
                                 className="w-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200 py-6"
                             >
-                                <Plus className="h-4 w-4 mr-2" /> Add Experience
+                                <Plus className="h-4 w-4 mr-2" /> {t('cvReview.addExperience')}
                             </Button>
                         </CardContent>
                     </Card>
@@ -423,7 +425,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                         <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
                             <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
                                 <GraduationCap className="h-4 w-4 text-indigo-600" />
-                                Education
+                                {t('cvReview.education')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
@@ -444,7 +446,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">School</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.school')}</Label>
                                             <Input
                                                 value={edu.school}
                                                 onChange={(e) => {
@@ -452,12 +454,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newEdu[idx].school = e.target.value;
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
-                                                placeholder="School Name"
+                                                placeholder={t('cvReview.school')}
                                                 className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">Degree</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.degree')}</Label>
                                             <Input
                                                 value={edu.degree}
                                                 onChange={(e) => {
@@ -465,12 +467,12 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     newEdu[idx].degree = e.target.value;
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
-                                                placeholder="Degree"
+                                                placeholder={t('cvReview.degree')}
                                                 className="bg-white"
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">Dates</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.dates')}</Label>
                                             <Input
                                                 value={edu.dates}
                                                 onChange={(e) => {
@@ -483,7 +485,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">Description</Label>
+                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.description')}</Label>
                                             <Textarea
                                                 value={edu.description}
                                                 onChange={(e) => {
@@ -492,7 +494,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
                                                 className="min-h-[100px] bg-white resize-y"
-                                                placeholder="Education description..."
+                                                placeholder={t('cvReview.description')}
                                             />
                                         </div>
                                     </div>
@@ -504,7 +506,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                 onClick={() => setFormData(prev => ({ ...prev, education: [...(prev.education || []), { school: "", degree: "", dates: "", description: "" }] }))}
                                 className="w-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200 py-6"
                             >
-                                <Plus className="h-4 w-4 mr-2" /> Add Education
+                                <Plus className="h-4 w-4 mr-2" /> {t('cvReview.addEducation')}
                             </Button>
                         </CardContent>
                     </Card>

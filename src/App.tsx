@@ -6,6 +6,8 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 import { Button } from "./components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { Steps } from "./components/ui/Steps";
+import { useTranslation } from "./hooks/useTranslation";
+
 
 import { CVUpload } from "./components/cv-form/CVUpload";
 import { CVReview } from "./components/cv-form/CVReview";
@@ -14,13 +16,6 @@ import { MatchingDashboard } from "./components/results/MatchingDashboard";
 import { PrintableCV } from "./components/results/PrintableCV";
 import { NetworkingSearch } from "./components/networking/NetworkingSearch";
 import { EmailPredictorTool } from "./components/networking/EmailPredictorTool";
-
-const steps = [
-  { id: 1, name: 'Upload CV', description: 'Your Profile' },
-  { id: 2, name: 'Job Details', description: 'Target Role' },
-  { id: 3, name: 'Analysis', description: 'Match & Optimize' },
-  { id: 4, name: 'Results', description: 'Download PDF' },
-];
 
 import { LandingPage } from "./components/LandingPage";
 
@@ -34,6 +29,14 @@ function App() {
   const { fetchCredits } = useUserStore();
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
+  const { t } = useTranslation();
+
+  const steps = [
+    { id: 1, name: t('steps.uploadName'), description: t('steps.uploadDescription') },
+    { id: 2, name: t('steps.jobName'), description: t('steps.jobDescription') },
+    { id: 3, name: t('steps.analysisName'), description: t('steps.analysisDescription') },
+    { id: 4, name: t('steps.resultsName'), description: t('steps.resultsDescription') },
+  ];
 
   useEffect(() => {
     const syncUser = async () => {
@@ -90,7 +93,7 @@ function App() {
         return analysisResults ? (
           <div className="max-w-[210mm] mx-auto">
             <Button variant="ghost" onClick={() => setStep(3)} className="mb-4 gap-2">
-              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+              <ArrowLeft className="h-4 w-4" /> {t('common.back')}
             </Button>
             {analysisResults.optimizedCV ? (
               <div className="bg-white shadow-xl rounded-lg overflow-hidden my-8">

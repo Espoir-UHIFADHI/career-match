@@ -8,8 +8,10 @@ import { Label } from "../ui/Label";
 import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export function EmailPredictorTool() {
+    const { t } = useTranslation();
     const [company, setCompany] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -161,8 +163,8 @@ export function EmailPredictorTool() {
     return (
         <div className="w-full max-w-none mx-auto space-y-8 animate-fade-in">
             <div className="text-center space-y-3">
-                <h2 className="text-3xl font-bold text-slate-900">Email Predictor</h2>
-                <p className="text-slate-600 text-lg">Find any professional email address in seconds.</p>
+                <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
+                <p className="text-slate-600 text-lg">{t('emailPredictor.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
@@ -174,17 +176,17 @@ export function EmailPredictorTool() {
                                 <div className="p-2 bg-indigo-100 rounded-lg">
                                     <Search className="w-5 h-5 text-indigo-600" />
                                 </div>
-                                Search Criteria
+                                {t('networking.searchCriteria')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="text-slate-700 font-medium">Company Name</Label>
+                                    <Label className="text-slate-700 font-medium">{t('emailPredictor.companyName')}</Label>
                                     <div className="relative group">
                                         <Building2 className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                                         <Input
-                                            placeholder="e.g. Google"
+                                            placeholder={t('emailPredictor.companyPlaceholder')}
                                             value={company}
                                             onChange={(e) => setCompany(e.target.value)}
                                             className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
@@ -193,11 +195,11 @@ export function EmailPredictorTool() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-slate-700 font-medium">First Name</Label>
+                                        <Label className="text-slate-700 font-medium">{t('emailPredictor.firstName')}</Label>
                                         <div className="relative group">
                                             <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                                             <Input
-                                                placeholder="e.g. Jean"
+                                                placeholder={t('emailPredictor.firstNamePlaceholder')}
                                                 value={firstName}
                                                 onChange={(e) => setFirstName(e.target.value)}
                                                 className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
@@ -205,9 +207,9 @@ export function EmailPredictorTool() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-slate-700 font-medium">Last Name</Label>
+                                        <Label className="text-slate-700 font-medium">{t('emailPredictor.lastName')}</Label>
                                         <Input
-                                            placeholder="e.g. Dupont"
+                                            placeholder={t('emailPredictor.lastNamePlaceholder')}
                                             value={lastName}
                                             onChange={(e) => setLastName(e.target.value)}
                                             className="h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
@@ -225,12 +227,12 @@ export function EmailPredictorTool() {
                                     {status === 'loading' ? (
                                         <>
                                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            Analyzing Patterns...
+                                            {t('emailPredictor.analyzePatterns')}
                                         </>
                                     ) : (
                                         <>
                                             <Mail className="mr-2 h-5 w-5" />
-                                            {firstName && lastName ? "Find Email" : "Find Pattern"}
+                                            {firstName && lastName ? t('emailPredictor.findEmail') : t('emailPredictor.findPattern')}
                                         </>
                                     )}
                                 </Button>
@@ -240,7 +242,7 @@ export function EmailPredictorTool() {
                                         className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-sm transition-all text-base"
                                     >
                                         <User className="mr-2 h-5 w-5" />
-                                        Sign in to use tool
+                                        {t('emailPredictor.signIn')}
                                     </Button>
                                 </SignInButton>
                             )}
@@ -257,7 +259,7 @@ export function EmailPredictorTool() {
                                     <div className="p-2 bg-emerald-100 rounded-lg">
                                         <Check className="w-5 h-5 text-emerald-600" />
                                     </div>
-                                    Result
+                                    {t('emailPredictor.result')}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6 h-[calc(100%-80px)]">
@@ -269,7 +271,7 @@ export function EmailPredictorTool() {
 
                                         <div className="w-full text-center space-y-2">
                                             <h3 className="font-semibold text-slate-900">
-                                                {result.source === 'finder' || result.source === 'cache' ? 'Verified Email' : 'Suggestion'}
+                                                {result.source === 'finder' || result.source === 'cache' ? t('emailPredictor.verified') : t('emailPredictor.suggestion')}
                                             </h3>
                                             <div className="flex items-center justify-center gap-2 w-full">
                                                 <code className="text-lg font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded border border-indigo-100 break-all">
@@ -295,12 +297,12 @@ export function EmailPredictorTool() {
                                                         className="w-full text-xs"
                                                         size="sm"
                                                     >
-                                                        Verify Format
+                                                        {t('emailPredictor.verifyFormat')}
                                                     </Button>
                                                 )}
                                                 {verificationStatus === 'verifying' && (
                                                     <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
-                                                        <Loader2 className="h-3 w-3 animate-spin" /> Verifying...
+                                                        <Loader2 className="h-3 w-3 animate-spin" /> {t('emailPredictor.verifying')}
                                                     </div>
                                                 )}
                                                 {verificationStatus !== 'idle' && verificationStatus !== 'verifying' && getVerificationBadge()}
@@ -310,13 +312,13 @@ export function EmailPredictorTool() {
                                 ) : (
                                     <>
                                         <div className="p-4 bg-slate-50 rounded-xl w-full text-center border border-slate-100">
-                                            <p className="text-sm text-slate-500 font-medium mb-2">Pattern Found</p>
+                                            <p className="text-sm text-slate-500 font-medium mb-2">{t('emailPredictor.patternFound')}</p>
                                             <code className="text-slate-900 font-mono font-bold">
                                                 {formatEmailPattern(result.pattern)}@{result.domain}
                                             </code>
                                         </div>
                                         <p className="text-xs text-slate-400 text-center px-4">
-                                            Enter a name to generate the specific email address.
+                                            {t('emailPredictor.patternDesc')}
                                         </p>
                                     </>
                                 )}
@@ -328,9 +330,9 @@ export function EmailPredictorTool() {
                                 <Search className="h-8 w-8 text-slate-300" />
                             </div>
                             <div>
-                                <h3 className="font-semibold text-slate-900">No prediction yet</h3>
+                                <h3 className="font-semibold text-slate-900">{t('emailPredictor.noPrediction')}</h3>
                                 <p className="text-slate-500 text-sm mt-1">
-                                    Enter company details to find email patterns or addresses.
+                                    {t('emailPredictor.noPredictionDesc')}
                                 </p>
                             </div>
                         </Card>

@@ -7,8 +7,10 @@ import { parseCV } from "../../services/ai/gemini";
 import { useAppStore } from "../../store/useAppStore";
 import type { ParsedCV } from "../../types";
 import { CVReview } from "./CVReview";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export function CVUpload() {
+    const { t } = useTranslation();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isReviewing, setIsReviewing] = useState(false);
@@ -34,7 +36,7 @@ export function CVUpload() {
 
         } catch (err) {
             console.error(err);
-            setError("Une erreur est survenue lors de l'analyse. Veuillez réessayer.");
+            setError(t('cvUpload.error'));
         } finally {
             setIsProcessing(false);
         }
@@ -75,10 +77,10 @@ export function CVUpload() {
         <div className="max-w-xl mx-auto animate-fade-in">
             <div className="text-center mb-10 space-y-3">
                 <h2 className="text-3xl font-bold text-slate-900">
-                    Upload your CV
+                    {t('cvUpload.title')}
                 </h2>
                 <p className="text-slate-600 text-lg">
-                    We'll analyze your resume to find the best match.
+                    {t('cvUpload.subtitle')}
                 </p>
             </div>
 
@@ -100,8 +102,8 @@ export function CVUpload() {
                                     <div className="absolute inset-0 rounded-full border-4 border-t-indigo-600 animate-spin"></div>
                                     <Loader2 className="absolute inset-0 m-auto h-8 w-8 text-indigo-600 animate-pulse" />
                                 </div>
-                                <p className="text-xl font-medium text-slate-900 mb-2">Analyzing your CV...</p>
-                                <p className="text-sm text-slate-600">This usually takes about 10-20 seconds.</p>
+                                <p className="text-xl font-medium text-slate-900 mb-2">{t('cvUpload.analyzing')}</p>
+                                <p className="text-sm text-slate-600">{t('cvUpload.analyzingDesc')}</p>
                             </div>
                         ) : (
                             <div className="relative z-10 flex flex-col items-center">
@@ -109,20 +111,20 @@ export function CVUpload() {
                                     <Upload className="h-10 w-10 text-indigo-600 group-hover:text-indigo-700 transition-colors" />
                                 </div>
                                 {isDragActive ? (
-                                    <p className="text-xl font-medium text-indigo-600 animate-pulse">Drop the file here...</p>
+                                    <p className="text-xl font-medium text-indigo-600 animate-pulse">{t('cvUpload.dropHere')}</p>
                                 ) : (
                                     <>
                                         <p className="text-xl font-medium text-slate-900 mb-3">
-                                            Drag & drop your CV here
+                                            {t('cvUpload.dragDrop')}
                                         </p>
                                         <p className="text-sm text-slate-600 mb-8">
-                                            Supports PDF or TXT files
+                                            {t('cvUpload.supports')}
                                         </p>
                                         <Button
                                             variant="outline"
                                             className="hover:bg-slate-100 text-slate-900 border-slate-300 px-8 py-6 text-base"
                                         >
-                                            Select File
+                                            {t('cvUpload.selectFile')}
                                         </Button>
                                     </>
                                 )}

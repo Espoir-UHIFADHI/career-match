@@ -9,7 +9,10 @@ import { NetworkingSection } from "./NetworkingSection";
 import { PrintableCV } from "./PrintableCV";
 import type { MatchResult } from "../../types";
 
+import { useTranslation } from "../../hooks/useTranslation";
+
 export function MatchingDashboard() {
+    const { t } = useTranslation();
     const { cvData, jobData, analysisResults, setAnalysisResults, language, setLanguage } = useAppStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -61,8 +64,8 @@ export function MatchingDashboard() {
                         <Loader2 className="h-10 w-10 text-indigo-600 animate-spin" />
                     </div>
                 </div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Optimizing your profile...</h2>
-                <p className="text-slate-500 mt-2 font-medium">Comparing your skills with job requirements</p>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t('dashboard.optimizing')}</h2>
+                <p className="text-slate-500 mt-2 font-medium">{t('dashboard.optimizingDesc')}</p>
             </div>
         );
     }
@@ -73,9 +76,9 @@ export function MatchingDashboard() {
                 <div className="inline-flex items-center justify-center p-4 bg-red-50 rounded-full mb-6 border border-red-100">
                     <AlertTriangle className="h-10 w-10 text-red-600" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 mb-2">Analysis Failed</h2>
-                <p className="text-slate-500 mb-6">{error}</p>
-                <Button onClick={runAnalysis} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">Try Again</Button>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">{t('dashboard.analysisFailed')}</h2>
+                <p className="text-slate-500 mb-6">{error || t('dashboard.analysisError')}</p>
+                <Button onClick={runAnalysis} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">{t('dashboard.tryAgain')}</Button>
             </div>
         );
     }
@@ -102,10 +105,9 @@ export function MatchingDashboard() {
                             <AlertTriangle className="h-5 w-5 text-red-600" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-red-900">Low Match Score Detected ({score}%)</h3>
+                            <h3 className="text-lg font-bold text-red-900">{t('dashboard.lowMatch')} ({score}%)</h3>
                             <p className="text-red-700 mt-1 leading-relaxed text-sm">
-                                The match between your profile and this job description is too low to generate a valid optimized CV.
-                                We do not generate fake information. Please review the missing keywords and recommendations below to improve your profile or apply to a more relevant position.
+                                {t('dashboard.lowMatchDesc')}
                             </p>
                         </div>
                     </div>
@@ -118,7 +120,7 @@ export function MatchingDashboard() {
                     <CardHeader className="pb-2">
                         <CardTitle className="text-center text-slate-900 flex items-center justify-center gap-2">
                             <Target className="h-5 w-5 text-slate-400" />
-                            Match Score
+                            {t('dashboard.matchScore')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center pt-6 pb-8">
@@ -158,7 +160,7 @@ export function MatchingDashboard() {
                                     score >= 45 ? "bg-amber-50 text-amber-700 border-amber-100" :
                                         "bg-red-50 text-red-700 border-red-100"
                                 }`}>
-                                {score >= 80 ? "Excellent Match" : score >= 60 ? "Good Potential" : score >= 45 ? "Needs Improvement" : "Critical Low Match"}
+                                {score >= 80 ? t('dashboard.excellentMatch') : score >= 60 ? t('dashboard.goodPotential') : score >= 45 ? t('dashboard.needsImprovement') : t('dashboard.criticalMatch')}
                             </span>
                         </div>
                     </CardContent>
@@ -169,12 +171,12 @@ export function MatchingDashboard() {
                     <CardHeader className="border-b border-slate-100 pb-4">
                         <div className="flex items-center gap-2">
                             <Sparkles className="h-5 w-5 text-indigo-600" />
-                            <CardTitle className="text-slate-900">Analysis Results</CardTitle>
+                            <CardTitle className="text-slate-900">{t('dashboard.analysisResults')}</CardTitle>
                         </div>
                         <p className="text-sm text-slate-500 mt-1">
                             {isLowMatch
-                                ? "Key factors affecting your match score."
-                                : `Detailed breakdown of your ${score}% match score.`}
+                                ? t('dashboard.keyFactors')
+                                : t('dashboard.scoreBreakdown').replace('{score}', score.toString())}
                         </p>
                     </CardHeader>
                     <CardContent className="space-y-8 pt-6">
@@ -185,7 +187,7 @@ export function MatchingDashboard() {
                                     <div className="p-1 bg-emerald-100 rounded-md">
                                         <CheckCircle className="h-4 w-4 text-emerald-600" />
                                     </div>
-                                    Key Strengths
+                                    {t('dashboard.strengths')}
                                 </h4>
                                 <div className="bg-emerald-50/30 rounded-xl p-5 border border-emerald-100/50">
                                     <ul className="space-y-3">
@@ -205,7 +207,7 @@ export function MatchingDashboard() {
                                     <div className="p-1 bg-red-100 rounded-md">
                                         <XCircle className="h-4 w-4 text-red-600" />
                                     </div>
-                                    Missing Keywords
+                                    {t('dashboard.missingKeywords')}
                                 </h4>
                                 <div className="bg-red-50/30 rounded-xl p-5 border border-red-100/50">
                                     <div className="flex flex-wrap gap-2">
@@ -223,7 +225,7 @@ export function MatchingDashboard() {
                         <div className="pt-6 border-t border-slate-100">
                             <h4 className="flex items-center gap-2 font-semibold text-slate-900 text-sm uppercase tracking-wide mb-3">
                                 <Globe className="h-4 w-4 text-indigo-600" />
-                                Culture Fit Assessment
+                                {t('dashboard.cultureFit')}
                             </h4>
                             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-sm text-slate-600 leading-relaxed">
                                 {analysis.cultureFit}
@@ -238,7 +240,7 @@ export function MatchingDashboard() {
                 <CardHeader className="border-b border-slate-100 pb-4">
                     <div className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-amber-500" />
-                        <CardTitle className="text-slate-900">Strategic Recommendations</CardTitle>
+                        <CardTitle className="text-slate-900">{t('dashboard.recommendations')}</CardTitle>
                     </div>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -266,7 +268,7 @@ export function MatchingDashboard() {
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
                                 <Globe className="h-4 w-4 text-slate-400" />
-                                <span className="text-sm font-medium text-slate-600">CV Language</span>
+                                <span className="text-sm font-medium text-slate-600">{t('dashboard.cvLanguage')}</span>
                             </div>
                             <div className="flex p-1 bg-slate-100 rounded-lg">
                                 <button
@@ -298,7 +300,7 @@ export function MatchingDashboard() {
                             className="w-full sm:w-auto gap-2 hover:bg-slate-50 text-slate-700 border-slate-200"
                         >
                             <Loader2 className="h-4 w-4" />
-                            Regenerate
+                            {t('dashboard.regenerate')}
                         </Button>
 
                         {!isLowMatch && (
@@ -310,7 +312,7 @@ export function MatchingDashboard() {
                                         }`}
                                 >
                                     <Eye className="h-4 w-4" />
-                                    {showPreview ? "Hide Preview" : "Preview CV"}
+                                    {showPreview ? t('dashboard.hidePreview') : t('dashboard.previewCV')}
                                 </Button>
                                 <Button
                                     size="lg"
@@ -318,7 +320,7 @@ export function MatchingDashboard() {
                                     className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 border-0"
                                 >
                                     <Download className="h-4 w-4" />
-                                    Download PDF
+                                    {t('dashboard.downloadPDF')}
                                 </Button>
                             </>
                         )}
@@ -326,28 +328,26 @@ export function MatchingDashboard() {
                 </div>
             </div>
 
-            {
-                showPreview && !isLowMatch && analysisResults.optimizedCV && (
-                    <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
-                        <CardHeader className="bg-slate-50 border-b border-slate-200 flex flex-row items-center justify-between py-4">
-                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
-                                <Sparkles className="h-4 w-4 text-indigo-600" />
-                                Optimized CV Preview
-                            </CardTitle>
-                            <Button size="sm" variant="ghost" onClick={() => setShowPreview(false)} className="text-slate-500 hover:text-slate-900">
-                                Close Preview
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="p-0 bg-slate-100 overflow-x-auto">
-                            <div className="min-w-[800px] p-8 flex justify-center">
-                                <div className="shadow-2xl bg-white">
-                                    <PrintableCV data={analysisResults.optimizedCV} language={language} />
-                                </div>
+            {showPreview && !isLowMatch && analysisResults.optimizedCV && (
+                <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
+                    <CardHeader className="bg-slate-50 border-b border-slate-200 flex flex-row items-center justify-between py-4">
+                        <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                            <Sparkles className="h-4 w-4 text-indigo-600" />
+                            {t('dashboard.optimizedPreview')}
+                        </CardTitle>
+                        <Button size="sm" variant="ghost" onClick={() => setShowPreview(false)} className="text-slate-500 hover:text-slate-900">
+                            {t('dashboard.closePreview')}
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="p-0 bg-slate-100 overflow-x-auto">
+                        <div className="min-w-[800px] p-8 flex justify-center">
+                            <div className="shadow-2xl bg-white">
+                                {analysisResults?.optimizedCV && <PrintableCV data={analysisResults.optimizedCV} language={language} />}
                             </div>
-                        </CardContent>
-                    </Card>
-                )
-            }
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Hidden Printable Component */}
             {!isLowMatch && analysisResults.optimizedCV && (
@@ -358,4 +358,3 @@ export function MatchingDashboard() {
         </div>
     );
 }
-
