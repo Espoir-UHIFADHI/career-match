@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "./ui/Button";
+import { DemoModal } from "./DemoModal";
 import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, StarHalf, CheckCircle, User } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
     const { t } = useTranslation();
+    const [isDemoOpen, setIsDemoOpen] = useState(false);
 
     return (
         <div className="flex flex-col bg-slate-50 overflow-x-hidden">
@@ -49,6 +52,7 @@ export function LandingPage() {
                                 <Button
                                     variant="outline"
                                     className="h-14 px-8 text-lg bg-white/60 hover:bg-white border-slate-200 text-slate-700 rounded-2xl backdrop-blur-sm transition-all hover:shadow-lg hover:border-indigo-200"
+                                    onClick={() => setIsDemoOpen(true)}
                                 >
                                     {t('hero.ctaDemo')}
                                 </Button>
@@ -109,7 +113,7 @@ export function LandingPage() {
                                         </div>
                                         <div className="flex gap-2">
                                             <div className="px-2 py-1 rounded-md bg-white/50 border border-white/60 text-[10px] font-semibold text-slate-600 shadow-sm">
-                                                5 Crédits
+                                                7 Crédits
                                             </div>
                                         </div>
                                     </div>
@@ -384,6 +388,7 @@ export function LandingPage() {
                     </div>
                 </div>
             </section>
+            <DemoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
         </div>
     );
 }

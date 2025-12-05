@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAppStore } from "../../store/useAppStore";
+import { useUserStore } from "../../store/useUserStore";
 import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -25,14 +27,20 @@ interface Contact {
 }
 
 export function NetworkingSearch() {
-    const [company, setCompany] = useState("");
-    const [role, setRole] = useState("");
-    const [isSearching, setIsSearching] = useState(false);
-    const [results, setResults] = useState<Contact[]>([]);
-    const [hasSearched, setHasSearched] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const { isSignedIn, user } = useUser();
     const { t } = useTranslation();
+    const { networking, setNetworkingState } = useAppStore();
+    const { useCredit } = useUserStore(); // hook usage
+
+    // Derived state from store
+    const { company, role, results, hasSearched } = networking;
+
+    // Local UI state
+    const [isSearching, setIsSearching] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const { isSignedIn, user, getToken } = useUser();
+
+    // Ensure results is treated as typed array even if store has any[]
+    const typedResults = (results || []) as Contact[];
 
     // Modal State
     const [showGuide, setShowGuide] = useState(false);
@@ -44,27 +52,55 @@ export function NetworkingSearch() {
     const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
+
+
     const handleSearch = async (isLoadMore = false) => {
         if (!company && !role) return;
+
+        if (!isSignedIn || !user) {
+            setError(t('networking.signInRequired') || "Veuillez vous connecter pour effectuer une recherche.");
+            return;
+        }
 
         // Check API key before attempting search
         const apiKey = import.meta.env.VITE_SERPER_API_KEY;
         if (!apiKey) {
             setError(t('networking.apiKeyError') || "⚠️ Clé API Serper manquante. Veuillez ajouter VITE_SERPER_API_KEY dans votre fichier .env et redémarrer le serveur.");
-            setHasSearched(true);
-            setResults([]);
+            setNetworkingState({ hasSearched: true, results: [] });
             return;
         }
 
         setIsSearching(true);
         setError(null);
 
+        // Deduct Credit
+        try {
+            const token = await getToken();
+            const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
+
+            if (!success) {
+                setIsSearching(false);
+                if (creditError === 'insufficient_funds_local') {
+                    setError(t('networking.insufficientCredits') || "Crédits insuffisants. Veuillez recharger votre compte.");
+                } else {
+                    setError(t('networking.creditError') || "Erreur lors de la déduction des crédits.");
+                }
+                return;
+            }
+        } catch (err) {
+            console.error("Credit deduction failed:", err);
+            setIsSearching(false);
+            setError("Erreur système lors de la vérification des crédits.");
+            return;
+        }
+
         if (!isLoadMore) {
-            setResults([]);
+            setNetworkingState({ results: [] });
         }
 
         try {
-            // Smart queries with Gemini
+
+
             let queries = [`site:linkedin.com/in/ ${role} ${company}`];
             try {
                 const response = await generateNetworkingQueries(company, role);
@@ -90,14 +126,13 @@ export function NetworkingSearch() {
 
             // Deduplicate
             if (isLoadMore) {
-                setResults(prev => {
-                    const combined = [...prev, ...newContacts];
-                    return combined.filter((c, i, self) => self.findIndex(t => t.link === c.link) === i);
-                });
+                const combined = [...typedResults, ...newContacts];
+                const unique = combined.filter((c, i, self) => self.findIndex(t => t.link === c.link) === i);
+                setNetworkingState({ results: unique });
             } else {
-                setResults(newContacts);
+                setNetworkingState({ results: newContacts });
             }
-            setHasSearched(true);
+            setNetworkingState({ hasSearched: true });
 
         } catch (error) {
             console.error("Search failed:", error);
@@ -108,7 +143,7 @@ export function NetworkingSearch() {
     };
 
     const handleGuessEmail = async (contactIndex: number) => {
-        const contact = results[contactIndex];
+        const contact = typedResults[contactIndex];
         if (!contact || !company) return;
 
         if (!isSignedIn || !user) {
@@ -116,9 +151,9 @@ export function NetworkingSearch() {
             return;
         }
 
-        const newResults = [...results];
+        const newResults = [...typedResults];
         newResults[contactIndex] = { ...contact, emailStatus: 'loading' };
-        setResults(newResults);
+        setNetworkingState({ results: newResults });
 
         try {
             const domain = await findCompanyDomain(company);
@@ -146,7 +181,7 @@ export function NetworkingSearch() {
                 }
             }
 
-            const updatedResults = [...results];
+            const updatedResults = [...typedResults];
             updatedResults[contactIndex] = {
                 ...contact,
                 emailStatus: 'success',
@@ -155,13 +190,13 @@ export function NetworkingSearch() {
                 emailPattern: pattern || undefined,
                 domain: domain
             };
-            setResults(updatedResults);
+            setNetworkingState({ results: updatedResults });
 
         } catch (error) {
             console.error(error);
-            const updatedResults = [...results];
+            const updatedResults = [...typedResults];
             updatedResults[contactIndex] = { ...contact, emailStatus: 'error' };
-            setResults(updatedResults);
+            setNetworkingState({ results: updatedResults });
         }
     };
 
@@ -228,7 +263,7 @@ export function NetworkingSearch() {
                                     <Input
                                         placeholder={t('networking.companyPlaceholder')}
                                         value={company}
-                                        onChange={(e) => setCompany(e.target.value)}
+                                        onChange={(e) => setNetworkingState({ company: e.target.value })}
                                         className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                     />
                                 </div>
@@ -240,7 +275,7 @@ export function NetworkingSearch() {
                                     <Input
                                         placeholder={t('networking.rolePlaceholder')}
                                         value={role}
-                                        onChange={(e) => setRole(e.target.value)}
+                                        onChange={(e) => setNetworkingState({ role: e.target.value })}
                                         className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                     />
                                 </div>
@@ -257,13 +292,13 @@ export function NetworkingSearch() {
 
                         {/* Results List */}
                         <div className="space-y-4 pt-2">
-                            {hasSearched && results.length === 0 && !isSearching ? (
+                            {hasSearched && typedResults.length === 0 && !isSearching ? (
                                 <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                     <p className="text-slate-500">{t('networking.noResults')}</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {results.map((contact, idx) => (
+                                    {typedResults.map((contact, idx) => (
                                         <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col justify-between h-full">
                                             <div className="flex justify-between items-start">
                                                 <div className="flex gap-3 items-start">

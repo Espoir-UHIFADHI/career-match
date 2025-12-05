@@ -55,38 +55,19 @@ export const useUserStore = create<UserState>((set, get) => ({
         const client = token ? createClerkSupabaseClient(token) : supabase;
 
         try {
-            // We first verify we have enough credits (double check)
-            const { data: currentProfile, error: fetchError } = await client
-                .from('profiles')
-                .select('credits')
-                .eq('id', userId)
-                .single();
+            // Call RPC to decrease credits atomically
+            const { data: newBalance, error: rpcError } = await client.rpc('decrease_user_credits', {
+                p_user_id: userId,
+                p_amount: amount
+            });
 
-            if (fetchError || !currentProfile) {
-                console.error("Error fetching current credits:", fetchError);
-                return { success: false, error: "fetch_error" };
-            }
-
-            if (currentProfile.credits < amount) {
-                console.warn("Not enough credits on server side");
-                // Sync local state
-                set({ credits: currentProfile.credits });
-                return { success: false, error: "insufficient_funds_server" };
-            }
-
-            // Perform the update
-            const { error: updateError } = await client
-                .from('profiles')
-                .update({ credits: currentProfile.credits - amount })
-                .eq('id', userId);
-
-            if (updateError) {
-                console.error("Error updating credits:", updateError);
-                return { success: false, error: "update_error" };
+            if (rpcError) {
+                console.error("Error decreasing credits (RPC):", rpcError);
+                return { success: false, error: rpcError.message || "update_error" };
             }
 
             // Update local state on success
-            set((state) => ({ credits: state.credits - amount }));
+            set({ credits: newBalance });
             return { success: true };
         } catch (error) {
             console.error('Error spending credits:', error);

@@ -18,8 +18,8 @@ export function CreditBalance() {
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 rounded-full hover:bg-slate-200 text-slate-400 hover:text-indigo-600"
-                onClick={() => addCredits(5)}
-                title="Ajouter 5 crédits (Mode Démo)"
+                onClick={() => addCredits(7)}
+                title="Ajouter 7 crédits (Mode Démo)"
             >
                 <Plus className="w-3 h-3" />
             </Button>

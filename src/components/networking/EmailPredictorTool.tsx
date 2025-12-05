@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUserStore } from "../../store/useUserStore";
+import { useAppStore } from "../../store/useAppStore";
 import { Mail, Loader2, Building2, User, Copy, Check, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -12,11 +13,13 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 export function EmailPredictorTool() {
     const { t } = useTranslation();
-    const [company, setCompany] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
+    const { emailPredictor, setEmailPredictorState } = useAppStore();
+
+    // Derived state from store for convenience, or use directly
+    const { company, firstName, lastName, result } = emailPredictor;
+
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [result, setResult] = useState<{ email?: string, domain: string, pattern: string, score?: number, source: 'finder' | 'pattern' | 'cache' } | null>(null);
+    // Error and Copied are transient UI states, keep local
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const { isSignedIn, user } = useUser();
@@ -26,6 +29,13 @@ export function EmailPredictorTool() {
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
     const [verificationResult, setVerificationResult] = useState<VerificationResponse['data'] | null>(null);
+
+    // Initialize status if result exists
+    useEffect(() => {
+        if (result && status === 'idle') {
+            setStatus('success');
+        }
+    }, [result, status]);
 
     const handlePredict = async () => {
         if (!company) return;
@@ -59,7 +69,7 @@ export function EmailPredictorTool() {
 
         setStatus('loading');
         setError(null);
-        setResult(null);
+        setEmailPredictorState({ result: null });
         setVerificationStatus('idle');
         setVerificationResult(null);
 
@@ -93,7 +103,9 @@ export function EmailPredictorTool() {
                 }
             }
 
-            setResult({ email, domain, pattern, score, source });
+            setEmailPredictorState({
+                result: { email, domain, pattern, score, source }
+            });
             setStatus('success');
         } catch (err) {
             console.error("Prediction failed:", err);
@@ -188,7 +200,7 @@ export function EmailPredictorTool() {
                                         <Input
                                             placeholder={t('emailPredictor.companyPlaceholder')}
                                             value={company}
-                                            onChange={(e) => setCompany(e.target.value)}
+                                            onChange={(e) => setEmailPredictorState({ company: e.target.value })}
                                             className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                         />
                                     </div>
@@ -201,7 +213,7 @@ export function EmailPredictorTool() {
                                             <Input
                                                 placeholder={t('emailPredictor.firstNamePlaceholder')}
                                                 value={firstName}
-                                                onChange={(e) => setFirstName(e.target.value)}
+                                                onChange={(e) => setEmailPredictorState({ firstName: e.target.value })}
                                                 className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                             />
                                         </div>
@@ -211,7 +223,7 @@ export function EmailPredictorTool() {
                                         <Input
                                             placeholder={t('emailPredictor.lastNamePlaceholder')}
                                             value={lastName}
-                                            onChange={(e) => setLastName(e.target.value)}
+                                            onChange={(e) => setEmailPredictorState({ lastName: e.target.value })}
                                             className="h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                         />
                                     </div>

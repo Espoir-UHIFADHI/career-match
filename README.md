@@ -26,8 +26,12 @@ Career Match est une application web moderne conçue pour optimiser votre recher
 - **Personnalisation Facile** : Remplissage automatique des champs (Nom, Entreprise) et copie en un clic.
 
 ### 4. Gestion de Données et Persistance
-- **Sauvegarde Automatique** : Vos données de CV sont sauvegardées localement dans votre navigateur, vous permettant de reprendre votre travail même après un rafraîchissement de la page.
-- **Base de Données Supabase** : (En cours d'intégration) Stockage sécurisé des profils utilisateurs et des crédits.
+- **Sauvegarde Automatique** : Vos données de CV sont sauvegardées localement dans votre navigateur.
+- **Base de Données Supabase** : Stockage sécurisé des profils utilisateurs et des crédits (1 crédit = 1 action).
+
+### 5. Fonctionnalités Avancées
+- **Mode Démo** : Visualisation instantanée des capacités de l'outil via une modal dédiée.
+- **Système de Crédits** : Gestion transparente des coûts pour chaque action (Analyse Job, Recherche Contact, Email).
 
 ## 🛠 Technologies Utilisées
 

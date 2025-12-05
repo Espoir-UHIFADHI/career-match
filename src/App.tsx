@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
 import { useUserStore } from "./store/useUserStore";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { Button } from "./components/ui/Button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
+import { useReactToPrint } from "react-to-print";
 import { Steps } from "./components/ui/Steps";
 import { useTranslation } from "./hooks/useTranslation";
 
@@ -31,6 +32,38 @@ function App() {
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const { t } = useTranslation();
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `CV_${cvData?.contact?.firstName || 'User'}_${cvData?.contact?.lastName || ''}`,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        // 210mm is approximately 794px at 96 DPI
+        const cvWidth = 794;
+
+        // Add some padding to calculation if needed, or simply scale to fit
+        if (containerWidth < cvWidth) {
+          setScale(containerWidth / cvWidth);
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [step, analysisResults]); // Re-run when step changes to Results
 
   const steps = [
     { id: 1, name: t('steps.uploadName'), description: t('steps.uploadDescription') },
@@ -92,13 +125,39 @@ function App() {
       case 3: return <MatchingDashboard />;
       case 4:
         return analysisResults ? (
-          <div className="max-w-[210mm] mx-auto">
-            <Button variant="ghost" onClick={() => setStep(3)} className="mb-4 gap-2">
-              <ArrowLeft className="h-4 w-4" /> {t('common.back')}
-            </Button>
-            {analysisResults.optimizedCV ? (
-              <div className="bg-white shadow-xl rounded-lg overflow-hidden my-8">
-                <PrintableCV data={analysisResults.optimizedCV} language={language} />
+          <div className="w-full max-w-[1000px] mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+              <Button variant="ghost" onClick={() => setStep(3)} className="gap-2 self-start">
+                <ArrowLeft className="h-4 w-4" /> {t('common.back')}
+              </Button>
+
+              {analysisResults!.optimizedCV && (
+                <Button
+                  onClick={() => handlePrint()}
+                  className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm w-full sm:w-auto"
+                >
+                  <Download className="h-4 w-4" />
+                  {t('dashboard.downloadPDF')}
+                </Button>
+              )}
+            </div>
+
+            {analysisResults!.optimizedCV ? (
+              <div
+                ref={containerRef}
+                className="w-full overflow-hidden flex justify-center bg-slate-100/50 rounded-xl border border-slate-200 p-4 sm:p-8 mb-8"
+              >
+                <div
+                  style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top center',
+                    height: `${297 * 3.78 * scale}px`, // Adjust height to avoid huge whitespace or clip
+                    width: '210mm' // Fixed width for the inner content
+                  }}
+                  className="transition-transform duration-200"
+                >
+                  <PrintableCV ref={printRef} data={analysisResults!.optimizedCV!} language={language} />
+                </div>
               </div>
             ) : (
               <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center my-8">

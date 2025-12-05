@@ -97,7 +97,7 @@ export function MatchingDashboard() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-32">
             {isLowMatch && (
                 <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow-sm">
                     <div className="flex items-start gap-4">
@@ -126,11 +126,11 @@ export function MatchingDashboard() {
                     <CardContent className="flex flex-col items-center justify-center pt-6 pb-8">
                         <div className="relative flex items-center justify-center h-48 w-48">
                             {/* Background Circle */}
-                            <svg className="h-full w-full transform -rotate-90">
+                            <svg className="h-full w-full transform -rotate-90" viewBox="0 0 192 192">
                                 <circle
                                     cx="96"
                                     cy="96"
-                                    r="88"
+                                    r="80"
                                     stroke="currentColor"
                                     strokeWidth="12"
                                     fill="transparent"
@@ -140,13 +140,13 @@ export function MatchingDashboard() {
                                 <circle
                                     cx="96"
                                     cy="96"
-                                    r="88"
+                                    r="80"
                                     stroke="currentColor"
                                     strokeWidth="12"
                                     fill="transparent"
                                     strokeLinecap="round"
-                                    strokeDasharray={552.92}
-                                    strokeDashoffset={552.92 - (552.92 * score) / 100}
+                                    strokeDasharray={502.65}
+                                    strokeDashoffset={502.65 - (502.65 * score) / 100}
                                     className={`transition-all duration-1000 ease-out ${getScoreColor(score)}`}
                                 />
                             </svg>

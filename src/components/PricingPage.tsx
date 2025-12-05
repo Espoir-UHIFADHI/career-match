@@ -19,7 +19,7 @@ export function PricingPage() {
             id: "free",
             name: "Découverte",
             price: "TwR 0", // Using TwR as symbol for "0€" but clearly stated as free
-            credits: "5 Crédits",
+            credits: "7 Crédits",
             description: "Pour tester l'outil gratuitement.",
             features: [
                 { name: "Analyse CV & Offre", included: true },
