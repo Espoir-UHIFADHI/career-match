@@ -11,6 +11,7 @@ import { findCompanyDomain, getEmailPattern, findEmail, cleanName, generateEmail
 import { generateNetworkingQueries, generateNetworkingMessage } from "../../services/ai/gemini";
 import { NetworkingGuide } from "./NetworkingGuide";
 import { Modal } from "../ui/Modal";
+import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -46,6 +47,7 @@ export function NetworkingSearch() {
     // Modal State
     const [showGuide, setShowGuide] = useState(false);
     const [showDraft, setShowDraft] = useState(false);
+    const [showCreditModal, setShowCreditModal] = useState(false);
 
     // Message Generation State
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -81,8 +83,8 @@ export function NetworkingSearch() {
 
             if (!success) {
                 setIsSearching(false);
-                if (creditError === 'insufficient_funds_local') {
-                    setError(t('networking.insufficientCredits') || "Crédits insuffisants. Veuillez recharger votre compte.");
+                if (creditError === 'insufficient_funds_local' || creditError === 'insufficient_funds_server') {
+                    setShowCreditModal(true);
                 } else {
                     setError(t('networking.creditError') || "Erreur lors de la déduction des crédits.");
                 }
@@ -414,6 +416,11 @@ export function NetworkingSearch() {
                     )}
                 </div>
             </Modal>
+
+            <InsufficientCreditsModal
+                isOpen={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
 
             {error && (
                 <div className="fixed bottom-4 right-4 bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-100 shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-5 z-50">

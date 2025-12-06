@@ -9,6 +9,7 @@ import { Label } from "../ui/Label";
 import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
+import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useTranslation } from "../../hooks/useTranslation";
 
 export function EmailPredictorTool() {
@@ -22,6 +23,7 @@ export function EmailPredictorTool() {
     // Error and Copied are transient UI states, keep local
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [showCreditModal, setShowCreditModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
     const { useCredit, credits } = useUserStore();
@@ -59,7 +61,7 @@ export function EmailPredictorTool() {
 
         if (!result.success) {
             if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
-                alert(`Credits exhausted (${credits}). Upgrade to Pro to continue.`);
+                setShowCreditModal(true);
             } else {
                 console.error("Credit error:", result.error);
                 alert(`An error occurred while checking credits (${result.error}). Please try again.`);
@@ -358,6 +360,12 @@ export function EmailPredictorTool() {
                     <p className="text-sm font-medium">{error}</p>
                 </div>
             )}
+
+
+            <InsufficientCreditsModal
+                isOpen={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
         </div>
     );
 }

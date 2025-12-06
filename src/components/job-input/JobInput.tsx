@@ -9,6 +9,7 @@ import { searchGoogle } from "../../services/search/serper";
 import { generateJSON } from "../../services/ai/gemini";
 import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 
 export function JobInput() {
     const { t } = useTranslation();
@@ -19,6 +20,7 @@ export function JobInput() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [previewData, setPreviewData] = useState<(JobAnalysis & { url?: string }) | null>(null);
+    const [showCreditModal, setShowCreditModal] = useState(false);
 
     const { user, isSignedIn } = useUser();
     const { getToken } = useAuth();
@@ -49,7 +51,7 @@ export function JobInput() {
         if (!result.success) {
             setIsProcessing(false);
             if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
-                setError(`Crédits épuisés (${credits}). Passez à la version Pro pour continuer.`);
+                setShowCreditModal(true);
             } else {
                 setError(`Erreur lors de l'utilisation des crédits: ${result.error}`);
             }
@@ -306,6 +308,12 @@ export function JobInput() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+
+
+            <InsufficientCreditsModal
+                isOpen={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
+        </div >
     );
 }

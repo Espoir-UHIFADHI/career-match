@@ -9,6 +9,7 @@ import { Label } from "../ui/Label";
 import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { useTranslation } from "../../hooks/useTranslation";
+import { cn } from "../../lib/utils";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -18,8 +19,16 @@ interface CVReviewProps {
 
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const { t } = useTranslation();
-    const [formData, setFormData] = useState<ParsedCV>(initialData);
-
+    const [formData, setFormData] = useState<ParsedCV>(() => {
+        if (!initialData.interests || initialData.interests.length === 0) {
+            return {
+                ...initialData,
+                interests: ["Musique"]
+            };
+        }
+        return initialData;
+    });
+    const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -76,6 +85,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     };
 
     const handleSave = () => {
+        setHasAttemptedSave(true);
         if (validateForm()) {
             onSave(formData);
         } else {
@@ -83,6 +93,8 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
+
+    const isInvalid = (value: string | undefined) => hasAttemptedSave && !value?.trim();
 
     const updateArrayItem = (section: "skills" | "languages" | "interests", index: number, value: string) => {
         setFormData((prev) => {
@@ -164,6 +176,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                     value={formData.contact.firstName}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, firstName: e.target.value } })}
                                     placeholder={t('cvReview.firstName')}
+                                    className={cn(isInvalid(formData.contact.firstName) && "border-red-500 focus-visible:ring-red-500")}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -172,6 +185,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                     value={formData.contact.lastName}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, lastName: e.target.value } })}
                                     placeholder={t('cvReview.lastName')}
+                                    className={cn(isInvalid(formData.contact.lastName) && "border-red-500 focus-visible:ring-red-500")}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -180,6 +194,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                     value={formData.contact.email}
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, email: e.target.value } })}
                                     placeholder={t('cvReview.email')}
+                                    className={cn(isInvalid(formData.contact.email) && "border-red-500 focus-visible:ring-red-500")}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -213,7 +228,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                             <Textarea
                                 value={formData.summary}
                                 onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                                className="min-h-[150px] resize-none"
+                                className={cn("min-h-[150px] resize-none", isInvalid(formData.summary) && "border-red-500 focus-visible:ring-red-500")}
                                 placeholder={t('cvReview.summaryPlaceholder')}
                             />
                         </CardContent>
@@ -240,7 +255,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                 value={skill}
                                                 onChange={(e) => updateArrayItem("skills", idx, e.target.value)}
                                                 placeholder={t('cvReview.skillPlaceholder')}
-                                                className="bg-slate-50 border-slate-200"
+                                                className={cn("bg-slate-50 border-slate-200", isInvalid(skill) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             <Button
                                                 variant="ghost"
@@ -272,7 +287,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                 value={lang}
                                                 onChange={(e) => updateArrayItem("languages", idx, e.target.value)}
                                                 placeholder={t('cvReview.langPlaceholder')}
-                                                className="bg-slate-50 border-slate-200"
+                                                className={cn("bg-slate-50 border-slate-200", isInvalid(lang) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             <Button
                                                 variant="ghost"
@@ -304,7 +319,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                 value={interest}
                                                 onChange={(e) => updateArrayItem("interests", idx, e.target.value)}
                                                 placeholder={t('cvReview.interestPlaceholder')}
-                                                className="bg-slate-50 border-slate-200"
+                                                className={cn("bg-slate-50 border-slate-200", isInvalid(interest) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                             <Button
                                                 variant="ghost"
@@ -364,7 +379,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
                                                 placeholder={t('cvReview.company')}
-                                                className="bg-white"
+                                                className={cn("bg-white", isInvalid(exp.company) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -377,7 +392,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     setFormData({ ...formData, experience: newExp });
                                                 }}
                                                 placeholder={t('cvReview.role')}
-                                                className="bg-white"
+                                                className={cn("bg-white", isInvalid(exp.role) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
@@ -455,7 +470,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
                                                 placeholder={t('cvReview.school')}
-                                                className="bg-white"
+                                                className={cn("bg-white", isInvalid(edu.school) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -468,7 +483,7 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                                     setFormData({ ...formData, education: newEdu });
                                                 }}
                                                 placeholder={t('cvReview.degree')}
-                                                className="bg-white"
+                                                className={cn("bg-white", isInvalid(edu.degree) && "border-red-500 focus-visible:ring-red-500")}
                                             />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">

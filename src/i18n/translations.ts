@@ -234,6 +234,12 @@ export const translations = {
             patternDesc: "Enter a name to generate the specific email address.",
             noPrediction: "No prediction yet",
             noPredictionDesc: "Enter company details to find email patterns or addresses."
+        },
+        credits: {
+            insufficientTitle: "Insufficient Credits",
+            outOfCredits: "You've run out of credits",
+            upgradeDescription: "Upgrade your plan to continue using our premium features and unlock your career potential.",
+            viewOffers: "View Offers"
         }
     },
     fr: {
@@ -472,6 +478,12 @@ export const translations = {
             patternDesc: "Entrez un nom pour générer l'adresse email spécifique.",
             noPrediction: "Pas encore de prédiction",
             noPredictionDesc: "Entrez les détails de l'entreprise pour trouver des patrons ou adresses."
+        },
+        credits: {
+            insufficientTitle: "Crédits Insuffisants",
+            outOfCredits: "Vous n'avez plus de crédits",
+            upgradeDescription: "Passez à la version supérieure pour continuer à utiliser nos fonctionnalités premium.",
+            viewOffers: "Voir les Offres"
         }
     }
 };
