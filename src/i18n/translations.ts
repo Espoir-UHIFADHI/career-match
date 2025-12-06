@@ -214,6 +214,7 @@ export const translations = {
             firstName: "First Name",
             firstNamePlaceholder: "e.g. Jean",
             lastName: "Last Name",
+            companyName: "Company Name",
             lastNamePlaceholder: "e.g. Dupont",
             companyPlaceholder: "e.g. Google",
             analyzePatterns: "Analyzing Patterns...",
@@ -450,7 +451,9 @@ export const translations = {
             firstName: "Prénom",
             firstNamePlaceholder: "ex: Jean",
             lastName: "Nom",
+            companyName: "Nom de l'entreprise",
             lastNamePlaceholder: "ex: Dupont",
+
             companyPlaceholder: "ex: Google",
             analyzePatterns: "Analyse des Patrons...",
             findEmail: "Trouver Email",
