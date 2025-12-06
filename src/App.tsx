@@ -27,7 +27,7 @@ import { LandingPage } from "./components/LandingPage";
 
 function App() {
   console.log("App.tsx rendering");
-  const { step, setStep, cvData, jobData, analysisResults, setCvData, language } = useAppStore();
+  const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset } = useAppStore();
   const { fetchCredits } = useUserStore();
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
@@ -75,6 +75,13 @@ function App() {
   useEffect(() => {
     const syncUser = async () => {
       if (isSignedIn && user) {
+        // Check for user switch
+        if (userId !== user.id) {
+          console.log("User changed, resetting store");
+          reset();
+          setUserId(user.id);
+        }
+
         try {
           // Get Supabase token from Clerk
           const token = await getToken({ template: 'supabase' });
@@ -89,11 +96,15 @@ function App() {
           // Fallback to unauthenticated fetch (might fail RLS but better than crashing)
           fetchCredits(user.id, undefined);
         }
+      } else if (!isSignedIn && userId) {
+        // User logged out
+        console.log("User logged out, resetting store");
+        reset();
       }
     };
 
     syncUser();
-  }, [isSignedIn, user, fetchCredits, getToken]);
+  }, [isSignedIn, user, fetchCredits, getToken, userId, setUserId, reset]);
 
 
   const handleStepClick = (stepId: number) => {

@@ -127,7 +127,9 @@ export const translations = {
             company: "Company",
             role: "Role",
             dates: "Dates",
-            description: "Description"
+            description: "Description",
+            school: "School",
+            degree: "Degree"
         },
         jobInput: {
             title: "Target Job",
@@ -370,7 +372,9 @@ export const translations = {
             company: "Entreprise",
             role: "Rôle",
             dates: "Dates",
-            description: "Description"
+            description: "Description",
+            school: "École",
+            degree: "Diplôme"
         },
         jobInput: {
             title: "Poste Visé",

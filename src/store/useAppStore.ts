@@ -22,6 +22,7 @@ export interface AppState {
     jobData: JobAnalysis | null;
     analysisResults: MatchResult | null;
     language: "English" | "French";
+    userId: string | null;
 
     // New Slices
     emailPredictor: EmailPredictorState;
@@ -32,6 +33,7 @@ export interface AppState {
     setJobData: (data: JobAnalysis) => void;
     setAnalysisResults: (results: MatchResult) => void;
     setLanguage: (lang: "English" | "French") => void;
+    setUserId: (id: string | null) => void;
 
     // New Setters
     setEmailPredictorState: (state: Partial<EmailPredictorState>) => void;
@@ -48,6 +50,7 @@ export const useAppStore = create<AppState>()(
             jobData: null,
             analysisResults: null,
             language: "French",
+            userId: null,
 
             emailPredictor: {
                 company: "",
@@ -67,6 +70,7 @@ export const useAppStore = create<AppState>()(
             setJobData: (jobData) => set({ jobData, analysisResults: null }),
             setAnalysisResults: (analysisResults) => set({ analysisResults }),
             setLanguage: (language) => set({ language }),
+            setUserId: (userId) => set({ userId }),
 
             setEmailPredictorState: (newState) => set((state) => ({
                 emailPredictor: { ...state.emailPredictor, ...newState }
@@ -81,6 +85,7 @@ export const useAppStore = create<AppState>()(
                 jobData: null,
                 analysisResults: null,
                 language: "French",
+                userId: null,
                 emailPredictor: { company: "", firstName: "", lastName: "", result: null },
                 networking: { company: "", role: "", results: [], hasSearched: false }
             }),
@@ -93,6 +98,7 @@ export const useAppStore = create<AppState>()(
                 jobData: state.jobData,
                 analysisResults: state.analysisResults,
                 language: state.language,
+                userId: state.userId,
                 emailPredictor: state.emailPredictor,
                 networking: state.networking
             }),
