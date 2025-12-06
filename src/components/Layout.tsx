@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, FileText, User, Mail, Menu, X, Coins } from "lucide-react";
+import { Briefcase, FileText, User, Mail, Menu, X, Coins, Zap } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
@@ -34,8 +34,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => useAppStore.getState().setStep(0)}
                     >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm shadow-indigo-500/20">
-                            <Briefcase className="h-4 w-4" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/20">
+                            <Zap className="h-5 w-5 text-yellow-300 fill-yellow-300 transform -rotate-12" />
                         </div>
                         <span className="text-xl font-bold tracking-tight text-slate-900 hidden sm:inline-block">
                             Career Match

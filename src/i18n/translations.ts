@@ -20,7 +20,7 @@ export const translations = {
             newVersion: "New AI 2.0 Version",
             titleLine1: "Your Career",
             titleLine2: "Deserves Excellence",
-            subtitle: "The first AI platform that transforms your anonymous CV into concrete opportunities. Optimize, target, and connect with recruiters in one click.",
+            subtitle: "The first AI platform that turns your anonymous CV into concrete opportunities. Optimize, target, and connect with recruiters in one click.",
             ctaStart: "Start for Free",
             ctaDashboard: "Go to App",
 
@@ -39,7 +39,7 @@ export const translations = {
             },
             networking: {
                 title: "Networking AI",
-                description: "Don't apply into the void. Find the right person to contact and let AI write the perfect outreach message.",
+                description: "Stop applying into the black hole. Find the right person to contact and let AI write the perfect outreach message.",
                 target: "Target",
                 targetVal: "Recruiters & Managers",
                 action: "Action",
@@ -240,7 +240,7 @@ export const translations = {
         nav: {
             uploadCV: "Télécharger CV",
             networking: "Réseautage",
-            emailPredictor: "Prédicteur d'Email",
+            emailPredictor: "Email Finder",
             signIn: "Se connecter",
             signUp: "S'inscrire",
             privacyPolicy: "Politique de Confidentialité",
@@ -256,8 +256,8 @@ export const translations = {
         hero: {
             newVersion: "Nouvelle version AI 2.0",
             titleLine1: "Votre Carrière",
-            titleLine2: "Mérite L'Excellence",
-            subtitle: "La première plateforme qui transforme votre CV anonyme en opportunité concrète. Optimisez, ciblez, et connectez-vous aux recruteurs en un clic.",
+            titleLine2: "Mérite l'Excellence",
+            subtitle: "La première IA qui propulse votre CV anonyme vers des opportunités concrètes. Optimisez, ciblez et connectez-vous aux recruteurs en un clic.",
             ctaStart: "Commencer Gratuitement",
             ctaDashboard: "Accéder à l'application",
 
@@ -266,17 +266,17 @@ export const translations = {
             freeCreditsOffer: "(7 crédits offerts à l'inscription)"
         },
         features: {
-            title: "Tout ce dont vous avez besoin.",
+            title: "Tout ce qu'il vous faut.",
             subtitle: "Une suite d'outils puissants pour maximiser vos chances de réussite.",
             cvOptimizer: {
                 title: "CV Optimizer Pro",
                 description: "Notre IA analyse votre CV contre les descriptions de poste et le réécrit pour passer les filtres ATS.",
-                tags: ["Analyse ATS", "Mots-clés Intelligents", "Réécriture Auto"],
+                tags: ["Analyse ATS", "Mots-clés Intelligents", "Réécriture Automatique"],
                 badge: "IA Active"
             },
             networking: {
                 title: "Networking AI",
-                description: "Ne postulez plus dans le vide. Trouvez la bonne personne à contacter et laissez l'IA rédiger le message d'approche parfait.",
+                description: "Fini les candidatures sans réponse. Trouvez la bonne personne à contacter et laissez l'IA rédiger le message d'approche parfait.",
                 target: "Cible",
                 targetVal: "Recruteurs & Managers",
                 action: "Action",
@@ -287,7 +287,7 @@ export const translations = {
                 description: "Algorithme de prédiction d'emails professionnels vérifié à 98% pour contacter directement les décideurs."
             },
             speed: {
-                title: "Rapidité Éclair",
+                title: "Vitesse Éclair",
                 description: "Générez, optimisez et envoyez. Ce qui prenait des heures ne prend plus que quelques minutes."
             }
         },
@@ -296,7 +296,7 @@ export const translations = {
             subtitle: "3 étapes simples vers votre nouveau job",
             step1: {
                 title: "Analysez",
-                desc: "Uploadez votre CV et une offre d'emploi."
+                desc: "Importez votre CV et une offre d'emploi."
             },
             step2: {
                 title: "Optimisez",
@@ -327,7 +327,7 @@ export const translations = {
         cvUpload: {
             title: "Téléchargez votre CV",
             subtitle: "Nous analyserons votre CV pour trouver le meilleur match.",
-            dragDrop: "Glissez & déposez votre CV ici",
+            dragDrop: "Glisser-déposer votre CV ici",
             supports: "Supporte les fichiers PDF ou TXT",
             selectFile: "Sélectionner un fichier",
             analyzing: "Analyse de votre CV...",
@@ -345,7 +345,7 @@ export const translations = {
             education: "Formation",
             missingInfo: "Informations Manquantes",
             fillRequired: "Veuillez remplir les champs obligatoires ci-dessous.",
-            reupload: "Ré-uploader CV",
+            reupload: "Réimporter le CV",
             saveContinue: "Enregistrer & Continuer",
             addSkill: "Ajouter Compétence",
             addLanguage: "Ajouter Langue",
@@ -393,7 +393,7 @@ export const translations = {
             tryAgain: "Réessayer",
             lowMatch: "Score de Match Faible Détecté",
             lowMatchDesc: "La correspondance entre votre profil et cette offre est trop faible pour générer un CV optimisé valide. Nous ne générons pas de fausses informations. Veuillez examiner les mots-clés manquants et les recommandations ci-dessous pour améliorer votre profil ou postuler à un poste plus pertinent.",
-            matchScore: "Score de Match",
+            matchScore: "Score de Compatibilité",
             excellent: "Match Excellent",
             excellentMatch: "Match Excellent",
             good: "Bon Potentiel",
