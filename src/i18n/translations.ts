@@ -662,7 +662,7 @@ export const translations = {
             close: "Fermer",
             generateNow: "Générer Maintenant",
             guideTitle: "Guide de Réseautage",
-            guideTitle: "Guide de Réseautage",
+
             creditError: "Crédits insuffisants",
             verified: "Vérifié",
             probable: "Probable (Pattern)",
