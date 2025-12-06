@@ -76,7 +76,7 @@ export function NetworkingSearch() {
 
         // Deduct Credit
         try {
-            const token = await getToken();
+            const token = await getToken({ template: 'supabase' });
             const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
 
             if (!success) {

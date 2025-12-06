@@ -5,6 +5,7 @@ export const translations = {
             networking: "Networking",
             emailPredictor: "Email Predictor",
             signIn: "Sign In",
+            signUp: "Sign Up",
             privacyPolicy: "Privacy Policy",
             termsOfService: "Terms of Service",
             contact: "Contact",
@@ -21,7 +22,8 @@ export const translations = {
             titleLine2: "Deserves Excellence",
             subtitle: "The first AI platform that transforms your anonymous CV into concrete opportunities. Optimize, target, and connect with recruiters in one click.",
             ctaStart: "Start for Free",
-            ctaDemo: "View Demo",
+            ctaDashboard: "Go to App",
+
             socialProof: "4.9/5 by +1000 pros",
             joinedTeams: "THEY JOINED THE BEST TEAMS",
             freeCreditsOffer: "(7 credits offered on signup)"
@@ -196,12 +198,15 @@ export const translations = {
             findingEmail: "Finding email...",
             draftMessage: "Draft Message",
             draftTitle: "Draft Message",
+            draftFor: "Draft for",
             draftingFor: "Drafting for:",
             writing: "Writing personalized message...",
             copyClipboard: "Copy to Clipboard",
             copied: "Copied!",
             close: "Close",
-            generateNow: "Generate Now"
+            generateNow: "Generate Now",
+            guideTitle: "Networking Guide",
+            creditError: "Insufficient credits"
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -235,7 +240,8 @@ export const translations = {
             uploadCV: "Télécharger CV",
             networking: "Réseautage",
             emailPredictor: "Prédicteur d'Email",
-            signIn: "Connexion",
+            signIn: "Se connecter",
+            signUp: "S'inscrire",
             privacyPolicy: "Politique de Confidentialité",
             termsOfService: "Conditions d'Utilisation",
             contact: "Contact",
@@ -252,7 +258,8 @@ export const translations = {
             titleLine2: "Mérite L'Excellence",
             subtitle: "La première plateforme qui transforme votre CV anonyme en opportunité concrète. Optimisez, ciblez, et connectez-vous aux recruteurs en un clic.",
             ctaStart: "Commencer Gratuitement",
-            ctaDemo: "Voir la démo",
+            ctaDashboard: "Accéder à l'application",
+
             socialProof: "4.9/5 par +1000 pros",
             joinedTeams: "Ils ont rejoint les meilleures équipes",
             freeCreditsOffer: "(7 crédits offerts à l'inscription)"
@@ -427,12 +434,15 @@ export const translations = {
             findingEmail: "Recherche email...",
             draftMessage: "Rédiger Message",
             draftTitle: "Brouillon de Message",
+            draftFor: "Brouillon pour",
             draftingFor: "Rédaction pour :",
             writing: "Rédaction du message personnalisé...",
             copyClipboard: "Copier",
             copied: "Copié !",
             close: "Fermer",
-            generateNow: "Générer Maintenant"
+            generateNow: "Générer Maintenant",
+            guideTitle: "Guide de Réseautage",
+            creditError: "Crédits insuffisants"
         },
         emailPredictor: {
             title: "Prédicteur d'Email",

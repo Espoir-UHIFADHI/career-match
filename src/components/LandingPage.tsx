@@ -1,18 +1,19 @@
 import { useState } from "react";
-import { SignInButton } from "@clerk/clerk-react";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useAppStore } from "../store/useAppStore";
 import { Button } from "./ui/Button";
-import { DemoModal } from "./DemoModal";
+
 import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, StarHalf, CheckCircle, User } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
     const { t } = useTranslation();
-    const [isDemoOpen, setIsDemoOpen] = useState(false);
+
 
     return (
         <div className="flex flex-col bg-slate-50 overflow-x-hidden">
             {/* Premium Hero Section */}
-            <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-40 overflow-visible">
+            <section className="relative pt-32 pb-32 lg:pt-40 lg:pb-40 overflow-visible">
                 {/* Advanced Gradient Mesh Background */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                     <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] animate-pulse" />
@@ -38,24 +39,32 @@ export function LandingPage() {
                             </p>
 
                             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-slide-up animation-delay-400">
-                                <SignInButton mode="modal">
+                                <SignedOut>
+                                    <SignInButton mode="modal">
+                                        <Button
+                                            className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-indigo-500/20 rounded-2xl transition-all hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 backdrop-blur-sm" />
+                                            <span className="relative flex items-center">
+                                                {t('hero.ctaStart')}
+                                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                            </span>
+                                        </Button>
+                                    </SignInButton>
+                                </SignedOut>
+                                <SignedIn>
                                     <Button
-                                        className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-indigo-500/20 rounded-2xl transition-all hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
+                                        onClick={() => useAppStore.getState().setStep(1)}
+                                        className="h-14 px-8 text-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/20 rounded-2xl transition-all hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
                                     >
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 backdrop-blur-sm" />
                                         <span className="relative flex items-center">
-                                            {t('hero.ctaStart')}
+                                            {t('hero.ctaDashboard')}
                                             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                         </span>
                                     </Button>
-                                </SignInButton>
-                                <Button
-                                    variant="outline"
-                                    className="h-14 px-8 text-lg bg-white/60 hover:bg-white border-slate-200 text-slate-700 rounded-2xl backdrop-blur-sm transition-all hover:shadow-lg hover:border-indigo-200"
-                                    onClick={() => setIsDemoOpen(true)}
-                                >
-                                    {t('hero.ctaDemo')}
-                                </Button>
+                                </SignedIn>
+
                             </div>
                             <p className="mt-3 text-sm font-medium text-indigo-600 animate-fade-in animation-delay-500">
                                 {t('hero.freeCreditsOffer')}
@@ -388,7 +397,7 @@ export function LandingPage() {
                     </div>
                 </div>
             </section>
-            <DemoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
+
         </div>
     );
 }
