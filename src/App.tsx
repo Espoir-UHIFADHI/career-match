@@ -20,6 +20,9 @@ import { EmailPredictorTool } from "./components/networking/EmailPredictorTool";
 import { PricingPage } from "./components/PricingPage";
 
 import { LandingPage } from "./components/LandingPage";
+import { PrivacyPolicy } from "./components/pages/PrivacyPolicy";
+import { TermsOfService } from "./components/pages/TermsOfService";
+import { Contact } from "./components/pages/Contact";
 
 // ... existing imports
 
@@ -186,17 +189,22 @@ function App() {
       case 5: return <NetworkingSearch />;
       case 6: return <EmailPredictorTool />;
       case 7: return <PricingPage />;
+      case 8: return <PrivacyPolicy />;
+      case 9: return <TermsOfService />;
+      case 10: return <Contact />;
       default: return <CVUpload />;
     }
   };
 
+  const isPublicPage = step === 0 || step === 8 || step === 9 || step === 10;
+
   return (
     <Layout>
-      {!isSignedIn || step === 0 ? (
+      {(!isSignedIn && !isPublicPage) || step === 0 ? (
         <LandingPage />
       ) : (
         <div className="space-y-8">
-          {step !== 5 && step !== 6 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
+          {step < 8 && step !== 5 && step !== 6 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
           {renderStep()}
         </div>
       )}

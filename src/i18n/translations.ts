@@ -242,6 +242,170 @@ export const translations = {
             outOfCredits: "You've run out of credits",
             upgradeDescription: "Upgrade your plan to continue using our premium features and unlock your career potential.",
             viewOffers: "View Offers"
+        },
+        privacy: {
+            title: "Privacy Policy",
+            lastUpdated: "Last updated: December 6, 2025",
+            intro: {
+                title: "1. Introduction",
+                text: "Welcome to **Career Match**. Protecting your personal data is at the heart of our commitment. This policy details transparently what data we collect, how we use it to optimize your career, and how we guarantee its security.\n\nBy using Career Match, you accept the practices described below."
+            },
+            collection: {
+                title: "2. Data We Collect",
+                description: "To provide our CV optimization and matchmaking services, we process the following categories of data:",
+                direct: {
+                    title: "A. Data you provide directly",
+                    items: [
+                        "**Account Information:** Your name, email address, and password (secured via our authentication partner Clerk).",
+                        "**Professional Documents:** The content of your CV (PDF/Image) that you upload for analysis.",
+                        "**Search Criteria:** Targeted job offers (URL or text) and your job preferences."
+                    ]
+                },
+                auto: {
+                    title: "B. Data collected automatically",
+                    items: [
+                        "**Usage Data:** Information about your navigation (pages visited, time spent) to improve our interface.",
+                        "**Technical Data:** IP address, browser type, and device used, for security and diagnostic purposes."
+                    ]
+                }
+            },
+            usage: {
+                title: "3. How We Use Your Data",
+                intro: "We only use your data for precise and legitimate purposes:",
+                items: [
+                    "**Deliver the Service:** Analyze your CV via AI to generate compatibility scores and improvement suggestions.",
+                    "**Personalization:** Adapt networking recommendations and message templates to your specific profile.",
+                    "**Product Improvement:** Analyze anonymized trends to make our AI more efficient.",
+                    "**Communication:** Send you important notifications about your account or service updates (you can unsubscribe at any time)."
+                ]
+            },
+            sharing: {
+                title: "4. Data Sharing and Processors",
+                intro: "We **never** sell your personal data. However, to operate our service, we collaborate with trusted technology partners:",
+                items: [
+                    "**Google Gemini (AI):** For semantic analysis and content rewriting. *Note: Your data is not used to train their public models.*",
+                    "**Serper & Hunter.io:** For job search and contact enrichment features.",
+                    "**Clerk:** For secure management of your identity and authentication.",
+                    "**Stripe:** For secure payment processing (we do not store any banking data).",
+                    "**Supabase:** For secure hosting of your user database."
+                ]
+            },
+            security: {
+                title: "5. Data Security",
+                intro: "Security is our top priority. We implement robust technical measures:",
+                items: [
+                    "**Encryption:** All data transits via secure protocols (HTTPS/TLS).",
+                    "**Access Control:** Access to your data is strictly limited to authorized employees and protected by strong authentication.",
+                    "**Hosting:** Your data is hosted on secure servers compliant with international standards."
+                ]
+            },
+            rights: {
+                title: "6. Your Rights (GDPR & CCPA)",
+                intro: "You keep full control of your information. You have the right to:",
+                items: [
+                    "**Access** all of your personal data.",
+                    "**Rectify** any inaccurate information.",
+                    "**Delete** your account and all associated data (\"Right to be forgotten\").",
+                    "**Export** your data in a standard format."
+                ],
+                contact: "To exercise these rights, simply contact us at: **privacy@careermatch.ai**."
+            },
+            cookies: {
+                title: "7. Cookies and Trackers",
+                text: "We use essential cookies to keep your session active and secure. Analytical cookies (optional) help us understand site usage. You can manage your preferences via your browser settings."
+            },
+            updates: {
+                title: "8. Updates to this Policy",
+                text: "We may update this policy to reflect legal or technical changes. We will inform you of any major changes by email or via a notification on the platform."
+            },
+            contactSection: {
+                title: "A question?",
+                dpo: "Our Data Protection Officer (DPO) is listening: **dpo@careermatch.com**",
+                footer: "Career Match - Propel your career with confidence."
+            }
+        },
+        terms: {
+            title: "Terms of Service (ToS)",
+            lastUpdated: "Last updated: December 6, 2025",
+            sections: {
+                acceptance: {
+                    title: "1. Acceptance of Terms",
+                    text: "Welcome to **Career Match**.\nBy creating an account or using our career optimization services, you unreservedly accept these Terms of Service. If you do not agree with any of these clauses, we invite you not to use the platform."
+                },
+                description: {
+                    title: "2. Service Description",
+                    text: "Career Match is an AI-powered job search aid tool. We provide:",
+                    items: [
+                        "CV analysis and optimization.",
+                        "Professional contact search (Networking).",
+                        "Professional email prediction."
+                    ],
+                    warning: "**Warning:** Our services are provided for information purposes only. AI, although efficient, can make mistakes. Career Match does not guarantee in any way obtaining an interview or a job."
+                },
+                usage: {
+                    title: "3. Responsible Use",
+                    text: "You agree to use our services in a legal and ethical manner.\n**It is strictly prohibited to:**",
+                    items: [
+                        "Use the platform for spamming or harassment.",
+                        "Upload documents containing viruses or illegal content.",
+                        "Attempt to circumvent our security systems or usage quotas.",
+                        "Use emails found via our service for massive commercial prospection (unsolicited Cold Emailing)."
+                    ]
+                },
+                credits: {
+                    title: "4. Credits and Payments",
+                    items: [
+                        "**Free Credits:** Offered upon registration to test the service. They are non-transferable and may expire.",
+                        "**Credit Purchases:** Credit packs (Booster, Pro) are one-time and final purchases.",
+                        "**Refunds:** In accordance with digital goods laws, credits are **not refundable** once the purchase is validated, except in case of proven technical malfunction on our part."
+                    ]
+                },
+                ip: {
+                    title: "5. Intellectual Property",
+                    items: [
+                        "**Your Data:** You remain the sole owner of your CV and personal data. You grant us a temporary license only to perform the requested analysis.",
+                        "**Our Platform:** The interface, logo, code, and algorithms of Career Match are our exclusive property. Any copy or reverse engineering is prohibited."
+                    ]
+                },
+                liability: {
+                    title: "6. Limitation of Liability",
+                    text: "Career Match is provided \"as is\". We cannot be held liable for direct or indirect consequences related to the use of our results (e.g., failure at an interview, error in an optimized CV). It is your responsibility to review and validate any generated document before sending."
+                },
+                modification: {
+                    title: "7. Modification and Termination",
+                    text: "We reserve the right to suspend your account without notice in case of violation of these conditions. We may also modify these terms at any time; the online version prevails."
+                },
+                law: {
+                    title: "8. Applicable Law",
+                    text: "These conditions are governed by French law. Any dispute will be submitted to the exclusive jurisdiction of the courts of Bordeaux (or your local jurisdiction depending on applicable consumer laws)."
+                }
+            },
+            contactSection: {
+                title: "Need help?",
+                text: "Contact our support: **support@careermatch.com**"
+            }
+        },
+        contact: {
+            title: "Contact Us",
+            subtitle: "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+            form: {
+                name: "Name",
+                email: "Email",
+                subject: "Subject",
+                message: "Message",
+                send: "Send Message",
+                sending: "Sending...",
+                success: "Message sent successfully!",
+                error: "Failed to send message."
+            },
+            info: {
+                email: "Email",
+                emailValue: "support@careermatch.com",
+                location: "Location",
+                locationValue: "Paris, France",
+                hours: "Business Hours",
+                hoursValue: "Mon-Fri, 9am - 6pm CET"
+            }
         }
     },
     fr: {
@@ -488,6 +652,170 @@ export const translations = {
             outOfCredits: "Vous n'avez plus de crédits",
             upgradeDescription: "Passez à la version supérieure pour continuer à utiliser nos fonctionnalités premium.",
             viewOffers: "Voir les Offres"
+        },
+        privacy: {
+            title: "Politique de Confidentialité",
+            lastUpdated: "Date de dernière mise à jour : 6 Décembre 2025",
+            intro: {
+                title: "1. Introduction",
+                text: "Bienvenue sur **Career Match**. La protection de vos données personnelles est au cœur de notre engagement. Cette politique détaille de manière transparente quelles données nous collectons, comment nous les utilisons pour optimiser votre carrière, et comment nous garantissons leur sécurité.\n\nEn utilisant Career Match, vous acceptez les pratiques décrites ci-dessous."
+            },
+            collection: {
+                title: "2. Les Données que nous collectons",
+                description: "Pour vous fournir nos services d'optimisation de CV et de mise en relation, nous traitons les catégories de données suivantes :",
+                direct: {
+                    title: "A. Données que vous nous fournissez directement",
+                    items: [
+                        "**Informations de Compte :** Votre nom, prénom, adresse email et mot de passe (sécurisés via notre partenaire d'authentification Clerk).",
+                        "**Documents Professionnels :** Le contenu de votre CV (PDF/Image) que vous téléchargez pour analyse.",
+                        "**Critères de Recherche :** Les offres d'emploi ciblées (URL ou texte) et vos préférences de poste."
+                    ]
+                },
+                auto: {
+                    title: "B. Données collectées automatiquement",
+                    items: [
+                        "**Données d'Usage :** Informations sur votre navigation (pages visitées, temps passé) pour améliorer notre interface.",
+                        "**Données Techniques :** Adresse IP, type de navigateur et appareil utilisé, à des fins de sécurité et de diagnostic."
+                    ]
+                }
+            },
+            usage: {
+                title: "3. Comment nous utilisons vos données",
+                intro: "Nous n'utilisons vos données que pour des finalités précises et légitimes :",
+                items: [
+                    "**Délivrer le Service :** Analyser votre CV via l'IA pour générer des scores de compatibilité et des suggestions d'amélioration.",
+                    "**Personnalisation :** Adapter les recommandations de networking et les modèles de messages à votre profil spécifique.",
+                    "**Amélioration Produit :** Analyser les tendances anonymisées pour rendre notre IA plus performante.",
+                    "**Communication :** Vous envoyer des notifications importantes sur votre compte ou des mises à jour de service (vous pouvez vous désinscrire à tout moment)."
+                ]
+            },
+            sharing: {
+                title: "4. Partage des données et Sous-traitants",
+                intro: "Nous ne vendons **jamais** vos données personnelles. Cependant, pour faire fonctionner notre service, nous collaborons avec des partenaires technologiques de confiance :",
+                items: [
+                    "**Google Gemini (IA) :** Pour l'analyse sémantique et la réécriture de contenu. *Note : Vos données ne sont pas utilisées pour entraîner leurs modèles publics.*",
+                    "**Serper & Hunter.io :** Pour les fonctionnalités de recherche d'emploi et d'enrichissement de contacts.",
+                    "**Clerk :** Pour la gestion sécurisée de votre identité et de l'authentification.",
+                    "**Stripe :** Pour le traitement sécurisé des paiements (nous ne stockons aucune donnée bancaire).",
+                    "**Supabase :** Pour l'hébergement sécurisé de votre base de données utilisateur."
+                ]
+            },
+            security: {
+                title: "5. Sécurité des Données",
+                intro: "La sécurité est notre priorité absolue. Nous mettons en œuvre des mesures techniques robustes :",
+                items: [
+                    "**Chiffrement :** Toutes les données transitent via des protocoles sécurisés (HTTPS/TLS).",
+                    "**Contrôle d'accès :** L'accès à vos données est strictement limité aux employés autorisés et protégé par une authentification forte.",
+                    "**Stockage :** Vos données sont hébergées sur des serveurs sécurisés conformes aux normes internationales."
+                ]
+            },
+            rights: {
+                title: "6. Vos Droits (RGPD & CCPA)",
+                intro: "Vous gardez le contrôle total de vos informations. Vous avez le droit de :",
+                items: [
+                    "**Accéder** à l'ensemble de vos données personnelles.",
+                    "**Rectifier** toute information inexacte.",
+                    "**Supprimer** votre compte et toutes les données associées (\"Droit à l'oubli\").",
+                    "**Exporter** vos données dans un format standard."
+                ],
+                contact: "Pour exercer ces droits, contactez-nous simplement à : **privacy@careermatch.ai**."
+            },
+            cookies: {
+                title: "7. Cookies et Traceurs",
+                text: "Nous utilisons des cookies essentiels pour maintenir votre session active et sécurisée. Des cookies analytiques (optionnels) nous aident à comprendre l'utilisation du site. Vous pouvez gérer vos préférences via les paramètres de votre navigateur."
+            },
+            updates: {
+                title: "8. Mises à jour de cette politique",
+                text: "Nous pouvons mettre à jour cette politique pour refléter les évolutions légales ou techniques. Nous vous informerons de tout changement majeur par email ou via une notification sur la plateforme."
+            },
+            contactSection: {
+                title: "Une question ?",
+                dpo: "Notre Délégué à la Protection des Données (DPO) est à votre écoute : **dpo@careermatch.com**",
+                footer: "Career Match - Propulsez votre carrière en toute confiance."
+            }
+        },
+        terms: {
+            title: "Conditions Générales d'Utilisation (CGU)",
+            lastUpdated: "Dernière mise à jour : 6 Décembre 2025",
+            sections: {
+                acceptance: {
+                    title: "1. Acceptation des Conditions",
+                    text: "Bienvenue sur **Career Match**.\nEn créant un compte ou en utilisant nos services d'optimisation de carrière, vous acceptez sans réserve les présentes Conditions Générales d'Utilisation. Si vous n'êtes pas d'accord avec l'une de ces clauses, nous vous invitons à ne pas utiliser la plateforme."
+                },
+                description: {
+                    title: "2. Description du Service",
+                    text: "Career Match est un outil d'aide à la recherche d'emploi utilisant l'intelligence artificielle. Nous fournissons :",
+                    items: [
+                        "L'analyse et l'optimisation de CV.",
+                        "La recherche de contacts professionnels (Networking).",
+                        "La prédiction d'adresses email professionnelles."
+                    ],
+                    warning: "**Avertissement :** Nos services sont fournis à titre indicatif. L'IA, bien que performante, peut commettre des erreurs. Career Match ne garantit en aucun cas l'obtention d'un entretien ou d'un emploi."
+                },
+                usage: {
+                    title: "3. Utilisation Responsable",
+                    text: "Vous vous engagez à utiliser nos services de manière légale et éthique.\n**Il est strictement interdit de :**",
+                    items: [
+                        "Utiliser la plateforme pour du spamming ou du harcèlement.",
+                        "Télécharger des documents contenant des virus ou du contenu illégal.",
+                        "Tenter de contourner nos systèmes de sécurité ou nos quotas d'utilisation.",
+                        "Utiliser les emails trouvés via notre service à des fins de prospection commerciale massive (Cold Emailing non sollicité)."
+                    ]
+                },
+                credits: {
+                    title: "4. Crédits et Paiements",
+                    items: [
+                        "**Crédits Gratuits :** Offerts à l'inscription pour tester le service. Ils sont non transférables et peuvent expirer.",
+                        "**Achats de Crédits :** Les packs de crédits (Booster, Pro) sont des achats uniques et définitifs.",
+                        "**Remboursements :** Conformément à la loi sur les biens numériques, les crédits ne sont **pas remboursables** une fois l'achat validé, sauf en cas de dysfonctionnement technique avéré de notre part."
+                    ]
+                },
+                ip: {
+                    title: "5. Propriété Intellectuelle",
+                    items: [
+                        "**Vos Données :** Vous restez seul propriétaire de votre CV et de vos données personnelles. Vous nous accordez une licence temporaire uniquement pour effectuer l'analyse demandée.",
+                        "**Notre Plateforme :** L'interface, le logo, le code et les algorithmes de Career Match sont notre propriété exclusive. Toute copie ou ingénierie inverse est interdite."
+                    ]
+                },
+                liability: {
+                    title: "6. Limitation de Responsabilité",
+                    text: "Career Match est fourni \"tel quel\". Nous ne saurions être tenus responsables des conséquences directes ou indirectes liées à l'utilisation de nos résultats (ex: échec à un entretien, erreur dans un CV optimisé). Il est de votre responsabilité de relire et valider tout document généré avant envoi."
+                },
+                modification: {
+                    title: "7. Modification et Résiliation",
+                    text: "Nous nous réservons le droit de suspendre votre compte sans préavis en cas de violation de ces conditions. Nous pouvons également modifier ces termes à tout moment ; la version en ligne fait foi."
+                },
+                law: {
+                    title: "8. Droit Applicable",
+                    text: "Ces conditions sont régies par le droit français. Tout litige sera soumis à la compétence exclusive des tribunaux de Bordeaux (ou de votre juridiction locale selon les lois de consommation en vigueur)."
+                }
+            },
+            contactSection: {
+                title: "Besoin d'aide ?",
+                text: "Contactez notre support : **support@careermatch.com**"
+            }
+        },
+        contact: {
+            title: "Contactez-nous",
+            subtitle: "Nous aimerions avoir de vos nouvelles. Envoyez-nous un message et nous vous répondrons dès que possible.",
+            form: {
+                name: "Nom",
+                email: "Email",
+                subject: "Sujet",
+                message: "Message",
+                send: "Envoyer le Message",
+                sending: "Envoi en cours...",
+                success: "Message envoyé avec succès !",
+                error: "Échec de l'envoi du message."
+            },
+            info: {
+                email: "Email",
+                emailValue: "support@careermatch.com",
+                location: "Localisation",
+                locationValue: "Paris, France",
+                hours: "Horaires",
+                hoursValue: "Lun-Ven, 9h - 18h CET"
+            }
         }
     }
 };

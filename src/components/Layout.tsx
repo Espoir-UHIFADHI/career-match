@@ -66,8 +66,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center gap-4">
+                        <LanguageSwitcher />
                         <SignedIn>
-                            <LanguageSwitcher />
 
                             {/* Credits Display */}
                             <div
@@ -105,10 +105,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         </SignedIn>
                     </div>
 
-                    {/* Mobile Actions (SignedIn only) */}
-                    <SignedIn>
-                        <div className="md:hidden flex items-center gap-2 mr-2">
-                            <LanguageSwitcher />
+                    {/* Mobile Actions */}
+                    <div className="md:hidden flex items-center gap-2 mr-2">
+                        <LanguageSwitcher />
+                        <SignedIn>
                             <div
                                 className="flex items-center gap-2 px-2 py-1 bg-white border border-slate-200 rounded-full shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
                                 onClick={() => useAppStore.getState().setStep(7)}
@@ -116,8 +116,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 <Coins className="h-3 w-3 text-amber-500" />
                                 <span className="text-xs font-bold text-slate-900">{credits}</span>
                             </div>
-                        </div>
-                    </SignedIn>
+                        </SignedIn>
+                    </div>
 
                     {/* Mobile Menu Toggle */}
                     <button
@@ -199,9 +199,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
                     <p>{t('nav.rights')}</p>
                     <div className="flex gap-6">
-                        <a href="#" className="hover:text-slate-900 transition-colors">{t('nav.privacyPolicy')}</a>
-                        <a href="#" className="hover:text-slate-900 transition-colors">{t('nav.termsOfService')}</a>
-                        <a href="#" className="hover:text-slate-900 transition-colors">{t('nav.contact')}</a>
+                        <button onClick={() => useAppStore.getState().setStep(8)} className="hover:text-slate-900 transition-colors text-left">{t('nav.privacyPolicy')}</button>
+                        <button onClick={() => useAppStore.getState().setStep(9)} className="hover:text-slate-900 transition-colors text-left">{t('nav.termsOfService')}</button>
+                        <button onClick={() => useAppStore.getState().setStep(10)} className="hover:text-slate-900 transition-colors text-left">{t('nav.contact')}</button>
                     </div>
                 </div>
             </footer>
