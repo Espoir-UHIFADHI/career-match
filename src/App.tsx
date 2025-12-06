@@ -29,7 +29,7 @@ function App() {
   console.log("App.tsx rendering");
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset } = useAppStore();
   const { fetchCredits } = useUserStore();
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const { getToken } = useAuth();
   const { t } = useTranslation();
 
@@ -74,6 +74,8 @@ function App() {
 
   useEffect(() => {
     const syncUser = async () => {
+      if (!isLoaded) return; // Wait for Clerk to load
+
       if (isSignedIn && user) {
         // Check for user switch
         if (userId !== user.id) {
@@ -104,7 +106,7 @@ function App() {
     };
 
     syncUser();
-  }, [isSignedIn, user, fetchCredits, getToken, userId, setUserId, reset]);
+  }, [isSignedIn, isLoaded, user, fetchCredits, getToken, userId, setUserId, reset]);
 
 
   const handleStepClick = (stepId: number) => {
