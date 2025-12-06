@@ -24,7 +24,7 @@ export function JobInput() {
 
     const { user, isSignedIn } = useUser();
     const { getToken } = useAuth();
-    const { useCredit, credits } = useUserStore();
+    const { useCredit } = useUserStore();
 
     const analyzeJob = async () => {
         const contentToAnalyze = mode === "url" ? url : description;

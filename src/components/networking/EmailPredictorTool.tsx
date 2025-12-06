@@ -26,7 +26,7 @@ export function EmailPredictorTool() {
     const [showCreditModal, setShowCreditModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
-    const { useCredit, credits } = useUserStore();
+    const { useCredit } = useUserStore();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');

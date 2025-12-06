@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, FileText, User, Mail, Menu, X, Coins, Zap } from "lucide-react";
+import { FileText, User, Mail, Menu, X, Coins, Zap } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
