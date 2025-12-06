@@ -196,7 +196,7 @@ export const translations = {
             searching: "Searching...",
             noResults: "No results found. Try broader terms.",
             viewProfile: "View Profile",
-            findEmail: "Find Email",
+            findEmail: "Find Email (1 credit)",
             findingEmail: "Finding email...",
             draftMessage: "Draft Message",
             draftTitle: "Draft Message",
@@ -208,7 +208,9 @@ export const translations = {
             close: "Close",
             generateNow: "Generate Now",
             guideTitle: "Networking Guide",
-            creditError: "Insufficient credits"
+            creditError: "Insufficient credits",
+            verified: "Verified",
+            probable: "Probable (Pattern)",
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -236,6 +238,49 @@ export const translations = {
             patternDesc: "Enter a name to generate the specific email address.",
             noPrediction: "No prediction yet",
             noPredictionDesc: "Enter company details to find email patterns or addresses."
+        },
+        pricingPage: {
+            title: "Invest in your Future",
+            subtitle: "Flexible credits to boost your job search. Pay only for what you use.",
+            currentBalance: "Your current balance: {amount} Credits",
+            securePayment: "Secure payment via Gumroad. Invoice available immediately.",
+            recommended: "Recommended",
+            unique: "/ one-time",
+            plans: {
+                free: {
+                    name: "Discovery",
+                    description: "To test the power of AI.",
+                    button: "Current Plan",
+                    features: {
+                        feat1: "CV & Job Analysis",
+                        feat2: "Basic CV Optimization",
+                        feat3: "Contact Search",
+                        feat4: "Unlock Emails (Limited)"
+                    }
+                },
+                booster: {
+                    name: "Booster Pack",
+                    description: "Ideal for landing your first interviews.",
+                    button: "Get 20 Credits",
+                    features: {
+                        feat1: "Access to Decision Maker Emails",
+                        feat2: "Anti-ATS CV Optimization",
+                        feat3: "Outreach Message Generation",
+                        feat4: "Standard Support"
+                    }
+                },
+                pro: {
+                    name: "Career Coach",
+                    description: "The complete kit to sign a contract this month.",
+                    button: "Get 100 Credits",
+                    features: {
+                        feat1: "Massive Networking Strategy",
+                        feat2: "Reduced Cost per Application",
+                        feat3: "VIP Priority Support",
+                        feat4: "Guaranteed Access to Future Features"
+                    }
+                }
+            }
         },
         credits: {
             insufficientTitle: "Insufficient Credits",
@@ -605,7 +650,7 @@ export const translations = {
             searching: "Recherche...",
             noResults: "Aucun résultat trouvé. Essayez des termes plus larges.",
             viewProfile: "Voir Profil",
-            findEmail: "Trouver Email",
+            findEmail: "Trouver Email (1 crédit)",
             findingEmail: "Recherche email...",
             draftMessage: "Rédiger Message",
             draftTitle: "Brouillon de Message",
@@ -617,7 +662,10 @@ export const translations = {
             close: "Fermer",
             generateNow: "Générer Maintenant",
             guideTitle: "Guide de Réseautage",
-            creditError: "Crédits insuffisants"
+            guideTitle: "Guide de Réseautage",
+            creditError: "Crédits insuffisants",
+            verified: "Vérifié",
+            probable: "Probable (Pattern)",
         },
         emailPredictor: {
             title: "Prédicteur d'Email",
@@ -646,6 +694,49 @@ export const translations = {
             patternDesc: "Entrez un nom pour générer l'adresse email spécifique.",
             noPrediction: "Pas encore de prédiction",
             noPredictionDesc: "Entrez les détails de l'entreprise pour trouver des patrons ou adresses."
+        },
+        pricingPage: {
+            title: "Investissez dans votre Avenir",
+            subtitle: "Des crédits flexibles pour booster votre recherche d'emploi. Payez uniquement ce que vous utilisez.",
+            currentBalance: "Votre solde actuel : {amount} Crédits",
+            securePayment: "Paiement sécurisé via Gumroad. Facture disponible immédiatement.",
+            recommended: "Recommandé",
+            unique: "/ unique",
+            plans: {
+                free: {
+                    name: "Découverte",
+                    description: "Pour tester la puissance de l'IA.",
+                    button: "Plan Actuel",
+                    features: {
+                        feat1: "Analyse CV & Offre",
+                        feat2: "Optimisation CV de base",
+                        feat3: "Recherche de contact",
+                        feat4: "Déblocage emails (Limité)"
+                    }
+                },
+                booster: {
+                    name: "Pack Booster",
+                    description: "Idéal pour décrocher vos premiers entretiens.",
+                    button: "Obtenir 20 Crédits",
+                    features: {
+                        feat1: "Accès aux emails décideurs",
+                        feat2: "Optimisation CV Anti-ATS",
+                        feat3: "Génération messages d'approche",
+                        feat4: "Support standard"
+                    }
+                },
+                pro: {
+                    name: "Career Coach",
+                    description: "Le kit complet pour signer un CDI ce mois-ci.",
+                    button: "Obtenir 100 Crédits",
+                    features: {
+                        feat1: "Stratégie de Networking Massive",
+                        feat2: "Coût par candidature réduit",
+                        feat3: "Support Prioritaire VIP",
+                        feat4: "Accès garanti futures features"
+                    }
+                }
+            }
         },
         credits: {
             insufficientTitle: "Crédits Insuffisants",

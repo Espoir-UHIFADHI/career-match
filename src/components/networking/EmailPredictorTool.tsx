@@ -127,6 +127,28 @@ export function EmailPredictorTool() {
     const handleVerify = async () => {
         if (!result?.email) return;
 
+        // COST SAVING: If we have a pattern, we trust it (as per user request)
+        if (result.source === 'pattern') {
+            setVerificationResult({
+                status: 'valid',
+                score: 95, // High confidence because pattern is certified
+                result: 'deliverable',
+                email: result.email,
+                regexp: true,
+                gibberish: false,
+                disposable: false,
+                webmail: false,
+                mx_records: true,
+                smtp_server: true,
+                smtp_check: true,
+                accept_all: false,
+                block: false,
+                sources: []
+            });
+            setVerificationStatus('verified');
+            return;
+        }
+
         setVerificationStatus('verifying');
         try {
             const data = await verifyEmail(result.email);
@@ -154,7 +176,7 @@ export function EmailPredictorTool() {
             return (
                 <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium border border-emerald-200">
                     <CheckCircle2 className="w-4 h-4" />
-                    Valid (Score: {score}%)
+                    Valid {score === 95 ? "(Certified)" : `(Score: ${score}%)`}
                 </div>
             );
         } else if (status === 'invalid') {

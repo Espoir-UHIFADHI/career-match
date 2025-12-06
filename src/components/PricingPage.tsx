@@ -1,73 +1,98 @@
-import { Check, X, Zap, Coins, Rocket, Briefcase } from "lucide-react";
+import { Check, X, Zap, Coins, Rocket, Briefcase, Loader2 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { useUserStore } from "../store/useUserStore";
 import { cn } from "../lib/utils";
-// import { useTranslation } from "../hooks/useTranslation";
+import { useTranslation } from "../hooks/useTranslation";
+import { useUser } from "@clerk/clerk-react";
+import { useState } from "react";
 
 export function PricingPage() {
     const { credits } = useUserStore();
-    // const { t } = useTranslation();
+    const { t } = useTranslation();
+    const { user } = useUser();
+    const [loadingProduct, setLoadingProduct] = useState<string | null>(null);
 
-    // Placeholder for Stripe checkout
-    const handleCheckout = (priceId: string) => {
-        console.log("Checkout initiated for:", priceId);
-        // TODO: Implement Stripe Checkout
+    const handleCheckout = (productSlug: string) => {
+        if (!user) {
+            alert("Veuillez vous connecter pour acheter des crédits.");
+            return;
+        }
+
+        setLoadingProduct(productSlug);
+
+        // Gumroad URL construction with custom tracking parameters
+        // These are critical for the webhook to credit the correct user
+        const baseUrl = `https://careermatch.gumroad.com/l/${productSlug}`;
+        const params = new URLSearchParams({
+            custom_user_id: user.id,
+            email: user.primaryEmailAddress?.emailAddress || ''
+        });
+
+        const gumroadUrl = `${baseUrl}?${params.toString()}`;
+
+        window.open(gumroadUrl, '_blank');
+
+        // Simple timeout to reset loading state as we open in new tab
+        setTimeout(() => setLoadingProduct(null), 2000);
     };
 
     const plans = [
         {
             id: "free",
-            name: "Découverte",
-            price: "TwR 0", // Using TwR as symbol for "0€" but clearly stated as free
+            name: t('pricingPage.plans.free.name'),
+            price: "TwR 0",
             credits: "7 Crédits",
-            description: "Pour tester l'outil gratuitement.",
+            description: t('pricingPage.plans.free.description'),
             features: [
-                { name: "Analyse CV & Offre", included: true },
-                { name: "Optimisation IA basique", included: true },
-                { name: "Networking : Recherche limitée", included: true },
-                { name: "Emails Hunter : Verrouillés", included: false },
+                { name: t('pricingPage.plans.free.features.feat1'), included: true },
+                { name: t('pricingPage.plans.free.features.feat2'), included: true },
+                { name: t('pricingPage.plans.free.features.feat3'), included: true },
+                { name: t('pricingPage.plans.free.features.feat4'), included: false },
             ],
-            buttonText: "Plan Actuel",
+            buttonText: t('pricingPage.plans.free.button'),
             buttonVariant: "outline" as const,
             popular: false,
             disabled: true,
-            icon: Coins
+            icon: Coins,
+            slug: ""
         },
         {
             id: "booster",
-            name: "Pack Booster",
-            price: "4.99 €",
+            name: t('pricingPage.plans.booster.name'),
+            price: "6.99 €",
             credits: "+20 Crédits",
-            description: "Pour une candidature spécifique.",
+            description: t('pricingPage.plans.booster.description'),
             features: [
-                { name: "Tout du gratuit", included: true },
-                { name: "Déblocage des emails Hunter", included: true },
-                { name: "4 emails inclus (via crédits)", included: true },
-                { name: "Accès prioritaire", included: true },
+                { name: t('pricingPage.plans.booster.features.feat1'), included: true },
+                { name: t('pricingPage.plans.booster.features.feat2'), included: true },
+                { name: t('pricingPage.plans.booster.features.feat3'), included: true },
+                { name: t('pricingPage.plans.booster.features.feat4'), included: true },
             ],
-            buttonText: "Acheter 20 Crédits",
+            buttonText: t('pricingPage.plans.booster.button'),
             buttonVariant: "primary" as const,
             popular: true,
             disabled: false,
-            icon: Zap
+            icon: Zap,
+            slug: "pack-booster"
         },
         {
             id: "pro",
-            name: "Career Coach",
-            price: "19.99 €",
+            name: t('pricingPage.plans.pro.name'),
+            price: "29.99 €",
             credits: "+100 Crédits",
-            description: "Pour une recherche intensive.",
+            description: t('pricingPage.plans.pro.description'),
             features: [
-                { name: "Coût par action réduit (-50%)", included: true },
-                { name: "Idéal pour 20+ recruteurs", included: true },
-                { name: "Support Prioritaire", included: true },
-                { name: "Accès à toutes les fonctions", included: true },
+                { name: t('pricingPage.plans.pro.features.feat1'), included: true },
+                { name: t('pricingPage.plans.pro.features.feat2'), included: true },
+                { name: t('pricingPage.plans.pro.features.feat3'), included: true },
+                { name: t('pricingPage.plans.pro.features.feat4'), included: true },
             ],
-            buttonText: "Acheter 100 Crédits",
+            buttonText: t('pricingPage.plans.pro.button'),
             buttonVariant: "secondary" as const,
             popular: false,
             disabled: false,
-            icon: Rocket
+            icon: Rocket,
+            slug: "career-coach"
         }
     ];
 
@@ -76,17 +101,16 @@ export function PricingPage() {
             {/* Header Section */}
             <div className="text-center space-y-4 max-w-2xl mx-auto">
                 <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-                    Investissez dans votre <span className="text-indigo-600">Avenir</span>
+                    {t('pricingPage.title')}
                 </h1>
                 <p className="text-lg text-slate-600">
-                    Des crédits flexibles pour booster votre recherche d'emploi.
-                    Payez uniquement ce que vous utilisez.
+                    {t('pricingPage.subtitle')}
                 </p>
 
                 {/* Current Balance Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 font-medium text-sm mt-4">
                     <Briefcase className="w-4 h-4" />
-                    <span>Votre solde actuel : {credits} Crédits</span>
+                    <span>{t('pricingPage.currentBalance').replace('{amount}', credits.toString())}</span>
                 </div>
             </div>
 
@@ -105,7 +129,7 @@ export function PricingPage() {
                         {plan.popular && (
                             <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
                                 <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
-                                    Recommandé
+                                    {t('pricingPage.recommended')}
                                 </span>
                             </div>
                         )}
@@ -125,7 +149,7 @@ export function PricingPage() {
 
                             <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-bold text-slate-900">{plan.price}</span>
-                                {plan.id !== "free" && <span className="text-slate-500 text-sm">/ unique</span>}
+                                {plan.id !== "free" && <span className="text-slate-500 text-sm">{t('pricingPage.unique')}</span>}
                             </div>
 
                             <div className="inline-block bg-emerald-50 text-emerald-700 text-sm font-semibold px-3 py-1 rounded-md border border-emerald-100">
@@ -156,10 +180,14 @@ export function PricingPage() {
                                 "w-full py-6 text-base font-semibold",
                                 plan.popular ? "shadow-lg shadow-indigo-600/20" : ""
                             )}
-                            onClick={() => handleCheckout(plan.id)}
-                            disabled={plan.disabled}
+                            onClick={() => plan.slug && handleCheckout(plan.slug)}
+                            disabled={plan.disabled || (!!plan.slug && loadingProduct === plan.slug)}
                         >
-                            {plan.buttonText}
+                            {plan.slug && loadingProduct === plan.slug ? (
+                                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                            ) : (
+                                plan.buttonText
+                            )}
                         </Button>
                     </div>
                 ))}
@@ -167,7 +195,7 @@ export function PricingPage() {
 
             {/* FAQ / Reassurance Section could go here */}
             <div className="mt-12 text-center text-sm text-slate-500">
-                <p>Paiement sécurisé via Stripe. Facture disponible immédiatement.</p>
+                <p>{t('pricingPage.securePayment')}</p>
             </div>
         </div>
     );

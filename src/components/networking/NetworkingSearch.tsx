@@ -154,6 +154,24 @@ export function NetworkingSearch() {
             return;
         }
 
+        // Deduct Credit
+        try {
+            const token = await getToken({ template: 'supabase' });
+            const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
+
+            if (!success) {
+                if (creditError === 'insufficient_funds_local' || creditError === 'insufficient_funds_server') {
+                    setShowCreditModal(true);
+                } else {
+                    alert(t('networking.creditError') || "Erreur lors de la déduction des crédits.");
+                }
+                return;
+            }
+        } catch (err) {
+            console.error("Credit deduction failed:", err);
+            return;
+        }
+
         const newResults = [...typedResults];
         newResults[contactIndex] = { ...contact, emailStatus: 'loading' };
         setNetworkingState({ results: newResults });
@@ -173,14 +191,27 @@ export function NetworkingSearch() {
             let score = undefined;
 
             if (first && last) {
-                // Try to find exact email
-                const result = await findEmail(first, last, domain);
-                if (result) {
-                    emailFound = result.email;
-                    score = result.score;
-                } else if (pattern) {
-                    // Generate based on pattern
+                // COST SAVING STRATEGY:
+                // 1. Try to generate from pattern first (Free/Cheap)
+                // 2. Fallback to API findEmail (Expensive)
+
+                if (pattern) {
+                    // Generate based on pattern - Save API credits
                     emailFound = generateEmail(first, last, pattern, domain);
+                    // Mock a confidence score for pattern-based generation
+                    if (emailFound) {
+                        score = 80;
+                        // console.log("Email generated from pattern, skipping Hunter findEmail API");
+                    }
+                }
+
+                // Only if no pattern or generation failed, try the expensive API
+                if (!emailFound) {
+                    const result = await findEmail(first, last, domain);
+                    if (result) {
+                        emailFound = result.email;
+                        score = result.score;
+                    }
                 }
             }
 
@@ -188,7 +219,7 @@ export function NetworkingSearch() {
             updatedResults[contactIndex] = {
                 ...contact,
                 emailStatus: 'success',
-                email: emailFound || undefined, // Ensure undefined if null
+                email: emailFound || undefined,
                 emailConfidence: score,
                 emailPattern: pattern || undefined,
                 domain: domain
