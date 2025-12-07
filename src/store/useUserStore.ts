@@ -17,19 +17,28 @@ export const useUserStore = create<UserState>((set, get) => ({
     fetchCredits: async (userId: string, token?: string) => {
         if (!userId) return;
 
-        // Use authenticated client if token is provided, otherwise fallback to anon
         const client = token ? createClerkSupabaseClient(token) : supabase;
 
         try {
-            // Call the RPC function which handles "get or create" logic atomically on the server
-            // entirely bypassing potential API schema cache issues
+            // STRATEGY 1: Direct Table Access (Faster & Bypasses potential RPC wrapping issues)
+            const { data: directData, error: directError } = await client
+                .from('profiles')
+                .select('credits')
+                .eq('id', userId)
+                .single();
+
+            if (!directError && directData) {
+                set({ credits: directData.credits });
+                return;
+            }
+
+            // STRATEGY 2: RPC Fallback (Atomic "Get or Create" logic)
             const { data, error } = await client.rpc('get_user_credits', {
                 p_user_id: userId
             });
 
             if (error) {
-                console.error("Error fetching credits (RPC):", error);
-                set({ credits: 0 });
+                console.error("Error fetching credits:", error);
             } else {
                 set({ credits: data ?? 0 });
             }
