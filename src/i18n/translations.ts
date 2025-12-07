@@ -81,6 +81,14 @@ export const translations = {
             dropHere: "Drop the file here...",
             error: "An error occurred during analysis. Please try again."
         },
+        common: {
+            back: "Back",
+            next: "Next",
+            save: "Save",
+            cancel: "Cancel",
+            loading: "Loading...",
+            signInRequired: "Please sign in to use this feature."
+        },
         cvReview: {
             title: "Review Extraction",
             subtitle: "Verify and edit the information extracted from your CV.",
@@ -136,8 +144,10 @@ export const translations = {
         },
         dashboard: {
             optimizing: "Optimizing your profile...",
+            optimizingDesc: "This usually takes about 10-20 seconds.",
             comparing: "Comparing your skills with job requirements",
             analysisFailed: "Analysis Failed",
+            analysisError: "An error occurred during analysis. Please try again.",
             tryAgain: "Try Again",
             lowMatch: "Low Match Score Detected",
             lowMatchDesc: "The match between your profile and this job description is too low to generate a valid optimized CV. We do not generate fake information. Please review the missing keywords and recommendations below to improve your profile or apply to a more relevant position.",
@@ -187,6 +197,14 @@ export const translations = {
             draftingFor: "Drafting for:",
             writing: "Writing personalized message...",
             copyClipboard: "Copy to Clipboard",
+            copied: "Copied!",
+            signInRequired: "Please sign in to perform a search.",
+            creditError: "Error deducting credits.",
+            searchError: "An error occurred during the search.",
+            genError: "Error generating message. Please try again.",
+            guideTitle: "Networking Guide",
+            close: "Close",
+            generateNow: "Generate Now"
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -530,7 +548,8 @@ export const translations = {
             next: "Suivant",
             save: "Enregistrer",
             cancel: "Annuler",
-            loading: "Chargement..."
+            loading: "Chargement...",
+            signInRequired: "Veuillez vous connecter pour utiliser cette fonctionnalité."
         },
         cvUpload: {
             title: "Téléchargez votre CV",
@@ -598,8 +617,10 @@ export const translations = {
         },
         dashboard: {
             optimizing: "Optimisation de votre profil...",
+            optimizingDesc: "Cela prend généralement 10-20 secondes.",
             comparing: "Comparaison de vos compétences avec les prérequis",
             analysisFailed: "Échec de l'analyse",
+            analysisError: "Une erreur est survenue lors de l'analyse. Veuillez réessayer.",
             tryAgain: "Réessayer",
             lowMatch: "Score de Match Faible Détecté",
             lowMatchDesc: "La correspondance entre votre profil et cette offre est trop faible pour générer un CV optimisé valide. Nous ne générons pas de fausses informations. Veuillez examiner les mots-clés manquants et les recommandations ci-dessous pour améliorer votre profil ou postuler à un poste plus pertinent.",
@@ -649,7 +670,14 @@ export const translations = {
             draftingFor: "Rédaction pour :",
             writing: "Rédaction du message personnalisé...",
             copyClipboard: "Copier",
-            copied: "Copié !"
+            copied: "Copié !",
+            signInRequired: "Veuillez vous connecter pour effectuer une recherche.",
+            creditError: "Erreur lors de la déduction des crédits.",
+            searchError: "Une erreur s'est produite lors de la recherche.",
+            genError: "Erreur lors de la génération du message. Veuillez réessayer.",
+            guideTitle: "Guide de Réseautage",
+            close: "Fermer",
+            generateNow: "Générer Maintenant"
         },
         emailPredictor: {
             title: "Prédicteur d'Email",

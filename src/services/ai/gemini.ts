@@ -115,24 +115,47 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
   console.log("🚀 Matching initialisé (Secure Backend)...", { hasToken: !!token });
 
   const prompt = `
-  Rôle : Expert en Recrutement pour cabinets de conseil "Top Tier" (McKinsey, BCG, Bain, Deloitte, PwC, EY, KPMG).
-  Action : Analyse la compatibilité entre ce CV et cette Offre d'Emploi.
-  Langue de sortie : ${language}
+  Rôle : Expert Mondial en Optimisation de CV & Recrutement "Top Tier" (ex-Recruteur Google/Amazon/McKinsey).
+  Objectif : Réécrire ce CV pour qu'il obtienne un score de pertinence (ATS Score) maximal pour l'Offre d'Emploi fournie.
 
-  Données CV : ${JSON.stringify(cv)}
-  Données Offre : ${JSON.stringify(job)}
+  Données CV Original : ${JSON.stringify(cv)}
+  Données Offre d'Emploi : ${JSON.stringify(job)}
 
-  RÈGLE CRITIQUE DE MATCHING (SEUIL DE PERTINENCE) :
-  1. Tu dois d'abord évaluer le score de matching (0-100).
-  2. SI LE SCORE EST INFÉRIEUR À 45% (Seuil Critique) :
-     - C'est un "Low Match". Le profil ne correspond pas du tout au poste.
-     - DANS CE CAS : NE GÉNÈRE PAS DE "optimizedCV". Mets "optimizedCV": null.
-     - Explique clairement pourquoi le profil est rejeté.
+  TES INSTRUCTIONS PRIORITAIRES (A RESPECTER À LA LETTRE) :
 
-  3. SI LE SCORE EST SUPÉRIEUR OU ÉGAL À 45% :
-     - Procède à l'optimisation complète du CV selon les règles "BIG FOUR / MBB".
+  1. **ZÉRO COPIER-COLLER (REFORMULATION TOTALE)** : 
+     - Ne reprends PAS les phrases du CV original telles quelles.
+     - Tu dois REFAÇONNER chaque phrase pour coller au vocabulaire et au ton de l'Offre d'Emploi.
+     - Le CV final doit donner l'impression que le candidat a fait ce CV *spécifiquement* pour ce poste.
 
-  Structure JSON attendue (MatchResult) :
+  2. **OPTIMISATION ATS (Mots-clés)** :
+     - Identifie les "Hard Skills", "Soft Skills" et mots-clés critiques de l'Offre.
+     - INTÈGRE ces mots-clés de manière naturelle dans le "Summary", les "Skills" et les descriptions d'"Experience".
+     - Si le candidat a une expérience similaire mais décrite différemment, utilise le terme exact de l'offre.
+
+  3. **ORIENTÉ RÉSULTATS & IMPACT (Méthode Google)** :
+     - Bannis les descriptions de tâches passives ("Responsable de...", "En charge de...").
+     - Utilise des verbes d'action forts (Piloté, Conçu, Augmenté, Réduit, Optimisé...).
+     - Structure : "Action + Contexte + Résultat Chiffré/Impact".
+     - Exemple : Au lieu de "Vente de logiciels", écris "Génération de 50k€ de revenus additionnels (+20%) via la prospection de 15 grands comptes".
+
+  4. **FORMATAGE STRICT (Bullet Points)** :
+     - Pour la section "experience", le champ "description" DOIT être une liste de points.
+     - Sépare CHAQUE point par un saut de ligne réel (\n).
+     - Exemple : "- Action 1\n- Action 2\n- Action 3".
+     - Pas de paragraphes compacts.
+
+  5. **DONNÉES DE CONTACT (CRITIQUE)** :
+     - Tu dois REPRENDRE EXACTEMENT les infos de contact du CV original.
+     - **NE PAS OUBLIER LE LIEN LINKEDIN** (field: contact.linkedin). C'est obligatoire.
+     - Ne pas inventer d'infos de contact.
+
+  PROCESSUS DE MATCHING :
+  1. Calcule un Score de Pertinence (0-100).
+  2. SI SCORE < 45 : Renvoie "optimizedCV": null.
+  3. SI SCORE >= 45 : Génère le JSON complet avec le CV optimisé selon les règles ci-dessus.
+
+  Structure JSON attendue :
   {
     "score": 85,
     "analysis": {
@@ -141,7 +164,14 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language:
       "missingKeywords": ["..."],
       "cultureFit": "..."
     },
-    "optimizedCV": { ... } OU null (si score < 45),
+    "optimizedCV": {
+      "contact": { ... }, // Garder LinkedIn !
+      "headline": "Titre du poste visé | Expertise clé",
+      "summary": "Résumé ultra-ciblé de 3-4 lignes...",
+      "skills": ["Compétence Offre 1", "Compétence Offre 2", ...],
+      "experience": [ ... ],
+      ...
+    },
     "recommendations": ["..."]
   }
   `;
