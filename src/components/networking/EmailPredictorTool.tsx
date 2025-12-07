@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUserStore } from "../../store/useUserStore";
 import { useAppStore } from "../../store/useAppStore";
-import { Mail, Loader2, Building2, User, Copy, Check, Search } from "lucide-react";
+import { Mail, Loader2, Building2, User, Copy, Check, Search, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -246,6 +246,7 @@ export function EmailPredictorTool() {
                                             value={company}
                                             onChange={(e) => setEmailPredictorState({ company: e.target.value })}
                                             className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                            disabled={true}
                                         />
                                     </div>
                                 </div>
@@ -259,6 +260,7 @@ export function EmailPredictorTool() {
                                                 value={firstName}
                                                 onChange={(e) => setEmailPredictorState({ firstName: e.target.value })}
                                                 className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                                disabled={true}
                                             />
                                         </div>
                                     </div>
@@ -269,6 +271,7 @@ export function EmailPredictorTool() {
                                             value={lastName}
                                             onChange={(e) => setEmailPredictorState({ lastName: e.target.value })}
                                             className="h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                            disabled={true}
                                         />
                                     </div>
                                 </div>
@@ -277,7 +280,7 @@ export function EmailPredictorTool() {
                             {isSignedIn ? (
                                 <Button
                                     onClick={handlePredict}
-                                    disabled={status === 'loading' || !company}
+                                    disabled={true}
                                     className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all text-base"
                                 >
                                     {status === 'loading' ? (
@@ -287,7 +290,11 @@ export function EmailPredictorTool() {
                                         </>
                                     ) : (
                                         <>
-                                            <Mail className="mr-2 h-5 w-5" />
+                                            {firstName && lastName ? (
+                                                <Mail className="mr-2 h-5 w-5" />
+                                            ) : (
+                                                <Lock className="mr-2 h-5 w-5" />
+                                            )}
                                             {firstName && lastName ? t('emailPredictor.findEmail') : t('emailPredictor.findPattern')}
                                         </>
                                     )}

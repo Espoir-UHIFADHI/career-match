@@ -717,7 +717,7 @@ export const translations = {
             risky: "Risqué",
             patternFound: "Patron Trouvé",
             patternDesc: "Entrez un nom pour générer l'adresse email spécifique.",
-            noPrediction: "Pas encore de prédiction",
+            noPrediction: "Disponible bientôt",
             noPredictionDesc: "Entrez les détails de l'entreprise pour trouver des modèles ou adresses.",
             errors: {
                 configMissing: "Erreur de configuration : Modèle JWT 'supabase' manquant dans Clerk. Veuillez contacter l'administrateur.",
