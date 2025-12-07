@@ -32,7 +32,7 @@ export function JobInput() {
         }
 
         // Check local credits BEFORE starting
-        if (credits < 1) {
+        if (credits < 1 && user?.primaryEmailAddress?.emailAddress !== 'espoiradouwekonou20@gmail.com') {
             setShowCreditModal(true);
             return;
         }

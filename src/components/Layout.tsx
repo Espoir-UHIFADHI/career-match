@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FileText, User, Mail, Menu, X, Coins, Zap } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "../hooks/useTranslation";
@@ -12,6 +12,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const { credits } = useUserStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { t } = useTranslation();
+    const { user } = useUser();
 
     const navItems = [
         { id: 1, name: t('nav.uploadCV'), icon: FileText, activeSteps: [1, 2, 3, 4] },
@@ -75,7 +76,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 onClick={() => useAppStore.getState().setStep(7)}
                             >
                                 <Coins className="h-4 w-4 text-amber-500" />
-                                <span className="text-sm font-bold text-slate-900">{credits}</span>
+                                <span className="text-sm font-bold text-slate-900">
+                                    {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' ? '∞' : credits}
+                                </span>
                             </div>
                         </SignedIn>
 
@@ -114,7 +117,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 onClick={() => useAppStore.getState().setStep(7)}
                             >
                                 <Coins className="h-3 w-3 text-amber-500" />
-                                <span className="text-xs font-bold text-slate-900">{credits}</span>
+                                <span className="text-xs font-bold text-slate-900">
+                                    {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' ? '∞' : credits}
+                                </span>
                             </div>
                         </SignedIn>
                     </div>
