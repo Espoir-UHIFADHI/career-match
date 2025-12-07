@@ -111,7 +111,7 @@ export async function parseCV(file: File, token?: string): Promise<ParsedCV> {
   }
 }
 
-export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, language: string = "French", token?: string): Promise<MatchResult> {
+export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language: string = "French", token?: string): Promise<MatchResult> {
   console.log("🚀 Matching initialisé (Secure Backend)...", { hasToken: !!token });
 
   const prompt = `
