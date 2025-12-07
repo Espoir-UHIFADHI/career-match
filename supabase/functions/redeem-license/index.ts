@@ -17,7 +17,7 @@ serve(async (req) => {
 
         if (!license_key || !user_id) {
             return new Response(JSON.stringify({ error: 'Missing license_key or user_id' }), {
-                status: 400,
+                status: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
         }
@@ -36,54 +36,136 @@ serve(async (req) => {
 
         if (existingLicense) {
             return new Response(JSON.stringify({ error: 'Ce code a déjà été utilisé.' }), {
-                status: 400,
+                status: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
         }
 
         // 3. Verify with Gumroad
-        // We try known products. If we have many, we might iterate or try to deduce.
-        // Major products: 'pack-booster' (20), 'career-coach' (100)
-
         let verificationData = null
         let validPermalink = ''
 
-        const products = ['pack-booster', 'career-coach']
+        // ID for pack-booster retrieved from error logs: JaME0YDDkp7O5KZd31sBxg==
+        // FIXED: The 4th character is a ZERO ('0'), not the letter 'O'.
+        const productIds: Record<string, string> = {
+            'pack-booster': 'JaME0YDDkp7O5KZd31sBxg==',
+            'career-coach': 'X3PD34MHCfnQjE2qgpkycg==', // Updated ID for 100 credits pack
+            'career-match': 'JaME0YDDkp7O5KZd31sBxg==', // Default parent to pack-booster ID
+            'careermatch': 'JaME0YDDkp7O5KZd31sBxg==',
+            'uhifadhi': 'JaME0YDDkp7O5KZd31sBxg=='
+        }
+
+        // Expanded list of potential permalinks to check
+        const products = [
+            ...Object.keys(productIds),
+            'career-match',
+            'careermatch',
+            'career-match-app',
+            'uhifadhi'
+        ]
+        const debugLogs: string[] = []
+
+        // Sanitize Key
+        const cleanKey = license_key.trim()
+        console.log(`Received Key: ${cleanKey.substring(0, 4)}... (Length: ${cleanKey.length})`)
 
         for (const permalink of products) {
-            console.log(`Verifying against ${permalink}...`)
-            const response = await fetch('https://api.gumroad.com/v2/licenses/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    product_permalink: permalink,
-                    license_key: license_key
-                })
-            })
+            const rawId = productIds[permalink]?.trim()
+            let found = false
 
-            const data = await response.json()
-            if (data.success && !data.purchase.refunded && !data.purchase.chargebacked) {
-                verificationData = data
-                validPermalink = permalink
-                break
+            // Strategy Group A: ID-based Variations (Only if we have an ID)
+            if (rawId) {
+                const idVariants = [
+                    { name: 'Standard', id: rawId, uses: undefined },
+                    { name: 'NoPadding', id: rawId.replace(/=+$/, ''), uses: undefined },
+                    { name: 'NoIncrement', id: rawId, uses: "false" }
+                ]
+
+                for (const variant of idVariants) {
+                    if (found) break; // Stop if already found in inner loop
+
+                    try {
+                        const payload: any = {
+                            product_id: variant.id,
+                            license_key: cleanKey
+                        }
+                        if (variant.uses) payload.increment_uses_count = variant.uses
+
+                        const response = await fetch('https://api.gumroad.com/v2/licenses/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })
+                        const data = await response.json()
+
+                        const logKey = `[${permalink}][${variant.name}]`
+                        debugLogs.push(`${logKey}: ${data.success} (${data.message || 'N/A'})`);
+
+                        if (data.success && !data.purchase.refunded && !data.purchase.chargebacked) {
+                            verificationData = data
+                            validPermalink = permalink
+                            found = true
+                            break
+                        }
+                    } catch (err) {
+                        debugLogs.push(`[${permalink}][${variant.name}]: Err (${err.message})`)
+                    }
+                }
+            }
+
+            if (found) break; // Stop outer loop
+
+            // Fallback: Link Strategy (just to log it)
+            try {
+                const response = await fetch('https://api.gumroad.com/v2/licenses/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_permalink: permalink,
+                        license_key: cleanKey
+                    })
+                })
+                const data = await response.json()
+                if (!data.success) {
+                    debugLogs.push(`[${permalink}][Link]: ${data.success} (${data.message || 'N/A'})`);
+                }
+                if (data.success && !data.purchase.refunded && !data.purchase.chargebacked) {
+                    verificationData = data
+                    validPermalink = permalink
+                    break
+                }
+            } catch (err) {
+                debugLogs.push(`[${permalink}][Link]: Err (${err.message})`)
             }
         }
 
         if (!verificationData) {
-            return new Response(JSON.stringify({ error: 'Code invalide ou expiré.' }), {
-                status: 400,
+            return new Response(JSON.stringify({ error: `Echec validation. Détails: ${debugLogs.join(', ')}` }), {
+                status: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
         }
 
         // 4. Determine Credits
         let creditsToAdd = 0
+        const variantName = verificationData.purchase.variants || ''
+
         if (validPermalink === 'pack-booster') creditsToAdd = 20
         if (validPermalink === 'career-coach') creditsToAdd = 100
 
+        // Variant match (if permalink is generic like 'career-match')
         if (creditsToAdd === 0) {
-            // Fallback or error if permalink matched but no credits defined (unlikely)
-            return new Response(JSON.stringify({ error: 'Produit non reconnu pour les crédits.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            if (variantName.includes('Booster') || variantName.includes('20')) creditsToAdd = 20
+            if (variantName.includes('Coach') || variantName.includes('100')) creditsToAdd = 100
+
+            // Fallback for generic 'career-match' if no variant text matches but it verified
+            if (creditsToAdd === 0 && (validPermalink === 'career-match' || validPermalink === 'uhifadhi')) {
+                creditsToAdd = 20 // Default safe assumption
+            }
+        }
+
+        if (creditsToAdd === 0) {
+            return new Response(JSON.stringify({ error: `Produit vérifié (${validPermalink}) mais crédits indéterminés. Variant: ${variantName}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
         // 5. Atomic Transaction: Record usage + Add Credits
@@ -125,11 +207,13 @@ serve(async (req) => {
             status: 200,
         })
 
+
     } catch (error) {
         console.error("Redeem Error:", error)
-        return new Response(JSON.stringify({ error: error.message }), {
+        // RETURN 200 to ensure the client receives the error message body
+        return new Response(JSON.stringify({ error: `Server Error: ${error.message}` }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
+            status: 200,
         })
     }
 })
