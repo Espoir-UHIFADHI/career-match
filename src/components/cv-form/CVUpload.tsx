@@ -9,8 +9,11 @@ import type { ParsedCV } from "../../types";
 import { CVReview } from "./CVReview";
 import { useTranslation } from "../../hooks/useTranslation";
 
+import { useAuth } from "@clerk/clerk-react";
+
 export function CVUpload() {
     const { t } = useTranslation();
+    const { getToken } = useAuth();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isReviewing, setIsReviewing] = useState(false);
@@ -25,7 +28,11 @@ export function CVUpload() {
         setError(null);
 
         try {
-            const parsedData = await parseCV(file);
+            // Get fresh token for the request
+            const token = await getToken({ template: 'supabase' });
+
+            // Pass token to parseCV for authenticated request
+            const parsedData = await parseCV(file, token || undefined);
 
             console.log("Parsed Data:", parsedData);
 
@@ -40,7 +47,7 @@ export function CVUpload() {
         } finally {
             setIsProcessing(false);
         }
-    }, []);
+    }, [getToken, t]);
 
 
 

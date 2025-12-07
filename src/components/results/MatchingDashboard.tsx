@@ -11,8 +11,11 @@ import type { MatchResult } from "../../types";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
+import { useAuth } from "@clerk/clerk-react";
+
 export function MatchingDashboard() {
     const { t } = useTranslation();
+    const { getToken } = useAuth();
     const { cvData, jobData, analysisResults, setAnalysisResults, language, setLanguage } = useAppStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -44,7 +47,8 @@ export function MatchingDashboard() {
         setIsProcessing(true);
         setError(null);
         try {
-            const results = await matchAndOptimize(cvData, jobData, language);
+            const token = await getToken({ template: 'supabase' });
+            const results = await matchAndOptimize(cvData, jobData, language, token || undefined);
             setAnalysisResults(results as MatchResult);
             setShowPreview(true);
         } catch (err) {

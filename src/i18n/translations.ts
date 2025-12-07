@@ -76,23 +76,6 @@ export const translations = {
             jobName: "Job Details",
             jobDescription: "Target Role",
             analysisName: "Analysis",
-            analysisDescription: "Match & Optimize",
-            resultsName: "Results",
-            resultsDescription: "Download PDF"
-        },
-        common: {
-            back: "Back",
-            next: "Next",
-            save: "Save",
-            cancel: "Cancel",
-            loading: "Loading..."
-        },
-        cvUpload: {
-            title: "Upload your CV",
-            subtitle: "We'll analyze your resume to find the best match.",
-            dragDrop: "Drag & drop your CV here",
-            supports: "Supports PDF or TXT files",
-            selectFile: "Select File",
             analyzing: "Analyzing your CV...",
             analyzingDesc: "This usually takes about 10-20 seconds.",
             dropHere: "Drop the file here...",
@@ -204,22 +187,6 @@ export const translations = {
             draftingFor: "Drafting for:",
             writing: "Writing personalized message...",
             copyClipboard: "Copy to Clipboard",
-            copied: "Copied!",
-            close: "Close",
-            generateNow: "Generate Now",
-            guideTitle: "Networking Guide",
-            creditError: "Insufficient credits",
-            verified: "Verified",
-            probable: "Probable (Pattern)",
-        },
-        emailPredictor: {
-            title: "Email Predictor",
-            subtitle: "Find any professional email address in seconds.",
-            firstName: "First Name",
-            firstNamePlaceholder: "e.g. Jean",
-            lastName: "Last Name",
-            companyName: "Company Name",
-            lastNamePlaceholder: "e.g. Dupont",
             companyPlaceholder: "e.g. Google",
             analyzePatterns: "Analyzing Patterns...",
             findEmail: "Find Email",
@@ -237,7 +204,22 @@ export const translations = {
             patternFound: "Pattern Found",
             patternDesc: "Enter a name to generate the specific email address.",
             noPrediction: "No prediction yet",
-            noPredictionDesc: "Enter company details to find email patterns or addresses."
+            noPredictionDesc: "Enter company details to find email patterns or addresses.",
+            errors: {
+                configMissing: "Configuration Error: Missing 'supabase' JWT template in Clerk Dashboard. Please contact the administrator.",
+                authFailed: "Authentication failed. Please refresh the page and sign in again.",
+                creditsCheck: "An error occurred while checking credits. Please try again.",
+                domainNotFound: "Could not find domain for \"{company}\"",
+                patternNotFound: "Could not find email pattern for {domain}",
+                generic: "An error occurred"
+            },
+            badges: {
+                validCertified: "Valid (Certified)",
+                validScore: "Valid (Score: {score}%)",
+                invalidScore: "Invalid (Score: {score}%)",
+                acceptAll: "Accept All",
+                risky: "Risky"
+            }
         },
         pricingPage: {
             title: "Invest in your Future",
@@ -658,14 +640,7 @@ export const translations = {
             draftingFor: "Rédaction pour :",
             writing: "Rédaction du message personnalisé...",
             copyClipboard: "Copier",
-            copied: "Copié !",
-            close: "Fermer",
-            generateNow: "Générer Maintenant",
-            guideTitle: "Guide de Réseautage",
-
-            creditError: "Crédits insuffisants",
-            verified: "Vérifié",
-            probable: "Probable (Pattern)",
+            copied: "Copié !"
         },
         emailPredictor: {
             title: "Prédicteur d'Email",
@@ -673,9 +648,8 @@ export const translations = {
             firstName: "Prénom",
             firstNamePlaceholder: "ex: Jean",
             lastName: "Nom",
-            companyName: "Nom de l'entreprise",
             lastNamePlaceholder: "ex: Dupont",
-
+            companyName: "Nom de l'entreprise",
             companyPlaceholder: "ex: Google",
             analyzePatterns: "Analyse des Patrons...",
             findEmail: "Trouver Email",
@@ -693,7 +667,22 @@ export const translations = {
             patternFound: "Patron Trouvé",
             patternDesc: "Entrez un nom pour générer l'adresse email spécifique.",
             noPrediction: "Pas encore de prédiction",
-            noPredictionDesc: "Entrez les détails de l'entreprise pour trouver des patrons ou adresses."
+            noPredictionDesc: "Entrez les détails de l'entreprise pour trouver des modèles ou adresses.",
+            errors: {
+                configMissing: "Erreur de configuration : Modèle JWT 'supabase' manquant dans Clerk. Veuillez contacter l'administrateur.",
+                authFailed: "Authentification échouée. Veuillez rafraîchir la page et vous reconnecter.",
+                creditsCheck: "Une erreur est survenue lors de la vérification des crédits. Veuillez réessayer.",
+                domainNotFound: "Impossible de trouver le domaine pour \"{company}\"",
+                patternNotFound: "Impossible de trouver le modèle d'email pour {domain}",
+                generic: "Une erreur est survenue"
+            },
+            badges: {
+                validCertified: "Valide (Certifié)",
+                validScore: "Valide (Score : {score}%)",
+                invalidScore: "Invalide (Score : {score}%)",
+                acceptAll: "Accept All",
+                risky: "Risqué"
+            }
         },
         pricingPage: {
             title: "Investissez dans votre Avenir",

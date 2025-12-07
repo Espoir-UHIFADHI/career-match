@@ -9,11 +9,17 @@ const getNestedValue = (obj: any, path: string) => {
 export function useTranslation() {
     const { language, setLanguage } = useLanguageStore();
 
-    const t = (key: string) => {
-        const translation = getNestedValue(translations[language], key);
+    const t = (key: string, params?: Record<string, string | number>) => {
+        let translation = getNestedValue(translations[language], key);
         if (!translation) {
             console.warn(`Translation missing for key: ${key} in language: ${language}`);
             return key;
+        }
+
+        if (params) {
+            Object.entries(params).forEach(([key, value]) => {
+                translation = translation.replace(`{${key}}`, String(value));
+            });
         }
         return translation;
     };

@@ -1,5 +1,5 @@
 import { searchGoogle } from "./search/serper";
-import { supabase } from "./supabase";
+import { supabase, createClerkSupabaseClient } from "./supabase";
 
 const HUNTER_API_KEY = import.meta.env.VITE_HUNTER_API_KEY;
 
@@ -24,9 +24,10 @@ interface HunterResponse {
 /**
  * Finds the company domain using Serper API
  * @param companyName Name of the company (e.g. "CIMPA")
+ * @param token Optional auth token for Supabase Edge Function calls (if needed)
  * @returns The domain name (e.g. "cimpa.com") or null if not found
  */
-export async function findCompanyDomain(companyName: string): Promise<string | null> {
+export async function findCompanyDomain(companyName: string, token?: string): Promise<string | null> {
     try {
         // 1. Check if input is already a domain (e.g. "google.com")
         if (companyName.includes(".") && !companyName.includes(" ")) {
@@ -34,10 +35,8 @@ export async function findCompanyDomain(companyName: string): Promise<string | n
         }
 
         // 2. Search for the domain
-        // Use English query to prioritize global domains (e.g. "Google official website" -> google.com)
-        // instead of "Site officiel Google" which might return google.fr
         const query = `"${companyName}" official website`;
-        const results = await searchGoogle(query, 1);
+        const results = await searchGoogle(query, 1, 0, token);
 
         if (results && results.length > 0) {
             const link = results[0].link;
@@ -59,17 +58,21 @@ export async function findCompanyDomain(companyName: string): Promise<string | n
 /**
  * Gets the email pattern for a domain using Hunter.io
  * @param domain The domain name (e.g. "cimpa.com")
+ * @param token Optional auth token to write to Supabase cache
  * @returns The email pattern (e.g. "{first}.{last}") or null
  */
-export async function getEmailPattern(domain: string): Promise<string | null> {
+export async function getEmailPattern(domain: string, token?: string): Promise<string | null> {
     if (!HUNTER_API_KEY) {
         console.error("Hunter API Key is missing");
         return null;
     }
 
+    // Use authenticated client if token is provided
+    const client = token ? createClerkSupabaseClient(token) : supabase;
+
     // 1. Check Global Cache (Supabase)
     try {
-        const { data } = await supabase
+        const { data } = await client
             .from('domain_patterns')
             .select('pattern')
             .eq('domain', domain)
@@ -98,7 +101,8 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
         // 3. Save to Global Cache
         if (pattern) {
             try {
-                await supabase.from('domain_patterns').upsert({
+                // We reuse the client which might be authenticated
+                await client.from('domain_patterns').upsert({
                     domain,
                     pattern
                 }, { onConflict: 'domain' });
@@ -117,21 +121,13 @@ export async function getEmailPattern(domain: string): Promise<string | null> {
 
 /**
  * Generates an email based on the pattern
- * @param firstName First name
- * @param lastName Last name
- * @param pattern Email pattern (e.g. "{first}.{last}")
- * @param domain Company domain
- * @returns The generated email
  */
 export function generateEmail(firstName: string, lastName: string, pattern: string, domain: string): string | null {
     if (!pattern || !domain || !firstName || !lastName) return null;
 
-    // Basic validation: names shouldn't be too long or contain suspicious characters for a person name
     if (firstName.length > 30 || lastName.length > 30) return null;
-    // If name contains comma, it's likely a title/sentence
     if (firstName.includes(",") || lastName.includes(",")) return null;
 
-    // Normalize names: lowercase, remove accents, replace spaces with hyphens
     const cleanFirst = firstName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, "-");
     const cleanLast = lastName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, "-");
 
@@ -142,8 +138,6 @@ export function generateEmail(firstName: string, lastName: string, pattern: stri
 
     let emailUser = pattern;
 
-    // Replace variables in pattern
-    // Common patterns: {first}, {last}, {f}, {l}
     emailUser = emailUser.replace("{first}", cleanFirst);
     emailUser = emailUser.replace("{last}", cleanLast);
     emailUser = emailUser.replace("{f}", firstInitial);
@@ -152,11 +146,6 @@ export function generateEmail(firstName: string, lastName: string, pattern: stri
     return `${emailUser}@${domain}`;
 }
 
-/**
- * Formats the email pattern for display
- * @param pattern The raw pattern from Hunter (e.g. "{first}.{last}")
- * @returns User friendly pattern (e.g. "{Prénom}.{Nom}")
- */
 export function formatEmailPattern(pattern: string): string {
     if (!pattern) return "";
     return pattern
@@ -185,11 +174,6 @@ export interface VerificationResponse {
     };
 }
 
-/**
- * Verifies an email address using Hunter.io
- * @param email The email to verify
- * @returns The verification result
- */
 export async function verifyEmail(email: string): Promise<VerificationResponse['data'] | null> {
     if (!HUNTER_API_KEY) {
         console.error("Hunter API Key is missing");
@@ -241,23 +225,44 @@ export interface EmailFinderResponse {
     };
 }
 
-/**
- * Finds the professional email address using Hunter.io Email Finder API
- * @param firstName First name
- * @param lastName Last name
- * @param domain Company domain
- * @returns The found email and details
- */
+// Helper to clean name
+export function cleanName(name: string): string {
+    if (!name) return "";
+
+    let cleaned = name;
+    // Remove emojis and symbols
+    cleaned = cleaned.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B50}\u{200D}\u{FE0F}]/gu, "");
+    cleaned = cleaned.replace(/[®™©•|]/g, "");
+
+    const suffixes = [
+        "PMP", "MBA", "PhD", "MSc", "CPA", "CFA", "CSM", "PSM", "ACP",
+        "Prince2", "ITIL", "AWS", "Azure", "GCP", "CISSP", "CISA", "CISM",
+        "Consultant", "Manager", "Director", "VP", "President", "Head", "Lead", "Chief", "Officer"
+    ];
+
+    cleaned = cleaned.split(/ [-|•] /)[0];
+
+    for (const suffix of suffixes) {
+        const regex = new RegExp(`\\b${suffix}\\b`, "gi");
+        cleaned = cleaned.replace(regex, "");
+    }
+
+    cleaned = cleaned.replace(/\s+/g, " ").trim();
+    return cleaned;
+}
+
 /**
  * Checks if an email is already in the global cache
  */
-export async function getCachedEmail(firstName: string, lastName: string, domain: string): Promise<EmailFinderResponse['data'] | null> {
+export async function getCachedEmail(firstName: string, lastName: string, domain: string, token?: string): Promise<EmailFinderResponse['data'] | null> {
     try {
+        const client = token ? createClerkSupabaseClient(token) : supabase;
+
         // Normalize for search
         const cleanFirst = cleanName(firstName).toLowerCase();
         const cleanLast = cleanName(lastName).toLowerCase();
 
-        const { data } = await supabase
+        const { data } = await client
             .from('found_emails')
             .select('*')
             .eq('first_name', cleanFirst)
@@ -271,7 +276,7 @@ export async function getCachedEmail(firstName: string, lastName: string, domain
                 email: data.email,
                 score: data.score,
                 domain: data.domain,
-                accept_all: false, // Default values for cached items
+                accept_all: false,
                 webmail: false,
                 disposable: false,
                 sources: [],
@@ -286,12 +291,8 @@ export async function getCachedEmail(firstName: string, lastName: string, domain
 
 /**
  * Finds the professional email address using Hunter.io Email Finder API
- * @param firstName First name
- * @param lastName Last name
- * @param domain Company domain
- * @returns The found email and details
  */
-export async function findEmail(firstName: string, lastName: string, domain: string): Promise<EmailFinderResponse['data'] | null> {
+export async function findEmail(firstName: string, lastName: string, domain: string, token?: string): Promise<EmailFinderResponse['data'] | null> {
     if (!HUNTER_API_KEY) {
         console.error("Hunter API Key is missing");
         return null;
@@ -301,7 +302,7 @@ export async function findEmail(firstName: string, lastName: string, domain: str
     const cleanLast = cleanName(lastName);
 
     // 1. Check Global Cache first
-    const cached = await getCachedEmail(cleanFirst, cleanLast, domain);
+    const cached = await getCachedEmail(cleanFirst, cleanLast, domain, token);
     if (cached) return cached;
 
     try {
@@ -320,7 +321,8 @@ export async function findEmail(firstName: string, lastName: string, domain: str
 
             // 2. Save to Global Cache
             try {
-                await supabase.from('found_emails').upsert({
+                const client = token ? createClerkSupabaseClient(token) : supabase;
+                await client.from('found_emails').upsert({
                     email: data.data.email,
                     first_name: cleanFirst.toLowerCase(),
                     last_name: cleanLast.toLowerCase(),
@@ -341,42 +343,4 @@ export async function findEmail(firstName: string, lastName: string, domain: str
         console.error("Error finding email:", error);
         return null;
     }
-}
-
-/**
- * Cleans a name by removing emojis, titles, and common suffixes
- * @param name The raw name string (e.g. "Mohit Bhatia PMP®")
- * @returns The cleaned name (e.g. "Mohit Bhatia")
- */
-export function cleanName(name: string): string {
-    if (!name) return "";
-
-    let cleaned = name;
-
-    // 1. Remove emojis and symbols
-    cleaned = cleaned.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B50}\u{200D}\u{FE0F}]/gu, "");
-    cleaned = cleaned.replace(/[®™©•|]/g, "");
-
-    // 2. Remove common titles and suffixes (case insensitive)
-    const suffixes = [
-        "PMP", "MBA", "PhD", "MSc", "CPA", "CFA", "CSM", "PSM", "ACP",
-        "Prince2", "ITIL", "AWS", "Azure", "GCP", "CISSP", "CISA", "CISM",
-        "Consultant", "Manager", "Director", "VP", "President", "Head", "Lead", "Chief", "Officer"
-    ];
-
-    // Remove text after common separators if it looks like a title/company
-    // e.g. "John Doe - Manager" -> "John Doe"
-    // e.g. "John Doe | PMP" -> "John Doe"
-    cleaned = cleaned.split(/ [-|•] /)[0];
-
-    // Remove specific suffixes if they are at the end of the string
-    for (const suffix of suffixes) {
-        const regex = new RegExp(`\\b${suffix}\\b`, "gi");
-        cleaned = cleaned.replace(regex, "");
-    }
-
-    // 3. Remove extra spaces
-    cleaned = cleaned.replace(/\s+/g, " ").trim();
-
-    return cleaned;
 }

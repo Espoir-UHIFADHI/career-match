@@ -41,7 +41,8 @@ Ce projet est construit avec une stack moderne et performante :
 - **Build Tool** : [Vite](https://vitejs.dev/) pour un développement rapide.
 - **Styling** : [Tailwind CSS](https://tailwindcss.com/) pour un design responsive et élégant.
 - **IA** : [Google Gemini API](https://ai.google.dev/) pour l'analyse de texte et la génération de contenu.
-- **Backend/Auth** : [Supabase](https://supabase.com/) & [Clerk](https://clerk.com/).
+- **Data & Search** : [Serper](https://serper.dev/) (Google Search API) & [Hunter.io](https://hunter.io/) (Email Finder).
+- **Backend/Auth** : [Supabase](https://supabase.com/) (Database & Edge Functions) & [Clerk](https://clerk.com/).
 - **State Management** : [Zustand](https://github.com/pmndrs/zustand) avec persistance locale.
 - **Icônes** : [Lucide React](https://lucide.dev/).
 
@@ -61,9 +62,17 @@ Suivez ces étapes pour lancer le projet localement :
     ```
 
 3.  **Configurer les variables d'environnement**
-    Créez un fichier `.env` à la racine du projet et ajoutez votre clé API Gemini :
+    Créez un fichier `.env` à la racine du projet et configurez les clés suivantes :
     ```env
-    VITE_GEMINI_API_KEY=votre_cle_api_ici
+    # AI & Search
+    VITE_GEMINI_API_KEY=votre_cle_api_gemini
+    
+    # Supabase (Database & Edge Functions)
+    VITE_SUPABASE_URL=votre_url_supabase
+    VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
+    
+    # Clerk (Authentication)
+    VITE_CLERK_PUBLISHABLE_KEY=votre_cle_publique_clerk
     ```
 
 4.  **Lancer le serveur de développement**

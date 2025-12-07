@@ -113,7 +113,7 @@ export function JobInput() {
         }
       `;
 
-            const analysis = await generateJSON(prompt);
+            const analysis = await generateJSON(prompt, token || undefined);
             console.log("Job Analysis Result:", analysis);
             setPreviewData({ ...analysis, url: mode === "url" ? url : undefined });
         } catch (err) {

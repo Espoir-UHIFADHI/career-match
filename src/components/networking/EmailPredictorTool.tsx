@@ -48,13 +48,20 @@ export function EmailPredictorTool() {
 
         let token: string | null = null;
         try {
-            token = await getToken({ template: 'supabase' });
+            token = await getToken({ template: 'supabase', skipCache: true });
         } catch (error) {
             console.error("Error getting Supabase token:", error);
             if (error instanceof Error && error.message.includes("No JWT template exists")) {
-                alert("Configuration Error: Missing 'supabase' JWT template in Clerk Dashboard. Please contact the administrator.");
+                alert(t('emailPredictor.errors.configMissing'));
                 return;
             }
+        }
+
+        if (!token) {
+            console.error("❌ Auth Error: No token generated");
+            setError(t('emailPredictor.errors.authFailed'));
+            setStatus('error');
+            return;
         }
 
         const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
@@ -64,7 +71,7 @@ export function EmailPredictorTool() {
                 setShowCreditModal(true);
             } else {
                 console.error("Credit error:", result.error);
-                alert(`An error occurred while checking credits (${result.error}). Please try again.`);
+                alert(t('emailPredictor.errors.creditsCheck'));
             }
             return;
         }
@@ -75,14 +82,17 @@ export function EmailPredictorTool() {
         setVerificationStatus('idle');
         setVerificationResult(null);
 
+        // Token is already fetched above
+
+
         try {
             // 1. Find domain
-            const domain = await findCompanyDomain(company);
-            if (!domain) throw new Error(`Could not find domain for "${company}"`);
+            const domain = await findCompanyDomain(company, token || undefined);
+            if (!domain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
 
             // 2. Get pattern
-            const pattern = await getEmailPattern(domain);
-            if (!pattern) throw new Error(`Could not find email pattern for ${domain}`);
+            const pattern = await getEmailPattern(domain, token || undefined);
+            if (!pattern) throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
 
             // 3. Find or Generate email
             let email: string | undefined;
@@ -91,7 +101,7 @@ export function EmailPredictorTool() {
 
             if (firstName && lastName) {
                 // 1. Check Cache first (Free for us)
-                const cached = await getCachedEmail(firstName, lastName, domain);
+                const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
 
                 if (cached) {
                     email = cached.email;
@@ -111,7 +121,7 @@ export function EmailPredictorTool() {
             setStatus('success');
         } catch (err) {
             console.error("Prediction failed:", err);
-            setError(err instanceof Error ? err.message : "An error occurred");
+            setError(err instanceof Error ? err.message : t('emailPredictor.errors.generic'));
             setStatus('error');
         }
     };
@@ -176,21 +186,22 @@ export function EmailPredictorTool() {
             return (
                 <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium border border-emerald-200">
                     <CheckCircle2 className="w-4 h-4" />
-                    Valid {score === 95 ? "(Certified)" : `(Score: ${score}%)`}
+                    {score === 95 ? t('emailPredictor.badges.validCertified') : t('emailPredictor.badges.validScore', { score })}
                 </div>
             );
         } else if (status === 'invalid') {
             return (
                 <div className="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-1 rounded-full text-sm font-medium border border-red-200">
                     <XCircle className="w-4 h-4" />
-                    Invalid (Score: {score}%)
+                    {t('emailPredictor.badges.invalidScore', { score })}
                 </div>
             );
         } else {
+            const label = status === 'accept_all' ? t('emailPredictor.badges.acceptAll') : t('emailPredictor.badges.risky');
             return (
                 <div className="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-1 rounded-full text-sm font-medium border border-amber-200">
                     <HelpCircle className="w-4 h-4" />
-                    {status === 'accept_all' ? 'Accept All' : 'Risky'} (Score: {score}%)
+                    {label} (Score: {score}%)
                 </div>
             );
         }

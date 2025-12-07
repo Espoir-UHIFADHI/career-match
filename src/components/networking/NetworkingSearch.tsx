@@ -39,7 +39,8 @@ export function NetworkingSearch() {
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { isSignedIn, user } = useUser();
-    const { getToken } = useAuth();
+    const { getToken } = useAuth(); // START-MODIFICATION: Move hook call here to fix scope
+    // END-MODIFICATION
 
     // Ensure results is treated as typed array even if store has any[]
     const typedResults = (results || []) as Contact[];
@@ -66,13 +67,6 @@ export function NetworkingSearch() {
         }
 
         // Check API key before attempting search
-        const apiKey = import.meta.env.VITE_SERPER_API_KEY;
-        if (!apiKey) {
-            setError(t('networking.apiKeyError') || "⚠️ Clé API Serper manquante. Veuillez ajouter VITE_SERPER_API_KEY dans votre fichier .env et redémarrer le serveur.");
-            setNetworkingState({ hasSearched: true, results: [] });
-            return;
-        }
-
         setIsSearching(true);
         setError(null);
 
@@ -105,8 +99,12 @@ export function NetworkingSearch() {
 
 
             let queries = [`site:linkedin.com/in/ ${role} ${company}`];
+
+            // Get token again if needed (or reuse if still valid)
+            const token = await getToken({ template: 'supabase' });
+
             try {
-                const response = await generateNetworkingQueries(company, role);
+                const response = await generateNetworkingQueries(company, role, "", token || undefined);
                 if (response && response.queries && response.queries.length > 0) {
                     queries = response.queries;
                 }
@@ -116,7 +114,7 @@ export function NetworkingSearch() {
 
             // Use the first query
             const queryToUse = queries[0];
-            const searchResults = await searchGoogle(queryToUse);
+            const searchResults = await searchGoogle(queryToUse, 10, 0, token || undefined);
 
             // Transform results
             const newContacts: Contact[] = searchResults.map(((r: any) => ({
@@ -154,9 +152,10 @@ export function NetworkingSearch() {
             return;
         }
 
+        let token: string | null = null;
         // Deduct Credit
         try {
-            const token = await getToken({ template: 'supabase' });
+            token = await getToken({ template: 'supabase' });
             const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
 
             if (!success) {
@@ -177,10 +176,10 @@ export function NetworkingSearch() {
         setNetworkingState({ results: newResults });
 
         try {
-            const domain = await findCompanyDomain(company);
+            const domain = await findCompanyDomain(company, token || undefined);
             if (!domain) throw new Error("Domaine introuvable");
 
-            const pattern = await getEmailPattern(domain);
+            const pattern = await getEmailPattern(domain, token || undefined);
 
             const cleanedName = cleanName(contact.name);
             const nameParts = cleanedName.split(" ");
@@ -207,7 +206,7 @@ export function NetworkingSearch() {
 
                 // Only if no pattern or generation failed, try the expensive API
                 if (!emailFound) {
-                    const result = await findEmail(first, last, domain);
+                    const result = await findEmail(first, last, domain, token || undefined);
                     if (result) {
                         emailFound = result.email;
                         score = result.score;
