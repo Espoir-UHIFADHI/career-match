@@ -26,6 +26,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         setIsMobileMenuOpen(false);
     };
 
+
+
     return (
         <div className="min-h-screen flex flex-col font-sans text-slate-900 selection:bg-indigo-500/20 selection:text-indigo-900 bg-slate-50">
             {/* Header */}
@@ -207,6 +209,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <button onClick={() => useAppStore.getState().setStep(8)} className="hover:text-slate-900 transition-colors text-left">{t('nav.privacyPolicy')}</button>
                         <button onClick={() => useAppStore.getState().setStep(9)} className="hover:text-slate-900 transition-colors text-left">{t('nav.termsOfService')}</button>
                         <button onClick={() => useAppStore.getState().setStep(10)} className="hover:text-slate-900 transition-colors text-left">{t('nav.contact')}</button>
+
+
                     </div>
                 </div>
             </footer>

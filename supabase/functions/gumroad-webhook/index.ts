@@ -33,11 +33,20 @@ serve(async (req) => {
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
         const { data: profile } = await supabaseAdmin.from('profiles').select('credits').eq('id', userId).single()
-        const newBalance = (profile?.credits || 0) + creditsToAdd
 
-        await supabaseAdmin.from('profiles').update({ credits: newBalance, is_premium: true }).eq('id', userId)
+        // If profile exists, use its credits. If not, start with 0.
+        const currentCredits = profile?.credits || 0
+        const newBalance = currentCredits + creditsToAdd
 
-        console.log(`✅ Success: +${creditsToAdd} for ${userId} -> ${newBalance}`)
+        // Use upsert to handle both update and insert (creates profile if missing)
+        const { error: upsertError } = await supabaseAdmin.from('profiles').upsert({
+            id: userId,
+            credits: newBalance
+        })
+
+        if (upsertError) throw upsertError
+
+        console.log(`✅ Success: +${creditsToAdd} for ${userId} -> ${newBalance} (Profile ${profile ? 'updated' : 'created'})`)
         return new Response(`Credits added: ${newBalance}`, { status: 200 })
 
     } catch (error) {

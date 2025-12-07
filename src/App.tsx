@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Layout } from "./components/Layout";
 import { useAppStore } from "./store/useAppStore";
 import { useUserStore } from "./store/useUserStore";
@@ -23,6 +23,7 @@ import { LandingPage } from "./components/LandingPage";
 import { PrivacyPolicy } from "./components/pages/PrivacyPolicy";
 import { TermsOfService } from "./components/pages/TermsOfService";
 import { Contact } from "./components/pages/Contact";
+import { PurchaseSuccessModal } from "./components/modals/PurchaseSuccessModal";
 
 // ... existing imports
 
@@ -31,7 +32,7 @@ import { Contact } from "./components/pages/Contact";
 function App() {
   console.log("App.tsx rendering");
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset } = useAppStore();
-  const { fetchCredits } = useUserStore();
+  const { fetchCredits, credits } = useUserStore();
   const { user, isSignedIn, isLoaded } = useUser();
   const { getToken } = useAuth();
   const { t } = useTranslation();
@@ -40,6 +41,27 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
+  // Notification Logic
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [addedCreditsAmount, setAddedCreditsAmount] = useState(0);
+  const prevCreditsRef = useRef(credits);
+
+  // Track credit increases
+  useEffect(() => {
+    // Only trigger if we have a valid previous balance (not initial load 0->X)
+    // AND if the credits actually increased
+    if (credits > prevCreditsRef.current && prevCreditsRef.current !== 0) {
+      const diff = credits - prevCreditsRef.current;
+      // Only show for significant increases (purchases), e.g. >= 20
+      if (diff >= 20) {
+        setAddedCreditsAmount(diff);
+        setShowSuccessModal(true);
+      }
+    }
+    prevCreditsRef.current = credits;
+  }, [credits]);
+
+  // Handle Resize for CV Preview
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: `CV_${cvData?.contact?.firstName || 'User'}_${cvData?.contact?.lastName || ''}`,
@@ -75,41 +97,47 @@ function App() {
     { id: 4, name: t('steps.resultsName'), description: t('steps.resultsDescription') },
   ];
 
-  useEffect(() => {
-    const syncUser = async () => {
-      if (!isLoaded) return; // Wait for Clerk to load
+  const syncUser = useCallback(async () => {
+    if (!isLoaded) return;
 
-      if (isSignedIn && user) {
-        // Check for user switch
-        if (userId !== user.id) {
-          console.log("User changed, resetting store");
-          reset();
-          setUserId(user.id);
-        }
-
-        try {
-          // Get Supabase token from Clerk
-          const token = await getToken({ template: 'supabase' });
-          // Sync user with Supabase (fetch credits) using the token
-          fetchCredits(user.id, token || undefined);
-        } catch (error) {
-          console.error("Error getting Supabase token:", error);
-          // Check if it's the specific template error
-          if (error instanceof Error && error.message.includes("No JWT template exists")) {
-            console.error("CRITICAL: You must create a JWT template named 'supabase' in your Clerk Dashboard.");
-          }
-          // Fallback to unauthenticated fetch (might fail RLS but better than crashing)
-          fetchCredits(user.id, undefined);
-        }
-      } else if (!isSignedIn && userId) {
-        // User logged out
-        console.log("User logged out, resetting store");
+    if (isSignedIn && user) {
+      if (userId !== user.id) {
+        console.log("User changed, resetting store");
         reset();
+        setUserId(user.id);
       }
+
+      try {
+        const token = await getToken({ template: 'supabase' });
+        fetchCredits(user.id, token || undefined);
+      } catch (error) {
+        console.error("Error getting Supabase token:", error);
+        if (error instanceof Error && error.message.includes("No JWT template exists")) {
+          console.error("CRITICAL: You must create a JWT template named 'supabase' in your Clerk Dashboard.");
+        }
+        fetchCredits(user.id, undefined);
+      }
+    } else if (!isSignedIn && userId) {
+      console.log("User logged out, resetting store");
+      reset();
+    }
+  }, [isLoaded, isSignedIn, user, userId, fetchCredits, getToken, reset, setUserId]);
+
+  // Initial sync
+  useEffect(() => {
+    syncUser();
+  }, [syncUser]);
+
+  // Re-sync on window focus (e.g. returning from Gumroad)
+  useEffect(() => {
+    const onFocus = () => {
+      console.log("Window focused, refreshing credits...");
+      syncUser();
     };
 
-    syncUser();
-  }, [isSignedIn, isLoaded, user, fetchCredits, getToken, userId, setUserId, reset]);
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [syncUser]);
 
 
   const handleStepClick = (stepId: number) => {
@@ -208,6 +236,12 @@ function App() {
           {renderStep()}
         </div>
       )}
+
+      <PurchaseSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        creditsAdded={addedCreditsAmount}
+      />
     </Layout>
   );
 }

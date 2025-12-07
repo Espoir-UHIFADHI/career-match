@@ -376,7 +376,7 @@ export const translations = {
                     "**Delete** your account and all associated data (\"Right to be forgotten\").",
                     "**Export** your data in a standard format."
                 ],
-                contact: "To exercise these rights, simply contact us at: **privacy@careermatch.ai**."
+                contact: "To exercise these rights, simply contact us at: **appcareermatch@gmail.com**."
             },
             cookies: {
                 title: "7. Cookies and Trackers",
@@ -388,7 +388,7 @@ export const translations = {
             },
             contactSection: {
                 title: "A question?",
-                dpo: "Our Data Protection Officer (DPO) is listening: **dpo@careermatch.com**",
+                dpo: "Our Data Protection Officer (DPO) is listening: **appcareermatch@gmail.com**",
                 footer: "Career Match - Propel your career with confidence."
             }
         },
@@ -450,7 +450,7 @@ export const translations = {
             },
             contactSection: {
                 title: "Need help?",
-                text: "Contact our support: **support@careermatch.com**"
+                text: "Contact our support: **appcareermatch@gmail.com**"
             }
         },
         contact: {
@@ -468,7 +468,7 @@ export const translations = {
             },
             info: {
                 email: "Email",
-                emailValue: "support@careermatch.com",
+                emailValue: "appcareermatch@gmail.com",
                 location: "Location",
                 locationValue: "Paris, France",
                 hours: "Business Hours",
@@ -849,7 +849,7 @@ export const translations = {
                     "**Supprimer** votre compte et toutes les données associées (\"Droit à l'oubli\").",
                     "**Exporter** vos données dans un format standard."
                 ],
-                contact: "Pour exercer ces droits, contactez-nous simplement à : **privacy@careermatch.ai**."
+                contact: "Pour exercer ces droits, contactez-nous simplement à : **appcareermatch@gmail.com**."
             },
             cookies: {
                 title: "7. Cookies et Traceurs",
@@ -861,7 +861,7 @@ export const translations = {
             },
             contactSection: {
                 title: "Une question ?",
-                dpo: "Notre Délégué à la Protection des Données (DPO) est à votre écoute : **dpo@careermatch.com**",
+                dpo: "Notre Délégué à la Protection des Données (DPO) est à votre écoute : **appcareermatch@gmail.com**",
                 footer: "Career Match - Propulsez votre carrière en toute confiance."
             }
         },
@@ -923,7 +923,7 @@ export const translations = {
             },
             contactSection: {
                 title: "Besoin d'aide ?",
-                text: "Contactez notre support : **support@careermatch.com**"
+                text: "Contactez notre support : **appcareermatch@gmail.com**"
             }
         },
         contact: {
@@ -941,7 +941,7 @@ export const translations = {
             },
             info: {
                 email: "Email",
-                emailValue: "support@careermatch.com",
+                emailValue: "appcareermatch@gmail.com",
                 location: "Localisation",
                 locationValue: "Paris, France",
                 hours: "Horaires",
