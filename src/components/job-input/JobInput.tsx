@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight, Link as LinkIcon } from "lucide-react";
+import { Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
 import { useUser, useAuth } from "@clerk/clerk-react";
