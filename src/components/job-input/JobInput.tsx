@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Search, FileText, Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight, Link as LinkIcon } from "lucide-react";
+import { Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight, Link as LinkIcon } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { searchGoogle } from "../../services/search/serper";
 import { generateJSON } from "../../services/ai/gemini";
 import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -14,8 +13,6 @@ import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 export function JobInput() {
     const { t } = useTranslation();
     const { setJobData, setStep } = useAppStore();
-    const [mode, setMode] = useState<"url" | "text">("url");
-    const [url, setUrl] = useState("");
     const [description, setDescription] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -24,14 +21,19 @@ export function JobInput() {
 
     const { user, isSignedIn } = useUser();
     const { getToken } = useAuth();
-    const { useCredit } = useUserStore();
+    const { useCredit, credits } = useUserStore(); // Added credits here for consistency with other components
 
     const analyzeJob = async () => {
-        const contentToAnalyze = mode === "url" ? url : description;
-        if (!contentToAnalyze.trim()) return;
+        if (!description.trim()) return;
 
         if (!isSignedIn || !user) {
             alert("Veuillez vous connecter pour analyser un job.");
+            return;
+        }
+
+        // Check local credits BEFORE starting
+        if (credits < 1) {
+            setShowCreditModal(true);
             return;
         }
 
@@ -59,45 +61,11 @@ export function JobInput() {
         }
 
         try {
-            let jobText = contentToAnalyze;
-
-            if (mode === "url") {
-                // 1. Try to fetch content via Jina AI Reader
-                let jinaContent = "";
-                try {
-                    const jinaResponse = await fetch(`https://r.jina.ai/${url}`);
-                    if (jinaResponse.ok) {
-                        jinaContent = await jinaResponse.text();
-                    }
-                } catch (e) {
-                    console.warn("Jina fetch failed:", e);
-                }
-
-                // 2. Also search via Serper for metadata/snippets
-                let serperContent = "";
-                try {
-                    const results = await searchGoogle(url);
-                    if (results && results.length > 0) {
-                        serperContent = results.slice(0, 5).map(r =>
-                            `Source: ${r.title}\nLink: ${r.link}\nSnippet: ${r.snippet}`
-                        ).join("\n\n");
-                    }
-                } catch (e) {
-                    console.warn("Serper search failed:", e);
-                }
-
-                if (!jinaContent && !serperContent) {
-                    console.warn("No info found for this URL");
-                }
-
-                jobText = `Target URL: ${url}\n\nFull Page Content (via Jina):\n${jinaContent}\n\nSearch Results (via Serper):\n${serperContent}`;
-            }
-
             const prompt = `
         Analyze the following job posting and extract the key requirements.
         
         Job Content:
-        ${jobText}
+        ${description}
         
         Return a JSON object matching this schema:
         {
@@ -115,7 +83,7 @@ export function JobInput() {
 
             const analysis = await generateJSON(prompt, token || undefined);
             console.log("Job Analysis Result:", analysis);
-            setPreviewData({ ...analysis, url: mode === "url" ? url : undefined });
+            setPreviewData({ ...analysis });
         } catch (err) {
             console.error(err);
             setError("Failed to analyze job. Please try again or paste text manually.");
@@ -233,48 +201,9 @@ export function JobInput() {
 
             <Card className="overflow-hidden bg-white shadow-sm border-slate-200">
                 <CardContent className="p-0">
-                    <div className="flex border-b border-slate-200">
-                        <button
-                            onClick={() => setMode("url")}
-                            className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all duration-200 ${mode === "url"
-                                ? "text-indigo-600 bg-indigo-50/50 border-b-2 border-indigo-600"
-                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                                }`}
-                        >
-                            <LinkIcon className="h-4 w-4" />
-                            {t('jobInput.tabUrl')}
-                        </button>
-                        <button
-                            onClick={() => setMode("text")}
-                            className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-all duration-200 ${mode === "text"
-                                ? "text-indigo-600 bg-indigo-50/50 border-b-2 border-indigo-600"
-                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                                }`}
-                        >
-                            <FileText className="h-4 w-4" />
-                            {t('jobInput.tabText')}
-                        </button>
-                    </div>
-
                     <div className="p-6 space-y-6">
-                        {mode === "url" ? (
-                            <div className="space-y-4">
-                                <div className="relative">
-                                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <input
-                                        type="url"
-                                        value={url}
-                                        onChange={(e) => setUrl(e.target.value)}
-                                        placeholder={t('jobInput.placeholderUrl')}
-                                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none shadow-sm"
-                                    />
-                                </div>
-                                <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                                    <Search className="h-3 w-3" />
-                                    {t('jobInput.poweredBy')}
-                                </p>
-                            </div>
-                        ) : (
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-medium text-slate-700">{t('jobInput.tabText')}</h3>
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
@@ -282,7 +211,7 @@ export function JobInput() {
                                 rows={10}
                                 className="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none shadow-sm text-sm leading-relaxed"
                             />
-                        )}
+                        </div>
 
                         {error && (
                             <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-lg flex items-center gap-3 text-sm">
@@ -293,7 +222,7 @@ export function JobInput() {
 
                         <Button
                             onClick={analyzeJob}
-                            disabled={isProcessing || (mode === "url" ? !url : !description)}
+                            disabled={isProcessing || !description}
                             className="w-full h-11 text-base shadow-lg shadow-indigo-500/20"
                         >
                             {isProcessing ? (
@@ -317,3 +246,4 @@ export function JobInput() {
         </div >
     );
 }
+

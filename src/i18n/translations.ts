@@ -124,7 +124,7 @@ export const translations = {
         },
         jobInput: {
             title: "Target Job",
-            subtitle: "Paste the job description or URL to match against.",
+            subtitle: "Paste the full job description below.",
             tabUrl: "Job URL",
             tabText: "Job Description",
             placeholderUrl: "https://linkedin.com/jobs/...",
@@ -597,7 +597,7 @@ export const translations = {
         },
         jobInput: {
             title: "Poste Visé",
-            subtitle: "Collez la description du poste ou l'URL pour la comparer.",
+            subtitle: "Collez la description complète du poste ci-dessous.",
             tabUrl: "URL de l'offre",
             tabText: "Description du poste",
             placeholderUrl: "https://linkedin.com/jobs/...",

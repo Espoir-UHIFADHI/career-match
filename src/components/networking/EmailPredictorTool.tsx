@@ -26,7 +26,7 @@ export function EmailPredictorTool() {
     const [showCreditModal, setShowCreditModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
-    const { useCredit } = useUserStore();
+    const { useCredit, credits } = useUserStore();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
@@ -64,15 +64,9 @@ export function EmailPredictorTool() {
             return;
         }
 
-        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
-
-        if (!result.success) {
-            if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
-                setShowCreditModal(true);
-            } else {
-                console.error("Credit error:", result.error);
-                alert(t('emailPredictor.errors.creditsCheck'));
-            }
+        // Check local credits BEFORE starting
+        if (credits < 1) {
+            setShowCreditModal(true);
             return;
         }
 
@@ -118,6 +112,21 @@ export function EmailPredictorTool() {
             setEmailPredictorState({
                 result: { email, domain, pattern, score, source }
             });
+            // Deduct Credit AFTER success - Only if we found something useful (pattern or email)
+            if (email || pattern) {
+                const creditResult = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
+                if (!creditResult.success) {
+                    if (creditResult.error === 'insufficient_funds_local' || creditResult.error === 'insufficient_funds_server') {
+                        // This catches the race condition where they spent their last credit in another tab
+                        setShowCreditModal(true);
+                        // Optional: Should we hide the result? 
+                        // For better UX, we might show it anyway since we already did the work, but warn them next time.
+                    } else {
+                        console.error("Credit deduction failed:", creditResult.error);
+                    }
+                }
+            }
+
             setStatus('success');
         } catch (err) {
             console.error("Prediction failed:", err);

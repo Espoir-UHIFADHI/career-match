@@ -30,7 +30,7 @@ interface Contact {
 export function NetworkingSearch() {
     const { t } = useTranslation();
     const { networking, setNetworkingState } = useAppStore();
-    const { useCredit } = useUserStore(); // hook usage
+    const { useCredit, credits } = useUserStore(); // hook usage
 
     // Derived state from store
     const { company, role, results, hasSearched } = networking;
@@ -70,24 +70,9 @@ export function NetworkingSearch() {
         setIsSearching(true);
         setError(null);
 
-        // Deduct Credit
-        try {
-            const token = await getToken({ template: 'supabase' });
-            const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
-
-            if (!success) {
-                setIsSearching(false);
-                if (creditError === 'insufficient_funds_local' || creditError === 'insufficient_funds_server') {
-                    setShowCreditModal(true);
-                } else {
-                    setError(t('networking.creditError') || "Erreur lors de la déduction des crédits.");
-                }
-                return;
-            }
-        } catch (err) {
-            console.error("Credit deduction failed:", err);
-            setIsSearching(false);
-            setError("Erreur système lors de la vérification des crédits.");
+        // Check local credits BEFORE starting
+        if (credits < 1) {
+            setShowCreditModal(true);
             return;
         }
 
@@ -96,11 +81,8 @@ export function NetworkingSearch() {
         }
 
         try {
-
-
             let queries = [`site:linkedin.com/in/ ${role} ${company}`];
 
-            // Get token again if needed (or reuse if still valid)
             const token = await getToken({ template: 'supabase' });
 
             try {
@@ -112,20 +94,17 @@ export function NetworkingSearch() {
                 console.warn("Gemini query generation failed, using fallback", e);
             }
 
-            // Use the first query
             const queryToUse = queries[0];
             const searchResults = await searchGoogle(queryToUse, 10, 0, token || undefined);
 
-            // Transform results
             const newContacts: Contact[] = searchResults.map(((r: any) => ({
-                name: r.title.split('|')[0].split('-')[0].trim(), // Simple heuristic
+                name: r.title.split('|')[0].split('-')[0].trim(),
                 title: r.title,
                 link: r.link,
                 snippet: r.snippet,
                 emailStatus: 'idle'
             })));
 
-            // Deduplicate
             if (isLoadMore) {
                 const combined = [...typedResults, ...newContacts];
                 const unique = combined.filter((c, i, self) => self.findIndex(t => t.link === c.link) === i);
@@ -134,6 +113,22 @@ export function NetworkingSearch() {
                 setNetworkingState({ results: newContacts });
             }
             setNetworkingState({ hasSearched: true });
+
+            // Deduct Credit AFTER success - BUT ONLY IF WE HAVE RESULTS
+            if (searchResults.length > 0 || (isLoadMore && newContacts.length > 0)) {
+                try {
+                    const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
+                    if (!success) {
+                        if (creditError === 'insufficient_funds_local' || creditError === 'insufficient_funds_server') {
+                            setShowCreditModal(true);
+                        } else {
+                            console.error("Credit deduction failed after search:", creditError);
+                        }
+                    }
+                } catch (err) {
+                    console.error("Credit deduction failed:", err);
+                }
+            }
 
         } catch (error) {
             console.error("Search failed:", error);
@@ -152,22 +147,8 @@ export function NetworkingSearch() {
             return;
         }
 
-        let token: string | null = null;
-        // Deduct Credit
-        try {
-            token = await getToken({ template: 'supabase' });
-            const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
-
-            if (!success) {
-                if (creditError === 'insufficient_funds_local' || creditError === 'insufficient_funds_server') {
-                    setShowCreditModal(true);
-                } else {
-                    alert(t('networking.creditError') || "Erreur lors de la déduction des crédits.");
-                }
-                return;
-            }
-        } catch (err) {
-            console.error("Credit deduction failed:", err);
+        if (credits < 1) {
+            setShowCreditModal(true);
             return;
         }
 
@@ -175,7 +156,9 @@ export function NetworkingSearch() {
         newResults[contactIndex] = { ...contact, emailStatus: 'loading' };
         setNetworkingState({ results: newResults });
 
+        let token: string | null = null;
         try {
+            token = await getToken({ template: 'supabase' });
             const domain = await findCompanyDomain(company, token || undefined);
             if (!domain) throw new Error("Domaine introuvable");
 
@@ -190,21 +173,13 @@ export function NetworkingSearch() {
             let score = undefined;
 
             if (first && last) {
-                // COST SAVING STRATEGY:
-                // 1. Try to generate from pattern first (Free/Cheap)
-                // 2. Fallback to API findEmail (Expensive)
-
                 if (pattern) {
-                    // Generate based on pattern - Save API credits
                     emailFound = generateEmail(first, last, pattern, domain);
-                    // Mock a confidence score for pattern-based generation
                     if (emailFound) {
                         score = 80;
-                        // console.log("Email generated from pattern, skipping Hunter findEmail API");
                     }
                 }
 
-                // Only if no pattern or generation failed, try the expensive API
                 if (!emailFound) {
                     const result = await findEmail(first, last, domain, token || undefined);
                     if (result) {
@@ -225,6 +200,18 @@ export function NetworkingSearch() {
             };
             setNetworkingState({ results: updatedResults });
 
+            // Deduct Credit AFTER success - ONLY IF EMAIL FOUND
+            if (emailFound) {
+                try {
+                    const { success } = await useCredit(user.id, 1, token || undefined);
+                    if (!success) {
+                        console.error("Credit deduction failed after email find");
+                    }
+                } catch (err) {
+                    console.error("Credit deduction failed:", err);
+                }
+            }
+
         } catch (error) {
             console.error(error);
             const updatedResults = [...typedResults];
@@ -232,6 +219,7 @@ export function NetworkingSearch() {
             setNetworkingState({ results: updatedResults });
         }
     };
+
 
     const handleGenerateMessage = async (contact: Contact) => {
         setSelectedContact(contact);
