@@ -204,14 +204,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {/* Footer */}
             <footer className="border-t border-slate-200 bg-white py-8 mt-auto">
                 <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-                    <p>{t('nav.rights')}</p>
-                    <div className="flex gap-6">
-                        <button onClick={() => useAppStore.getState().setStep(8)} className="hover:text-slate-900 transition-colors text-left">{t('nav.privacyPolicy')}</button>
-                        <button onClick={() => useAppStore.getState().setStep(9)} className="hover:text-slate-900 transition-colors text-left">{t('nav.termsOfService')}</button>
-                        <button onClick={() => useAppStore.getState().setStep(10)} className="hover:text-slate-900 transition-colors text-left">{t('nav.contact')}</button>
-
-
-                    </div>
+                    {step !== 7 && <p>{t('nav.rights')}</p>}
+                    {step === 7 && (
+                        <div className="flex gap-6">
+                            <button onClick={() => useAppStore.getState().setStep(8)} className="hover:text-slate-900 transition-colors text-left">{t('nav.privacyPolicy')}</button>
+                            <button onClick={() => useAppStore.getState().setStep(9)} className="hover:text-slate-900 transition-colors text-left">{t('nav.termsOfService')}</button>
+                            <button onClick={() => useAppStore.getState().setStep(10)} className="hover:text-slate-900 transition-colors text-left">{t('nav.contact')}</button>
+                        </div>
+                    )}
                 </div>
             </footer>
         </div>
