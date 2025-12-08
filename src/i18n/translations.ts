@@ -24,7 +24,11 @@ export const translations = {
             ctaStart: "Start for Free",
             ctaDashboard: "Go to App",
 
-            socialProof: "4.9/5 by +1000 pros",
+            badges: {
+                privacy: "Data Privacy Guaranteed",
+                trust: "Trusted Technology",
+                ai: "Powered by AI"
+            },
             joinedTeams: "THEY JOINED THE BEST TEAMS",
             freeCreditsOffer: "(7 credits offered on signup)"
         },
@@ -512,7 +516,11 @@ export const translations = {
             ctaStart: "Commencer Gratuitement",
             ctaDashboard: "Accéder à l'application",
 
-            socialProof: "4.9/5 par +1000 pros",
+            badges: {
+                privacy: "Confidentialité Garantie",
+                trust: "Technologie de Confiance",
+                ai: "Propulsé par l'IA"
+            },
             joinedTeams: "Ils ont rejoint les meilleures équipes",
             freeCreditsOffer: "(7 crédits offerts à l'inscription)"
         },

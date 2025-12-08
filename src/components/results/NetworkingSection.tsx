@@ -4,8 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { searchLinkedIn, type SearchResult } from "../../services/search/serper";
 import { useAppStore } from "../../store/useAppStore";
 
+import { useAuth } from "@clerk/clerk-react";
+
 export function NetworkingSection() {
     const { jobData } = useAppStore();
+    const { getToken } = useAuth();
     const [profiles, setProfiles] = useState<SearchResult[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -19,9 +22,10 @@ export function NetworkingSection() {
         if (!jobData) return;
         setLoading(true);
         try {
+            const token = await getToken({ template: 'supabase' });
             // Search for people in the company with similar roles or hiring roles
             // We can search for "Recruiter" or the specific role
-            const results = await searchLinkedIn(jobData.company, jobData.title);
+            const results = await searchLinkedIn(jobData.company, jobData.title, 10, 0, token || undefined);
             setProfiles(results.slice(0, 5));
         } catch (err) {
             console.error("Networking search failed", err);

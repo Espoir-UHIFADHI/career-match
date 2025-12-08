@@ -139,6 +139,44 @@ function App() {
     return () => window.removeEventListener('focus', onFocus);
   }, [syncUser]);
 
+  // Handle first-time login (Welcome Email)
+  useEffect(() => {
+    const sendWelcome = async () => {
+      if (!isLoaded || !isSignedIn || !user) return;
+
+      const metadata = user.unsafeMetadata as { welcome_sent?: boolean };
+
+      if (!metadata.welcome_sent) {
+        console.log("New user detected, sending welcome email...");
+        try {
+          const token = await getToken({ template: 'supabase' });
+          if (!token) return;
+
+          // Dynamically import to avoid circular dependencies if any, or just use imported
+          const { sendTransactionalEmail } = await import("./services/emailService");
+
+          const sent = await sendTransactionalEmail(
+            user.primaryEmailAddress?.emailAddress,
+            'welcome',
+            { name: user.firstName || 'User' },
+            token
+          );
+
+          if (sent) {
+            await user.update({
+              unsafeMetadata: { ...metadata, welcome_sent: true }
+            });
+            console.log("Welcome email sent and metadata updated.");
+          }
+        } catch (error) {
+          console.error("Failed to send welcome email:", error);
+        }
+      }
+    };
+
+    sendWelcome();
+  }, [isLoaded, isSignedIn, user]);
+
 
   const handleStepClick = (stepId: number) => {
     // ... existing logic

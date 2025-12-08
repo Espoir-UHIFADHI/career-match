@@ -346,3 +346,36 @@ export async function findEmail(firstName: string, lastName: string, domain: str
         return null;
     }
 }
+
+/**
+ * Sends a transactional email via Supabase Edge Function 'send-email'
+ */
+export async function sendTransactionalEmail(
+    to: string,
+    type: string,
+    data: any,
+    token?: string
+): Promise<boolean> {
+    console.log(`🚀 Sending email '${type}' to ${to}...`);
+    try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        const { error } = await supabase.functions.invoke('send-email', {
+            body: {
+                to,
+                type,
+                data
+            },
+            headers
+        });
+
+        if (error) {
+            console.error("❌ Error sending email:", error);
+            return false;
+        }
+        console.log("✅ Email sent successfully.");
+        return true;
+    } catch (e) {
+        console.error("❌ Exception sending email:", e);
+        return false;
+    }
+}

@@ -3,7 +3,7 @@ import { SignInButton, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { useAppStore } from "../store/useAppStore";
 import { Button } from "./ui/Button";
 
-import { ArrowRight, FileText, Mail, Sparkles, Zap, Star, StarHalf, CheckCircle, User } from "lucide-react";
+import { ArrowRight, FileText, Mail, Zap, CheckCircle, User, Shield, Lock, Sparkles } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
@@ -70,37 +70,16 @@ export function LandingPage() {
                                 {t('hero.freeCreditsOffer')}
                             </p>
 
-                            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 animate-fade-in animation-delay-500">
-                                <div className="flex -space-x-4">
-                                    {[
-                                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64",
-                                        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=64&h=64",
-                                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=64&h=64",
-                                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=64&h=64"
-                                    ].map((src, i) => (
-                                        <div key={i} className="h-12 w-12 rounded-full border-2 border-white ring-2 ring-indigo-50 shadow-md relative z-10 hover:scale-110 hover:z-20 transition-all duration-300">
-                                            <img
-                                                src={src}
-                                                alt={`User ${i + 1}`}
-                                                className="w-full h-full rounded-full object-cover"
-                                            />
-                                        </div>
-                                    ))}
+                            <div className="mt-10 flex flex-wrap gap-4 justify-center lg:justify-start animate-fade-in animation-delay-500">
+                                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:shadow-md transition-shadow">
+                                    <Shield className="w-4 h-4 text-emerald-500" />
+                                    <span className="text-sm font-medium text-slate-700">{t('hero.badges.privacy')}</span>
                                 </div>
-                                <div className="flex flex-col gap-1 bg-white/60 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex text-amber-400">
-                                            {[1, 2, 3, 4].map(i => (
-                                                <Star key={i} className="w-4 h-4 fill-current drop-shadow-sm" />
-                                            ))}
-                                            <StarHalf className="w-4 h-4 fill-current drop-shadow-sm" />
-                                        </div>
-                                        <span className="font-bold text-slate-800">4.6/5</span>
-                                    </div>
-                                    <p className="text-sm font-medium text-slate-600">
-                                        par <span className="text-indigo-600 font-bold">+1000 pros</span>
-                                    </p>
+                                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:shadow-md transition-shadow">
+                                    <Lock className="w-4 h-4 text-indigo-500" />
+                                    <span className="text-sm font-medium text-slate-700">{t('hero.badges.trust')}</span>
                                 </div>
+
                             </div>
                         </div>
 

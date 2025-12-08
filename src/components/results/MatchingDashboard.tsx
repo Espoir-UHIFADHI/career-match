@@ -11,10 +11,11 @@ import type { MatchResult } from "../../types";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 export function MatchingDashboard() {
     const { t } = useTranslation();
+    const { user } = useUser();
     const { getToken } = useAuth();
     const { cvData, jobData, analysisResults, setAnalysisResults, language, setLanguage } = useAppStore();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -51,6 +52,21 @@ export function MatchingDashboard() {
             const results = await matchAndOptimize(cvData, jobData, language, token || undefined);
             setAnalysisResults(results as MatchResult);
             setShowPreview(true);
+
+            // Send "Match Ready" email
+            if (results && 'score' in results && user?.primaryEmailAddress?.emailAddress) {
+                const { sendTransactionalEmail } = await import("../../services/emailService");
+
+                await sendTransactionalEmail(
+                    user.primaryEmailAddress.emailAddress,
+                    'match_ready',
+                    {
+                        score: (results as any).score,
+                        jobTitle: jobData.title || jobData.company || 'Job'
+                    },
+                    token || ""
+                );
+            }
         } catch (err) {
             console.error(err);
             setError("Failed to analyze match. Please try again.");
