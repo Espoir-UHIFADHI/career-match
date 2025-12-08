@@ -1,5 +1,5 @@
 import React from "react";
-import { Page, Text, View, Document, StyleSheet, Font, Link } from "@react-pdf/renderer";
+import { Page, Text, View, Document, StyleSheet, Link } from "@react-pdf/renderer";
 import type { ParsedCV } from "../../types";
 
 // Register typical fonts (optional, using Standard fonts by default for simplicity/speed)
