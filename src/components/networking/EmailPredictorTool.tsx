@@ -388,16 +388,48 @@ export function EmailPredictorTool() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="bg-slate-50 border-dashed border-2 border-slate-200 shadow-none h-full flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-75">
-                            <div className="p-4 bg-white rounded-full shadow-sm">
-                                <Search className="h-8 w-8 text-slate-300" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-slate-900">{t('emailPredictor.noPrediction')}</h3>
-                                <p className="text-slate-500 text-sm mt-1">
-                                    {t('emailPredictor.noPredictionDesc')}
-                                </p>
-                            </div>
+                        <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full opacity-60 hover:opacity-100 transition-opacity">
+                            <CardHeader className="border-b border-slate-100 pb-4">
+                                <CardTitle className="text-lg text-slate-900 flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 bg-slate-100 rounded-lg">
+                                            <Search className="w-5 h-5 text-slate-500" />
+                                        </div>
+                                        {t('emailPredictor.noPrediction')}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <span className="text-xs font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded-full uppercase tracking-wider">
+                                            {t('emailPredictor.inDevelopment')}
+                                        </span>
+                                        <span className="text-xs font-bold px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase tracking-wider">
+                                            Exemple
+                                        </span>
+                                    </div>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6">
+                                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center border border-indigo-100">
+                                    <Mail className="w-10 h-10 text-indigo-600" />
+                                </div>
+
+                                <div className="w-full text-center space-y-2">
+                                    <h3 className="font-semibold text-slate-900">
+                                        {t('emailPredictor.verified')}
+                                    </h3>
+                                    <div className="flex items-center justify-center gap-2 w-full">
+                                        <code className="text-lg font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded border border-indigo-100 break-all">
+                                            jean.dupont@google.com
+                                        </code>
+                                    </div>
+                                </div>
+
+                                <div className="w-full space-y-3 pt-4 border-t border-slate-100">
+                                    <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium border border-emerald-200 justify-center">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        Valid (Score: 100%)
+                                    </div>
+                                </div>
+                            </CardContent>
                         </Card>
                     )}
                 </div>

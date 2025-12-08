@@ -76,7 +76,7 @@ export async function getEmailPattern(domain: string, token?: string): Promise<s
             .from('domain_patterns')
             .select('pattern')
             .eq('domain', domain)
-            .single();
+            .maybeSingle();
 
         if (data?.pattern) {
             console.log(`[Hunter Cache] Global Hit for ${domain}`);
@@ -268,7 +268,7 @@ export async function getCachedEmail(firstName: string, lastName: string, domain
             .eq('first_name', cleanFirst)
             .eq('last_name', cleanLast)
             .eq('domain', domain)
-            .single();
+            .maybeSingle();
 
         if (data) {
             console.log(`[Hunter Cache] Email found in cache: ${data.email}`);
@@ -311,7 +311,9 @@ export async function findEmail(firstName: string, lastName: string, domain: str
 
         if (!response.ok) {
             console.error(`Hunter API Error: ${response.status} ${response.statusText}`);
-            return null;
+            if (response.status === 429) throw new Error("quota_exceeded");
+            if (response.status === 401) throw new Error("invalid_api_key");
+            throw new Error(`api_error_${response.status}`);
         }
 
         const data: EmailFinderResponse = await response.json();

@@ -218,7 +218,11 @@ export const translations = {
             genError: "Error generating message. Please try again.",
             guideTitle: "Networking Guide",
             close: "Close",
-            generateNow: "Generate Now"
+            generateNow: "Generate Now",
+            emailNotFound: "Email not found",
+            emailError: "Check failed",
+            emailQuota: "Quota Exceeded",
+            emailApiKey: "API Key Error"
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -246,6 +250,7 @@ export const translations = {
             patternDesc: "Enter a name to generate the specific email address.",
             noPrediction: "No prediction yet",
             noPredictionDesc: "Enter company details to find email patterns or addresses.",
+            inDevelopment: "In Development",
             errors: {
                 configMissing: "Configuration Error: Missing 'supabase' JWT template in Clerk Dashboard. Please contact the administrator.",
                 authFailed: "Authentication failed. Please refresh the page and sign in again.",
@@ -691,7 +696,11 @@ export const translations = {
             genError: "Erreur lors de la génération du message. Veuillez réessayer.",
             guideTitle: "Guide de Réseautage",
             close: "Fermer",
-            generateNow: "Générer Maintenant"
+            generateNow: "Générer Maintenant",
+            emailNotFound: "Email introuvable",
+            emailError: "Échec vérif.",
+            emailQuota: "Quota dépassé (Hunter)",
+            emailApiKey: "Erreur Clé API"
         },
         emailPredictor: {
             title: "Prédicteur d'Email",
@@ -704,7 +713,7 @@ export const translations = {
             companyPlaceholder: "ex: Google",
             analyzePatterns: "Analyse des Patrons...",
             findEmail: "Trouver Email",
-            findPattern: "Trouver Patron (1 crédit)",
+            findPattern: "Trouver Email (1 crédit)",
             signIn: "Connectez-vous pour utiliser",
             result: "Résultat",
             verified: "Email Vérifié",
@@ -717,8 +726,9 @@ export const translations = {
             risky: "Risqué",
             patternFound: "Patron Trouvé",
             patternDesc: "Entrez un nom pour générer l'adresse email spécifique.",
-            noPrediction: "Disponible bientôt",
+            noPrediction: "Exemple",
             noPredictionDesc: "Entrez les détails de l'entreprise pour trouver des modèles ou adresses.",
+            inDevelopment: "En cours de développement",
             errors: {
                 configMissing: "Erreur de configuration : Modèle JWT 'supabase' manquant dans Clerk. Veuillez contacter l'administrateur.",
                 authFailed: "Authentification échouée. Veuillez rafraîchir la page et vous reconnecter.",

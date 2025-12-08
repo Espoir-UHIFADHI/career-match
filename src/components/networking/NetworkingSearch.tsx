@@ -25,6 +25,7 @@ interface Contact {
     emailConfidence?: number;
     emailPattern?: string;
     domain?: string;
+    emailErrorType?: string;
 }
 
 export function NetworkingSearch() {
@@ -215,7 +216,12 @@ export function NetworkingSearch() {
         } catch (error) {
             console.error(error);
             const updatedResults = [...typedResults];
-            updatedResults[contactIndex] = { ...contact, emailStatus: 'error' };
+            let errorMsg = 'error';
+            if (error instanceof Error) {
+                if (error.message === 'quota_exceeded') errorMsg = 'quota';
+                else if (error.message === 'invalid_api_key') errorMsg = 'apikey';
+            }
+            updatedResults[contactIndex] = { ...contact, emailStatus: 'error', emailErrorType: errorMsg };
             setNetworkingState({ results: updatedResults });
         }
     };
@@ -228,12 +234,14 @@ export function NetworkingSearch() {
         setGeneratedMessage("");
 
         try {
+            const token = await getToken({ template: 'supabase' });
             const msg = await generateNetworkingMessage(
                 null,
                 company + " " + role,
                 contact.title,
                 company,
-                "cold-outreach"
+                "cold-outreach",
+                token || undefined
             );
             setGeneratedMessage(msg);
         } catch (e) {
@@ -347,6 +355,20 @@ export function NetworkingSearch() {
                                                         <span className="flex items-center text-slate-400 text-xs">
                                                             <Loader2 className="h-3 w-3 animate-spin mr-1" /> {t('networking.findingEmail')}
                                                         </span>
+                                                    ) : contact.emailStatus === 'error' ? (
+                                                        <div className="flex items-center gap-1 text-red-500 text-xs font-medium" title={t('networking.emailError')}>
+                                                            <AlertCircle className="h-3 w-3" />
+                                                            <span>
+                                                                {contact.emailErrorType === 'quota' ? t('networking.emailQuota') :
+                                                                    contact.emailErrorType === 'apikey' ? t('networking.emailApiKey') :
+                                                                        t('networking.emailError')}
+                                                            </span>
+                                                        </div>
+                                                    ) : (contact.emailStatus === 'success' && !contact.email) ? (
+                                                        <div className="flex items-center gap-1 text-slate-400 text-xs italic" title="Email introuvable">
+                                                            <Mail className="h-3 w-3 opacity-50" />
+                                                            <span>{t('networking.emailNotFound')}</span>
+                                                        </div>
                                                     ) : (
                                                         <Button
                                                             variant="ghost"

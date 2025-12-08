@@ -11,7 +11,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 
 export function JobInput() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const { setJobData, setStep } = useAppStore();
     const [description, setDescription] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
@@ -79,6 +79,8 @@ export function JobInput() {
             "experienceLevel": "Junior/Mid/Senior"
           }
         }
+
+        IMPORTANT: Provide the response in ${language === 'fr' ? 'French' : 'English'}.
       `;
 
             const analysis = await generateJSON(prompt, token || undefined);
