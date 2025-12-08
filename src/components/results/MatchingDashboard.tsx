@@ -365,15 +365,6 @@ export function MatchingDashboard() {
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                        <Button
-                            variant="outline"
-                            onClick={runAnalysis}
-                            className="w-full sm:w-auto gap-2 hover:bg-slate-50 text-slate-700 border-slate-200"
-                        >
-                            <Loader2 className="h-4 w-4" />
-                            {t('dashboard.regenerate')}
-                        </Button>
-
                         {!isLowMatch && (
                             <>
                                 <Button
