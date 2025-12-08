@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
-import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle } from "lucide-react";
+import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle, Construction } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -39,6 +39,7 @@ export function NetworkingSearch() {
     // Local UI state
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showDevModal, setShowDevModal] = useState(false); // Modal state instead of notification
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth(); // START-MODIFICATION: Move hook call here to fix scope
     // END-MODIFICATION
@@ -140,6 +141,11 @@ export function NetworkingSearch() {
     };
 
     const handleGuessEmail = async (contactIndex: number) => {
+        // TEMPORARY: Disable email search and show "Coming Soon" notification
+        setShowDevModal(true);
+        return;
+
+        /* Original Logic Commented Out
         const contact = typedResults[contactIndex];
         if (!contact || !company) return;
 
@@ -224,6 +230,7 @@ export function NetworkingSearch() {
             updatedResults[contactIndex] = { ...contact, emailStatus: 'error', emailErrorType: errorMsg };
             setNetworkingState({ results: updatedResults });
         }
+        */
     };
 
 
@@ -468,6 +475,37 @@ export function NetworkingSearch() {
                     {error}
                 </div>
             )}
+
+            {/* Development Modal */}
+            <Modal
+                isOpen={showDevModal}
+                onClose={() => setShowDevModal(false)}
+                title=""
+                className="max-w-md"
+            >
+                <div className="flex flex-col items-center text-center p-6 space-y-6">
+                    <div className="h-20 w-20 bg-indigo-50 rounded-full flex items-center justify-center shadow-inner">
+                        <Construction className="h-10 w-10 text-indigo-600" />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-2xl font-bold text-slate-900">{t('networking.comingSoon.title')}</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            {t('networking.comingSoon.description')}
+                            <br />
+                            <span className="text-sm text-slate-400 mt-2 block">{t('networking.comingSoon.note')}</span>
+                        </p>
+                    </div>
+
+                    <Button
+                        onClick={() => setShowDevModal(false)}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-11 rounded-lg shadow-sm transition-all hover:shadow-md"
+                    >
+                        {t('networking.comingSoon.button')}
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }
+

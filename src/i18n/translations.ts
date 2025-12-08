@@ -222,7 +222,13 @@ export const translations = {
             emailNotFound: "Email not found",
             emailError: "Check failed",
             emailQuota: "Quota Exceeded",
-            emailApiKey: "API Key Error"
+            emailApiKey: "API Key Error",
+            comingSoon: {
+                title: "Coming Soon!",
+                description: "We are actively working on this feature to bring you the best results.",
+                note: "This option will be enabled very shortly.",
+                button: "Got it, thanks!"
+            }
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -700,7 +706,13 @@ export const translations = {
             emailNotFound: "Email introuvable",
             emailError: "Échec vérif.",
             emailQuota: "Quota dépassé (Hunter)",
-            emailApiKey: "Erreur Clé API"
+            emailApiKey: "Erreur Clé API",
+            comingSoon: {
+                title: "Bientôt Disponible !",
+                description: "Nous travaillons activement sur cette fonctionnalité pour vous offrir les meilleurs résultats.",
+                note: "Cette option sera activée très prochainement.",
+                button: "Compris, merci !"
+            }
         },
         emailPredictor: {
             title: "Prédicteur d'Email",
