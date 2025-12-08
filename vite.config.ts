@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()], // Optimize deps trigger
     resolve: {
       alias: {
-        'pako': 'pako',
+        // 'pako': 'pako', // Removing this as it caused issues
       },
     },
     define: {
