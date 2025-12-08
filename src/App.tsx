@@ -155,8 +155,11 @@ function App() {
           // Dynamically import to avoid circular dependencies if any, or just use imported
           const { sendTransactionalEmail } = await import("./services/emailService");
 
+          const email = user.primaryEmailAddress?.emailAddress;
+          if (!email) return;
+
           const sent = await sendTransactionalEmail(
-            user.primaryEmailAddress?.emailAddress,
+            email,
             'welcome',
             { name: user.firstName || 'User' },
             token
