@@ -3,15 +3,15 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers":
-        "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface EmailRequest {
-    to: string;
-    type: "welcome" | "match_ready";
-    data?: any;
+  to: string;
+  type: "welcome" | "match_ready";
+  data?: any;
 }
 
 const getEmailLayout = (content: string) => `
@@ -67,12 +67,12 @@ const getEmailLayout = (content: string) => `
 `;
 
 const EMAIL_TEMPLATES = {
-    welcome: (data: any) => ({
-        subject: "Bienvenue sur Career Match ! 🚀",
-        html: getEmailLayout(`
+  welcome: (data: any) => ({
+    subject: "Bienvenue sur Career Match ! 🚀",
+    html: getEmailLayout(`
       <h1>Bienvenue, ${data?.name || 'cher utilisateur'} ! 👋</h1>
       <p>Merci de nous avoir rejoints. Nous sommes ravis de vous aider à propulser votre carrière vers de nouveaux sommets.</p>
-      <p>Avec **Career Match**, vous avez désormais le pouvoir de :</p>
+      <p>Avec <strong>Career Match</strong>, vous avez désormais le pouvoir de :</p>
       <ul>
         <li>⚡ <strong>Optimiser</strong> votre CV pour battre les ATS</li>
         <li>🎯 <strong>Trouver</strong> les emails directs des recruteurs et patrons</li>
@@ -83,10 +83,10 @@ const EMAIL_TEMPLATES = {
         <a href="https://careermatch.fr" class="button">Accéder à mon tableau de bord</a>
       </div>
     `),
-    }),
-    match_ready: (data: any) => ({
-        subject: "Votre analyse CV est prête ! 📄",
-        html: getEmailLayout(`
+  }),
+  match_ready: (data: any) => ({
+    subject: "Votre analyse CV est prête ! 📄",
+    html: getEmailLayout(`
       <h1>Analyse Terminée ! ✅</h1>
       <p>Bonne nouvelle ! Notre IA a terminé l'analyse de votre CV pour le poste de <strong>${data?.jobTitle || 'Cible'}</strong>.</p>
       
@@ -100,61 +100,61 @@ const EMAIL_TEMPLATES = {
         <a href="https://careermatch.fr" class="button">Voir mon rapport détaillé</a>
       </div>
     `),
-    }),
+  }),
 };
 
 serve(async (req) => {
-    if (req.method === "OPTIONS") {
-        return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const { to, type, data } = await req.json();
+
+    if (!RESEND_API_KEY) {
+      throw new Error("Missing RESEND_API_KEY");
     }
 
-    try {
-        const { to, type, data } = await req.json();
-
-        if (!RESEND_API_KEY) {
-            throw new Error("Missing RESEND_API_KEY");
-        }
-
-        if (!to || !type) {
-            throw new Error("Missing 'to' or 'type' in request body");
-        }
-
-        const templateGenerator = EMAIL_TEMPLATES[type];
-        if (!templateGenerator) {
-            throw new Error(`Invalid email type: ${type}`);
-        }
-
-        const { subject, html } = templateGenerator(data);
-
-        const res = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-                from: "Career Match <contact@careermatch.fr>",
-                to: [to],
-                subject: subject,
-                html: html,
-            }),
-        });
-
-        const responseData = await res.json();
-
-        if (!res.ok) {
-            console.error("Resend API Error:", responseData);
-            throw new Error(`Resend API Error: ${JSON.stringify(responseData)}`);
-        }
-
-        return new Response(JSON.stringify(responseData), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-        });
-    } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
-        });
+    if (!to || !type) {
+      throw new Error("Missing 'to' or 'type' in request body");
     }
+
+    const templateGenerator = EMAIL_TEMPLATES[type];
+    if (!templateGenerator) {
+      throw new Error(`Invalid email type: ${type}`);
+    }
+
+    const { subject, html } = templateGenerator(data);
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Career Match <contact@careermatch.fr>",
+        to: [to],
+        subject: subject,
+        html: html,
+      }),
+    });
+
+    const responseData = await res.json();
+
+    if (!res.ok) {
+      console.error("Resend API Error:", responseData);
+      throw new Error(`Resend API Error: ${JSON.stringify(responseData)}`);
+    }
+
+    return new Response(JSON.stringify(responseData), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400,
+    });
+  }
 });
