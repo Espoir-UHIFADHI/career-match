@@ -7,7 +7,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { searchGoogle } from "../../services/search/serper";
-import { findCompanyDomain, getEmailPattern, findEmail, cleanName, generateEmail } from "../../services/emailService";
+// import { findCompanyDomain, getEmailPattern, findEmail, cleanName, generateEmail } from "../../services/emailService";
 import { generateNetworkingQueries, generateNetworkingMessage } from "../../services/ai/gemini";
 import { NetworkingGuide } from "./NetworkingGuide";
 import { Modal } from "../ui/Modal";
@@ -140,7 +140,7 @@ export function NetworkingSearch() {
         }
     };
 
-    const handleGuessEmail = async (contactIndex: number) => {
+    const handleGuessEmail = async (_contactIndex: number) => {
         // TEMPORARY: Disable email search and show "Coming Soon" notification
         setShowDevModal(true);
         return;
