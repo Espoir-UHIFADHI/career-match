@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
-import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle, Construction } from "lucide-react";
+import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle, Construction, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -34,7 +34,7 @@ export function NetworkingSearch() {
     const { useCredit, credits } = useUserStore(); // hook usage
 
     // Derived state from store
-    const { company, role, results, hasSearched } = networking;
+    const { company, role, location, results, hasSearched } = networking;
 
     // Local UI state
     const [isSearching, setIsSearching] = useState(false);
@@ -61,7 +61,7 @@ export function NetworkingSearch() {
 
 
     const handleSearch = async (isLoadMore = false) => {
-        if (!company && !role) return;
+        if (!company && !role && !location) return;
 
         if (!isSignedIn || !user) {
             setError(t('networking.signInRequired') || "Veuillez vous connecter pour effectuer une recherche.");
@@ -83,12 +83,12 @@ export function NetworkingSearch() {
         }
 
         try {
-            let queries = [`site:linkedin.com/in/ ${role} ${company}`];
+            let queries = [`site:linkedin.com/in/ ${role} ${company} ${location || ''}`.trim()];
 
             const token = await getToken({ template: 'supabase' });
 
             try {
-                const response = await generateNetworkingQueries(company, role, "", token || undefined);
+                const response = await generateNetworkingQueries(company, role, location, token || undefined);
                 if (response && response.queries && response.queries.length > 0) {
                     queries = response.queries;
                 }
@@ -97,7 +97,11 @@ export function NetworkingSearch() {
             }
 
             const queryToUse = queries[0];
-            const searchResults = await searchGoogle(queryToUse, 10, 0, token || undefined);
+
+            // Pagination logic
+            const startOffset = isLoadMore ? typedResults.length : 0;
+
+            const searchResults = await searchGoogle(queryToUse, 10, startOffset, token || undefined);
 
             const newContacts: Contact[] = searchResults.map(((r: any) => ({
                 name: r.title.split('|')[0].split('-')[0].trim(),
@@ -107,17 +111,21 @@ export function NetworkingSearch() {
                 emailStatus: 'idle'
             })));
 
+            let addedCount = 0;
+
             if (isLoadMore) {
                 const combined = [...typedResults, ...newContacts];
                 const unique = combined.filter((c, i, self) => self.findIndex(t => t.link === c.link) === i);
+                addedCount = unique.length - typedResults.length;
                 setNetworkingState({ results: unique });
             } else {
+                addedCount = newContacts.length;
                 setNetworkingState({ results: newContacts });
             }
             setNetworkingState({ hasSearched: true });
 
-            // Deduct Credit AFTER success - BUT ONLY IF WE HAVE RESULTS
-            if (searchResults.length > 0 || (isLoadMore && newContacts.length > 0)) {
+            // Deduct Credit AFTER success - BUT ONLY IF WE HAVE NEW UNIQUE RESULTS
+            if (addedCount > 0) {
                 try {
                     const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
                     if (!success) {
@@ -291,7 +299,7 @@ export function NetworkingSearch() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-slate-700 font-medium">{t('networking.companyLabel')}</Label>
                                 <div className="relative group">
@@ -316,10 +324,22 @@ export function NetworkingSearch() {
                                     />
                                 </div>
                             </div>
+                            <div className="space-y-2">
+                                <Label className="text-slate-700 font-medium">{t('networking.locationLabel')}</Label>
+                                <div className="relative group">
+                                    <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                                    <Input
+                                        placeholder={t('networking.locationPlaceholder')}
+                                        value={location || ''}
+                                        onChange={(e) => setNetworkingState({ location: e.target.value })}
+                                        className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-all"
+                                    />
+                                </div>
+                            </div>
                         </div>
                         <Button
                             onClick={() => handleSearch(false)}
-                            disabled={isSearching || (!company && !role)}
+                            disabled={isSearching || (!company && !role && !location)}
                             className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm"
                         >
                             {isSearching ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Search className="h-5 w-5 mr-2" />}
@@ -400,11 +420,24 @@ export function NetworkingSearch() {
                                     ))}
                                 </div>
                             )}
-                            {isSearching && hasSearched && (
+                            {isSearching && (
                                 <div className="space-y-3">
                                     {[1, 2, 3].map(i => (
                                         <div key={i} className="h-24 bg-slate-50 animate-pulse rounded-xl" />
                                     ))}
+                                </div>
+                            )}
+
+                            {/* Load More Button */}
+                            {hasSearched && typedResults.length > 0 && !isSearching && (
+                                <div className="flex justify-center pt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => handleSearch(true)}
+                                        className="border-dashed border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-300"
+                                    >
+                                        {t('networking.loadMore')}
+                                    </Button>
                                 </div>
                             )}
                         </div>

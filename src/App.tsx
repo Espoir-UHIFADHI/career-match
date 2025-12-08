@@ -5,7 +5,9 @@ import { useUserStore } from "./store/useUserStore";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { Button } from "./components/ui/Button";
 import { ArrowLeft, Download } from "lucide-react";
-import { useReactToPrint } from "react-to-print";
+// @ts-ignore
+import { pdf } from "@react-pdf/renderer";
+import { CVDocument } from "./components/results/CVDocument";
 import { Steps } from "./components/ui/Steps";
 import { useTranslation } from "./hooks/useTranslation";
 
@@ -62,10 +64,30 @@ function App() {
   }, [credits]);
 
   // Handle Resize for CV Preview
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `CV_${cvData?.contact?.firstName || 'User'}_${cvData?.contact?.lastName || ''}`,
-  });
+  const handleDownload = async () => {
+    if (!analysisResults?.optimizedCV) return;
+
+    try {
+      const blob = await pdf(
+        <CVDocument
+          data={analysisResults.optimizedCV}
+          language={language} // Use the app language setting
+        />
+      ).toBlob();
+
+      const filename = `Optimized_CV_${cvData?.contact?.firstName || 'User'}_${cvData?.contact?.lastName || ''}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("PDF download error:", e);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -218,7 +240,7 @@ function App() {
 
               {analysisResults!.optimizedCV && (
                 <Button
-                  onClick={() => handlePrint()}
+                  onClick={handleDownload}
                   className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm w-full sm:w-auto"
                 >
                   <Download className="h-4 w-4" />

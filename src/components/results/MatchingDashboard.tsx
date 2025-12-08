@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe } from "lucide-react";
-import { useReactToPrint } from "react-to-print";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -13,25 +12,58 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 import { useAuth, useUser } from "@clerk/clerk-react";
 
+// @ts-ignore
+import { pdf } from "@react-pdf/renderer";
+import { CVDocument } from "./CVDocument";
+
 export function MatchingDashboard() {
     const { t } = useTranslation();
     const { user } = useUser();
     const { getToken } = useAuth();
-    const { cvData, jobData, analysisResults, setAnalysisResults, language, setLanguage } = useAppStore();
+    const { cvData, jobData, analysisResults, setAnalysisResults, language } = useAppStore();
+    const [cvLanguage, setCvLanguage] = useState<"English" | "French">(language);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isUpdatingCV, setIsUpdatingCV] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const printRef = useRef<HTMLDivElement>(null);
 
-    const handlePrint = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: "Optimized_CV",
-    });
 
-    const prevLanguageRef = useRef(language);
+
+    // ... existing imports ...
+
+    const handleDownload = async () => {
+        if (!analysisResults?.optimizedCV) return;
+
+        try {
+            const blob = await pdf(
+                <CVDocument
+                    data={analysisResults.optimizedCV}
+                    language={cvLanguage}
+                />
+            ).toBlob();
+
+            // Generate filename based on language
+            const filename = `Optimized_CV_${cvLanguage}.pdf`;
+
+            // Trigger download
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error("PDF Generation error:", e);
+        }
+    };
+
+    const prevCvLanguageRef = useRef(cvLanguage);
 
     useEffect(() => {
-        const hasLanguageChanged = prevLanguageRef.current !== language;
+        const hasLanguageChanged = prevCvLanguageRef.current !== cvLanguage;
         const hasResults = !!analysisResults;
 
         if (cvData && jobData && !isProcessing) {
@@ -40,21 +72,39 @@ export function MatchingDashboard() {
                 runAnalysis();
             }
         }
-        prevLanguageRef.current = language;
-    }, [language, cvData, jobData]);
+        prevCvLanguageRef.current = cvLanguage;
+    }, [cvLanguage, cvData, jobData]);
 
     const runAnalysis = async () => {
         if (!cvData || !jobData) return;
-        setIsProcessing(true);
+
+        const isUpdate = !!analysisResults;
+        if (isUpdate) {
+            setIsUpdatingCV(true);
+        } else {
+            setIsProcessing(true);
+        }
+
         setError(null);
         try {
             const token = await getToken({ template: 'supabase' });
-            const results = await matchAndOptimize(cvData, jobData, language, token || undefined);
+            const results = await matchAndOptimize(cvData, jobData, cvLanguage, token || undefined);
+
+            // If updating, preserve the original score and analysis to avoid flickering/confusion,
+            // unless we want to allow them to change. The user asked for "only the CV refreshes".
+            // However, matchAndOptimize generates everything together. 
+            // If we replace everything, the score might change.
+            // Let's replace everything for now but only show loader on CV.
+            // OR: we could merge: { ...results, score: analysisResults?.score || results.score, analysis: analysisResults?.analysis || results.analysis } ??
+            // But if the language changes, maybe the analysis text (strengths) should theoretically change language too?
+            // The user said "page stays in original language".
+            // Let's just update the results but keep the UI stable via isUpdatingCV.
+
             setAnalysisResults(results as MatchResult);
             setShowPreview(true);
 
-            // Send "Match Ready" email
-            if (results && 'score' in results && user?.primaryEmailAddress?.emailAddress) {
+            // Only send email on initial run, not on language switch updates
+            if (!isUpdate && results && 'score' in results && user?.primaryEmailAddress?.emailAddress) {
                 const { sendTransactionalEmail } = await import("../../services/emailService");
 
                 await sendTransactionalEmail(
@@ -72,6 +122,7 @@ export function MatchingDashboard() {
             setError("Failed to analyze match. Please try again.");
         } finally {
             setIsProcessing(false);
+            setIsUpdatingCV(false);
         }
     };
 
@@ -292,8 +343,8 @@ export function MatchingDashboard() {
                             </div>
                             <div className="flex p-1 bg-slate-100 rounded-lg">
                                 <button
-                                    onClick={() => setLanguage("French")}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${language === "French"
+                                    onClick={() => setCvLanguage("French")}
+                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${cvLanguage === "French"
                                         ? "bg-white text-indigo-600 shadow-sm"
                                         : "text-slate-500 hover:text-slate-700"
                                         }`}
@@ -301,8 +352,8 @@ export function MatchingDashboard() {
                                     Français
                                 </button>
                                 <button
-                                    onClick={() => setLanguage("English")}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${language === "English"
+                                    onClick={() => setCvLanguage("English")}
+                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${cvLanguage === "English"
                                         ? "bg-white text-indigo-600 shadow-sm"
                                         : "text-slate-500 hover:text-slate-700"
                                         }`}
@@ -336,7 +387,7 @@ export function MatchingDashboard() {
                                 </Button>
                                 <Button
                                     size="lg"
-                                    onClick={() => handlePrint()}
+                                    onClick={handleDownload}
                                     className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 border-0"
                                 >
                                     <Download className="h-4 w-4" />
@@ -349,7 +400,7 @@ export function MatchingDashboard() {
             </div>
 
             {showPreview && !isLowMatch && analysisResults.optimizedCV && (
-                <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500">
+                <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500 relative">
                     <CardHeader className="bg-slate-50 border-b border-slate-200 flex flex-row items-center justify-between py-4">
                         <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
                             <Sparkles className="h-4 w-4 text-indigo-600" />
@@ -359,10 +410,16 @@ export function MatchingDashboard() {
                             {t('dashboard.closePreview')}
                         </Button>
                     </CardHeader>
-                    <CardContent className="p-0 bg-slate-100 overflow-x-auto">
+                    <CardContent className="p-0 bg-slate-100 overflow-x-auto relative min-h-[400px]">
+                        {isUpdatingCV && (
+                            <div className="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                                <Loader2 className="h-8 w-8 text-indigo-600 animate-spin mb-4" />
+                                <p className="text-sm font-medium text-slate-600 animate-pulse">{t('dashboard.optimizing')}</p>
+                            </div>
+                        )}
                         <div className="min-w-[800px] p-8 flex justify-center">
                             <div className="shadow-2xl bg-white">
-                                {analysisResults?.optimizedCV && <PrintableCV data={analysisResults.optimizedCV} language={language} />}
+                                {analysisResults?.optimizedCV && <PrintableCV data={analysisResults.optimizedCV} language={cvLanguage} />}
                             </div>
                         </div>
                     </CardContent>
@@ -372,7 +429,7 @@ export function MatchingDashboard() {
             {/* Hidden Printable Component */}
             {!isLowMatch && analysisResults.optimizedCV && (
                 <div className="hidden">
-                    <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={language} />
+                    <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={cvLanguage} />
                 </div>
             )}
         </div>

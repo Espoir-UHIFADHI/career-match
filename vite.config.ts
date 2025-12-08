@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [react()],
+    plugins: [react()], // Optimize deps trigger
     define: {
       // Explicitly define the variables to ensure they are replaced during build
       // We check both the loaded env (from .env files) and process.env (from Vercel)

@@ -4,7 +4,6 @@ import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -69,7 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center gap-4">
-                        <LanguageSwitcher />
+
                         <SignedIn>
 
                             {/* Credits Display */}
@@ -112,7 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                     {/* Mobile Actions */}
                     <div className="md:hidden flex items-center gap-2 mr-2">
-                        <LanguageSwitcher />
+
                         <SignedIn>
                             <div
                                 className="flex items-center gap-2 px-2 py-1 bg-white border border-slate-200 rounded-full shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"

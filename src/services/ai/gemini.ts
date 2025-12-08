@@ -138,6 +138,12 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - Utilise des verbes d'action forts (Piloté, Conçu, Augmenté, Réduit, Optimisé...).
      - Structure : "Action + Contexte + Résultat Chiffré/Impact".
      - Exemple : Au lieu de "Vente de logiciels", écris "Génération de 50k€ de revenus additionnels (+20%) via la prospection de 15 grands comptes".
+  
+  6. **LANGUE DE SORTIE (IMPÉRATIF)** :
+     - LE CV DOIT ÊTRE ENTIÈREMENT RÉDIGÉ EN : **${_language.toUpperCase()}**.
+     - Traduis tout le contenu (titres, descriptions, skills, summary) dans cette langue si nécessaire.
+     - Si la langue demandée est "ENGLISH", tout le texte doit être en anglais.
+     - Si la langue demandée est "FRENCH", tout le texte doit être en français.
 
   4. **FORMATAGE STRICT (Bullet Points)** :
      - Pour la section "experience", le champ "description" DOIT être une liste de points.

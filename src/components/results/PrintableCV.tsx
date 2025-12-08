@@ -89,26 +89,28 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
     return (
         <div
             ref={ref}
-            className="relative w-[210mm] min-h-[297mm] h-auto mx-auto bg-white text-black shadow-lg print:shadow-none print:m-0 print:w-full print:h-auto"
+            className="relative w-[210mm] min-h-[297mm] h-auto mx-auto shadow-lg print:shadow-none print:m-0 print:w-full print:h-auto"
             style={{
                 padding: '12mm 15mm', // Optimised margins for print
                 boxSizing: 'border-box',
+                backgroundColor: '#ffffff',
+                color: '#000000'
             }}
         >
             {/* Header - Balanced Format */}
-            <div className="border-b border-slate-800 pb-3 mb-4">
-                <h1 className="text-[22px] font-bold uppercase tracking-wide mb-1 text-slate-900 leading-none">
+            <div style={{ borderBottom: '1px solid #1e293b', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
+                <h1 className="text-[22px] font-bold uppercase tracking-wide mb-1 leading-none" style={{ color: '#0f172a' }}>
                     {data.contact?.firstName || ''} {data.contact?.lastName || ''}
                 </h1>
 
                 {/* HEADLINE */}
                 {data.headline && (
-                    <div className="text-[14px] font-bold text-indigo-800 mb-1.5 uppercase tracking-tight leading-none">
+                    <div className="text-[14px] font-bold mb-1.5 uppercase tracking-tight leading-none" style={{ color: '#3730a3' }}>
                         {cleanMarkdown(data.headline)}
                     </div>
                 )}
 
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-600 leading-tight font-medium">
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] leading-tight font-medium" style={{ color: '#475569' }}>
                     {data.contact?.email && <span>{data.contact.email}</span>}
                     {data.contact?.phone && <span>• {data.contact.phone}</span>}
                     {data.contact?.location && <span>• {data.contact.location}</span>}
@@ -120,27 +122,27 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
             {/* Summary */}
             {data.summary && (
                 <div className="mb-4">
-                    <h2 className="text-[13px] font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 mb-1.5 pb-0.5">{headers.summary}</h2>
-                    <p className="text-[11px] leading-relaxed text-justify text-slate-800">{cleanMarkdown(data.summary)}</p>
+                    <h2 className="text-[13px] font-bold uppercase tracking-wider mb-1.5 pb-0.5" style={{ color: '#3730a3', borderBottom: '1px solid #e0e7ff' }}>{headers.summary}</h2>
+                    <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#1e293b' }}>{cleanMarkdown(data.summary)}</p>
                 </div>
             )}
 
             {/* Experience */}
             {data.experience && data.experience.length > 0 && (
                 <div className="mb-4">
-                    <h2 className="text-[13px] font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 mb-2 pb-0.5">{headers.experience}</h2>
+                    <h2 className="text-[13px] font-bold uppercase tracking-wider mb-2 pb-0.5" style={{ color: '#3730a3', borderBottom: '1px solid #e0e7ff' }}>{headers.experience}</h2>
                     <div className="space-y-3">
                         {data.experience.map((exp, i) => (
                             <div key={i}>
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className="font-bold text-[13px] text-slate-900">{cleanMarkdown(exp.role)}</h3>
-                                    <span className="text-[11px] font-medium text-slate-600 whitespace-nowrap ml-2">{exp.dates}</span>
+                                    <h3 className="font-bold text-[13px]" style={{ color: '#0f172a' }}>{cleanMarkdown(exp.role)}</h3>
+                                    <span className="text-[11px] font-medium whitespace-nowrap ml-2" style={{ color: '#475569' }}>{exp.dates}</span>
                                 </div>
-                                <div className="text-[12px] font-semibold text-indigo-700 mb-0.5">{cleanMarkdown(exp.company)}</div>
+                                <div className="text-[12px] font-semibold mb-0.5" style={{ color: '#4338ca' }}>{cleanMarkdown(exp.company)}</div>
                                 <ul className="list-none space-y-0.5 mt-0.5">
                                     {getExperiencePoints(exp.description).map((line: string, idx: number) => (
-                                        <li key={idx} className="flex items-start text-[11px] leading-snug text-slate-700">
-                                            <span className="mr-1.5 flex-shrink-0 text-slate-900 font-bold">-</span>
+                                        <li key={idx} className="flex items-start text-[11px] leading-snug" style={{ color: '#334155' }}>
+                                            <span className="mr-1.5 flex-shrink-0 font-bold" style={{ color: '#0f172a' }}>-</span>
                                             <span>{line.trim().replace(/^[-•*]\s*/, '')}</span>
                                         </li>
                                     ))}
@@ -154,16 +156,16 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
             {/* Education */}
             {data.education && data.education.length > 0 && (
                 <div className="mb-4">
-                    <h2 className="text-[13px] font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 mb-2 pb-0.5">{headers.education}</h2>
+                    <h2 className="text-[13px] font-bold uppercase tracking-wider mb-2 pb-0.5" style={{ color: '#3730a3', borderBottom: '1px solid #e0e7ff' }}>{headers.education}</h2>
                     <div className="space-y-2">
                         {data.education.map((edu, i) => (
                             <div key={i}>
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className="font-bold text-[13px] text-slate-900">{cleanMarkdown(edu.school)}</h3>
-                                    <span className="text-[11px] font-medium text-slate-600 whitespace-nowrap ml-2">{edu.dates}</span>
+                                    <h3 className="font-bold text-[13px]" style={{ color: '#0f172a' }}>{cleanMarkdown(edu.school)}</h3>
+                                    <span className="text-[11px] font-medium whitespace-nowrap ml-2" style={{ color: '#475569' }}>{edu.dates}</span>
                                 </div>
-                                <div className="text-[12px] text-slate-700">{cleanMarkdown(edu.degree)}</div>
-                                {edu.description && <p className="text-[11px] text-slate-600 mt-0.5">{cleanMarkdown(edu.description)}</p>}
+                                <div className="text-[12px]" style={{ color: '#334155' }}>{cleanMarkdown(edu.degree)}</div>
+                                {edu.description && <p className="text-[11px] mt-0.5" style={{ color: '#475569' }}>{cleanMarkdown(edu.description)}</p>}
                             </div>
                         ))}
                     </div>
@@ -175,40 +177,40 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
                 {/* Technical Skills */}
                 {data.skills && data.skills.length > 0 && (
                     <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold text-slate-900 w-40 flex-shrink-0">{headers.skills} :</span>
-                        <span className="text-slate-700 flex-1 leading-snug">{cleanMarkdown(data.skills.join(" • "))}</span>
+                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.skills} :</span>
+                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.skills.join(" • "))}</span>
                     </div>
                 )}
 
                 {/* Soft Skills */}
                 {data.softSkills && data.softSkills.length > 0 && (
                     <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold text-slate-900 w-40 flex-shrink-0">{headers.softSkills} :</span>
-                        <span className="text-slate-700 flex-1 leading-snug">{cleanMarkdown(data.softSkills.join(" • "))}</span>
+                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.softSkills} :</span>
+                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.softSkills.join(" • "))}</span>
                     </div>
                 )}
 
                 {/* Languages */}
                 {data.languages && data.languages.length > 0 && (
                     <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold text-slate-900 w-40 flex-shrink-0">{headers.languages} :</span>
-                        <span className="text-slate-700 flex-1 leading-snug">{cleanMarkdown(data.languages.join(" • "))}</span>
+                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.languages} :</span>
+                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.languages.join(" • "))}</span>
                     </div>
                 )}
 
                 {/* Certifications */}
                 {data.certifications && data.certifications.length > 0 && (
                     <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold text-slate-900 w-40 flex-shrink-0">{headers.certifications} :</span>
-                        <span className="text-slate-700 flex-1 leading-snug">{cleanMarkdown(data.certifications.join(" • "))}</span>
+                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.certifications} :</span>
+                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.certifications.join(" • "))}</span>
                     </div>
                 )}
 
                 {/* Interests */}
                 {data.interests && data.interests.length > 0 && (
                     <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold text-slate-900 w-40 flex-shrink-0">{headers.interests} :</span>
-                        <span className="text-slate-700 flex-1 leading-snug">{cleanMarkdown(data.interests.join(" • "))}</span>
+                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.interests} :</span>
+                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.interests.join(" • "))}</span>
                     </div>
                 )}
             </div>
@@ -227,6 +229,7 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                        color-adjust: exact !important;
                     }
                 }
             `}</style>

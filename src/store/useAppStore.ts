@@ -12,6 +12,7 @@ interface EmailPredictorState {
 interface NetworkingState {
     company: string;
     role: string;
+    location: string;
     results: any[]; // Using any[] for now to avoid circular dependency or duplication, can be refined
     hasSearched: boolean;
 }
@@ -61,6 +62,7 @@ export const useAppStore = create<AppState>()(
             networking: {
                 company: "",
                 role: "",
+                location: "",
                 results: [],
                 hasSearched: false
             },
@@ -87,7 +89,7 @@ export const useAppStore = create<AppState>()(
                 language: "French",
                 userId: null,
                 emailPredictor: { company: "", firstName: "", lastName: "", result: null },
-                networking: { company: "", role: "", results: [], hasSearched: false }
+                networking: { company: "", role: "", location: "", results: [], hasSearched: false }
             }),
         }),
         {
