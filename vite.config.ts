@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()], // Optimize deps trigger
+    resolve: {
+      alias: {
+        'pako': 'pako',
+      },
+    },
     define: {
       // Explicitly define the variables to ensure they are replaced during build
       // We check both the loaded env (from .env files) and process.env (from Vercel)
