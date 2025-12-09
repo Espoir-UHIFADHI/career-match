@@ -156,6 +156,10 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - **NE PAS OUBLIER LE LIEN LINKEDIN** (field: contact.linkedin). C'est obligatoire.
      - Ne pas inventer d'infos de contact.
 
+  7. **GESTION DES COMPÉTENCES (LAYOUT 1 PAGE)** :
+     - Si le candidat possède beaucoup de compétences techniques (> 10), SUPPRIME les 2 compétences les MOINS pertinentes pour ce poste.
+     - Cela permet d'optimiser l'espace pour que le CV tienne sur une seule page.
+
   PROCESSUS DE MATCHING :
   1. Calcule un Score de Pertinence (0-100).
   2. SI SCORE < 45 : Renvoie "optimizedCV": null.
