@@ -22,7 +22,7 @@ export function MatchingDashboard() {
     const { t } = useTranslation();
     const { user } = useUser();
     const { getToken } = useAuth();
-    const { cvData, jobData, analysisResults, setAnalysisResults, language } = useAppStore();
+    const { cvData, jobData, analysisResults, setAnalysisResults } = useAppStore();
     const [cvLanguage] = useState<"French" | "English">("French");
     const [isProcessing, setIsProcessing] = useState(false);
     const [isUpdatingCV, setIsUpdatingCV] = useState(false);
