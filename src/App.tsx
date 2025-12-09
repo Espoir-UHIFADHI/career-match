@@ -161,6 +161,60 @@ function App() {
     return () => window.removeEventListener('focus', onFocus);
   }, [syncUser]);
 
+  // Referral Logic
+  useEffect(() => {
+    // 1. Catch URL param
+    const params = new URLSearchParams(window.location.search);
+    const refId = params.get('ref');
+    if (refId) {
+      console.log("Referral detected:", refId);
+      localStorage.setItem('career_match_ref', refId);
+    }
+
+    // 2. Process if signed in
+    const processRef = async () => {
+      if (!isSignedIn || !user) return;
+
+      const storedRef = localStorage.getItem('career_match_ref');
+      if (!storedRef) return;
+
+      // Prevent self-referral loop optimization
+      if (storedRef === user.id) {
+        localStorage.removeItem('career_match_ref');
+        return;
+      }
+
+      console.log("Processing referral for:", storedRef);
+
+      try {
+        const token = await getToken({ template: 'supabase' });
+        // Import dynamically to avoid top-level issues if any
+        const { createClerkSupabaseClient } = await import('./services/supabase');
+        const supabase = createClerkSupabaseClient(token || "");
+
+        const { data, error } = await supabase.rpc('process_referral', {
+          referrer_id: storedRef
+        });
+
+        console.log("Referral Process Result:", data, error);
+
+        // Clear storage regardless of success/fail to avoid infinite retries
+        // (unless network error, but for MVP simpler is better)
+        localStorage.removeItem('career_match_ref');
+
+        if (data && data.success) {
+          // Maybe show a toast "Bienvenue ! Vous avez été parrainé."
+        }
+      } catch (err) {
+        console.error("Referral Error:", err);
+      }
+    };
+
+    if (isLoaded && isSignedIn) {
+      processRef();
+    }
+  }, [isLoaded, isSignedIn, user, getToken]);
+
   // Handle first-time login (Welcome Email)
   useEffect(() => {
     const sendWelcome = async () => {

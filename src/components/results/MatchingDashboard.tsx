@@ -6,6 +6,7 @@ import { Button } from "../ui/Button";
 import { matchAndOptimize } from "../../services/ai/gemini";
 import { NetworkingSection } from "./NetworkingSection";
 import { PrintableCV } from "./PrintableCV";
+import { FeedbackWidget } from "./FeedbackWidget";
 import type { MatchResult } from "../../types";
 
 import { useTranslation } from "../../hooks/useTranslation";
@@ -309,9 +310,12 @@ export function MatchingDashboard() {
             {/* Recommendations */}
             <Card className="bg-white border-slate-200 shadow-sm">
                 <CardHeader className="border-b border-slate-100 pb-4">
-                    <div className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-amber-500" />
-                        <CardTitle className="text-slate-900">{t('dashboard.recommendations')}</CardTitle>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-amber-500" />
+                            <CardTitle className="text-slate-900">{t('dashboard.recommendations')}</CardTitle>
+                        </div>
+                        <FeedbackWidget />
                     </div>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -331,6 +335,38 @@ export function MatchingDashboard() {
             </Card>
 
             <NetworkingSection />
+
+
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-lg mx-auto max-w-4xl mb-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-white/20 transition-all duration-500" />
+
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-yellow-300" />
+                            Gagnez des crédits gratuits !
+                        </h3>
+                        <p className="text-indigo-100 max-w-lg">
+                            Invitez un ami à utiliser Career Match. Dès qu'il s'inscrira, vous recevrez automatiquement <strong>3 crédits</strong>.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <div className="bg-white/10 backdrop-blur-md px-4 py-3 rounded-lg border border-white/20 font-mono text-sm select-all">
+                            https://careermatch.fr?ref={user?.id}
+                        </div>
+                        <Button
+                            className="bg-white text-indigo-600 hover:bg-slate-100 border-0"
+                            onClick={() => {
+                                navigator.clipboard.writeText(`https://careermatch.fr?ref=${user?.id}`);
+                                alert("Lien copié !");
+                            }}
+                        >
+                            Copier
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
             {/* Action Bar */}
             <div className="sticky bottom-6 z-10">
