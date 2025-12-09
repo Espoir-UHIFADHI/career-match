@@ -272,7 +272,9 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data, language = "French
                     {data.skills && data.skills.length > 0 && (
                         <View style={styles.skillRow}>
                             <Text style={styles.skillLabel}>{headers.skills}:</Text>
-                            <Text style={styles.skillValue}>{cleanMarkdown(data.skills.join(" • "))}</Text>
+                            <Text style={styles.skillValue}>
+                                {cleanMarkdown(data.skills.join(" • "))}
+                            </Text>
                         </View>
                     )}
                     {data.softSkills && data.softSkills.length > 0 && (

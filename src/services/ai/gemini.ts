@@ -145,10 +145,15 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - Si la langue demandée est "ENGLISH", tout le texte doit être en anglais.
      - Si la langue demandée est "FRENCH", tout le texte doit être en français.
 
-  4. **FORMATAGE STRICT (Bullet Points)** :
-     - Pour la section "experience", le champ "description" DOIT être une liste de points.
-     - Sépare CHAQUE point par un saut de ligne réel (\n).
-     - Exemple : "- Action 1\n- Action 2\n- Action 3".
+   4. **FORMATAGE DE L'EXPÉRIENCE (RÈGLE DES 3+1+1)** :
+      - Pour CHAQUE expérience, le champ "description" DOIT respecter STRICTEMENT cette structure :
+        - 3 tirets MAX pour la description des tâches (les plus importantes).
+        - 1 tiret "Impact" : Résultat chiffré ou qualitatif majeur.
+        - 1 tiret "Environnement" : Liste des outils/technos utilisés.
+      - Total = 5 lignes par expérience MAXIMUM. C'est CRUCIAL pour tenir sur 1 page.
+      - Sépare CHAQUE point par un saut de ligne réel (\n).
+      - Exemple :
+        "- Action majeure 1...\n- Action majeure 2...\n- Action majeure 3...\n- Impact : Augmentation de 30%...\n- Environnement : React, Node.js, AWS"
      - Pas de paragraphes compacts.
 
   5. **DONNÉES DE CONTACT (CRITIQUE)** :
@@ -156,12 +161,16 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - **NE PAS OUBLIER LE LIEN LINKEDIN** (field: contact.linkedin). C'est obligatoire.
      - Ne pas inventer d'infos de contact.
 
-   7. **OPTIMISATION DES COMPÉTENCES TECHNIQUES (VITAL POUR LA CLARTÉ)** :
-      - **FORMAT** : Utilise le format "Catégorie : Compétence 1, Compétence 2, ..." (ex: "Frontend : React, TypeScript, Tailwind").
-      - **VOLUME** : Génère entre 4 et 6 catégories MAXIMUM.
-      - **DENSITÉ** : Pas de listes à rallonge. Garde uniquement les 5-6 mots-clés les plus percutants par ligne.
-      - **PERTINENCE** : Si une compétence n'est pas clé pour le poste, SUPPRIME-LA.
-      - **RÉSULTAT** : On doit pouvoir scanner la rubrique en 3 secondes. Évite les phrases, privilégie les mots-clés.
+   7. **OPTIMISATION DES COMPÉTENCES TECHNIQUES (LIMITATION STRICTE)** :
+      - **FORMAT** : Une liste SIMPLE et PLATE de mots-clés séparés par des virgules. PAS DE CATÉGORIES.
+      - **VOLUME** : Garde UNIQUEMENT les 8 à 12 compétences les plus CRITIQUES pour ce poste spécifique.
+      - **CONTRAINTE ABSOLUE** : Le CV final DOIT tenir sur UNE SEULE PAGE. Si tu mets trop de compétences, ça déborde. Coupe ce qui n'est pas essentiel.
+      - **QUALITÉ** : Choisis les "Hard Skills" qui font dire "Wow" au recruteur.
+
+   8. **RÉDACTION "DREAM JOB" (TOP 1%)** :
+      - Ton but est que ce CV décroche l'entretien à coup sûr.
+      - Utilise un langage d'impact, orienté résultats ("Augmenté de X%", "Réduit de Y%").
+      - Sois précis, concis, et percutant. Chaque mot doit "vendre" le candidat.
 
    PROCESSUS DE MATCHING :
   1. Calcule un Score de Pertinence (0-100).
@@ -181,9 +190,13 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
       "contact": { ... }, // Garder LinkedIn !
       "headline": "Titre du poste visé | Expertise clé",
       "summary": "Résumé ultra-ciblé de 3-4 lignes...",
-      "skills": ["Compétence Offre 1", "Compétence Offre 2", ...],
+      "skills": ["Catégorie : Skill 1, Skill 2...", ...],
+      "softSkills": ["Soft Skill 1", "Soft Skill 2", ...],
       "experience": [ ... ],
-      ...
+      "education": [ ... ],
+      "languages": ["Langue 1 (Niveau)", ...],
+      "certifications": ["Certification 1", ...],
+      "interests": ["Intérêt 1", ...]
     },
     "recommendations": ["..."]
   }
