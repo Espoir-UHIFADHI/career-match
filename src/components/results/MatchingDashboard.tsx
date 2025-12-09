@@ -1,5 +1,6 @@
+
 import { useEffect, useState, useRef } from "react";
-import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe, Link as LinkIcon, Copy } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -22,7 +23,7 @@ export function MatchingDashboard() {
     const { user } = useUser();
     const { getToken } = useAuth();
     const { cvData, jobData, analysisResults, setAnalysisResults, language } = useAppStore();
-    const [cvLanguage, setCvLanguage] = useState<"English" | "French">(language);
+    const [cvLanguage] = useState<"French" | "English">("French");
     const [isProcessing, setIsProcessing] = useState(false);
     const [isUpdatingCV, setIsUpdatingCV] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -219,19 +220,19 @@ export function MatchingDashboard() {
                                     strokeLinecap="round"
                                     strokeDasharray={502.65}
                                     strokeDashoffset={502.65 - (502.65 * score) / 100}
-                                    className={`transition-all duration-1000 ease-out ${getScoreColor(score)}`}
+                                    className={`transition - all duration - 1000 ease - out ${getScoreColor(score)} `}
                                 />
                             </svg>
                             <div className="absolute flex flex-col items-center">
-                                <span className={`text-6xl font-bold tracking-tighter ${getScoreColor(score)}`}>{score}%</span>
+                                <span className={`text - 6xl font - bold tracking - tighter ${getScoreColor(score)} `}>{score}%</span>
                             </div>
                         </div>
                         <div className="mt-8 text-center">
-                            <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold border ${score >= 80 ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                            <span className={`inline - flex items - center px - 4 py - 1.5 rounded - full text - sm font - semibold border ${score >= 80 ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
                                 score >= 60 ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
                                     score >= 45 ? "bg-amber-50 text-amber-700 border-amber-100" :
                                         "bg-red-50 text-red-700 border-red-100"
-                                }`}>
+                                } `}>
                                 {score >= 80 ? t('dashboard.excellentMatch') : score >= 60 ? t('dashboard.goodPotential') : score >= 45 ? t('dashboard.needsImprovement') : t('dashboard.criticalMatch')}
                             </span>
                         </div>
@@ -337,33 +338,54 @@ export function MatchingDashboard() {
             <NetworkingSection />
 
 
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-lg mx-auto max-w-4xl mb-8 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-white/20 transition-all duration-500" />
+            <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-xl shadow-slate-200/50 mx-auto max-w-5xl mb-12 relative overflow-hidden group border border-slate-800 ring-1 ring-white/5">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-slate-800/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none group-hover:bg-slate-800/70 transition-all duration-700 mixture-blend-overlay" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-slate-800/30 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div>
-                        <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-yellow-300" />
-                            Gagnez des crédits gratuits !
+                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                    <div className="text-center lg:text-left max-w-2xl">
+                        <h3 className="text-2xl md:text-3xl font-bold mb-4 flex items-center justify-center lg:justify-start gap-3">
+                            <span className="p-2.5 bg-slate-800 rounded-xl backdrop-blur-sm shadow-inner text-yellow-300 border border-slate-700">
+                                <Sparkles className="h-6 w-6" />
+                            </span>
+                            Gagnez des crédits gratuits
                         </h3>
-                        <p className="text-indigo-100 max-w-lg">
-                            Invitez un ami à utiliser Career Match. Dès qu'il s'inscrira, vous recevrez automatiquement <strong>3 crédits</strong>.
+                        <p className="text-slate-300 text-lg leading-relaxed">
+                            Invitez un ami sur Career Match. Dès qu'il s'inscrit, vous recevrez <strong className="text-white font-bold bg-slate-800 px-2 py-0.5 rounded shadow-sm border border-slate-700">3 crédits offerts</strong> chacun.
                         </p>
                     </div>
 
-                    <div className="flex gap-2">
-                        <div className="bg-white/10 backdrop-blur-md px-4 py-3 rounded-lg border border-white/20 font-mono text-sm select-all">
-                            https://careermatch.fr?ref={user?.id}
+                    <div className="flex flex-col gap-3 w-full lg:w-auto min-w-[340px]">
+                        <div className="flex items-center gap-2 p-1.5 bg-black/40 backdrop-blur-xl rounded-xl border border-slate-700 focus-within:border-slate-500 focus-within:bg-black/50 transition-all shadow-lg">
+                            <div className="pl-3 text-slate-400">
+                                <LinkIcon className="h-4 w-4" />
+                            </div>
+                            <input
+                                type="text"
+                                readOnly
+                                value={`https://careermatch.fr?ref=${user?.id}`}
+                                className="bg-transparent border-none focus:ring-0 text-sm text-slate-200 w-full font-mono placeholder-slate-500 truncate"
+                                onClick={(e) => e.currentTarget.select()}
+                            />
+                            <Button
+                                size="sm"
+                                className="bg-white text-slate-900 hover:bg-slate-100 border-0 font-bold shadow-lg shadow-black/10 hover:scale-105 active:scale-95 transition-all min-w-[100px]"
+                                onClick={(e) => {
+                                    navigator.clipboard.writeText(`https://careermatch.fr?ref=${user?.id}`);
+                                    const btn = e.currentTarget;
+                                    const originalText = btn.innerHTML;
+                                    btn.innerText = "Copié !";
+                                    setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+                                }}
+                            >
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copier
+                            </Button>
                         </div>
-                        <Button
-                            className="bg-white text-indigo-600 hover:bg-slate-100 border-0"
-                            onClick={() => {
-                                navigator.clipboard.writeText(`https://careermatch.fr?ref=${user?.id}`);
-                                alert("Lien copié !");
-                            }}
-                        >
-                            Copier
-                        </Button>
+                        <p className="text-xs text-slate-400 text-center font-medium opacity-80">
+                            Partagez ce lien sur LinkedIn ou WhatsApp
+                        </p>
                     </div>
                 </div>
             </div>
@@ -377,25 +399,11 @@ export function MatchingDashboard() {
                                 <Globe className="h-4 w-4 text-slate-400" />
                                 <span className="text-sm font-medium text-slate-600">{t('dashboard.cvLanguage')}</span>
                             </div>
-                            <div className="flex p-1 bg-slate-100 rounded-lg">
-                                <button
-                                    onClick={() => setCvLanguage("French")}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${cvLanguage === "French"
-                                        ? "bg-white text-indigo-600 shadow-sm"
-                                        : "text-slate-500 hover:text-slate-700"
-                                        }`}
-                                >
+                            <div className="flex p-1 bg-slate-100 rounded-lg opacity-80 cursor-not-allowed" title="Autres langues bientôt disponibles">
+                                <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-white text-indigo-600 shadow-sm">
                                     Français
-                                </button>
-                                <button
-                                    onClick={() => setCvLanguage("English")}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${cvLanguage === "English"
-                                        ? "bg-white text-indigo-600 shadow-sm"
-                                        : "text-slate-500 hover:text-slate-700"
-                                        }`}
-                                >
-                                    English
-                                </button>
+                                </span>
+                                {/* English disabled for MVP */}
                             </div>
                         </div>
                     )}
@@ -424,7 +432,7 @@ export function MatchingDashboard() {
                         )}
                     </div>
                 </div>
-            </div>
+            </div >
 
             {showPreview && !isLowMatch && analysisResults.optimizedCV && (
                 <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500 relative">
@@ -454,11 +462,13 @@ export function MatchingDashboard() {
             )}
 
             {/* Hidden Printable Component */}
-            {!isLowMatch && analysisResults.optimizedCV && (
-                <div className="hidden">
-                    <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={cvLanguage} />
-                </div>
-            )}
-        </div>
+            {
+                !isLowMatch && analysisResults.optimizedCV && (
+                    <div className="hidden">
+                        <PrintableCV ref={printRef} data={analysisResults.optimizedCV} language={cvLanguage} />
+                    </div>
+                )
+            }
+        </div >
     );
 }

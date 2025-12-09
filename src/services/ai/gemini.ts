@@ -147,12 +147,12 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - Si la langue demandée est "ENGLISH" -> TOUT le contenu DOIT être en ANGLAIS.
      - Ne laisse AUCUN mot dans la mauvaise langue (sauf noms propres d'entreprises/outils).
 
-   4. **FORMATAGE DE L'EXPÉRIENCE (RÈGLE DES 3+1+1)** :
+   4. **FORMATAGE DE L'EXPÉRIENCE (RÈGLE DES 2+1+1)** :
       - Pour CHAQUE expérience, le champ "description" DOIT respecter STRICTEMENT cette structure :
-        - 3 tirets MAX pour la description des tâches (les plus importantes).
+        - 2 tirets MAX pour la description des tâches (les plus importantes).
         - 1 tiret "Impact" : Résultat chiffré ou qualitatif majeur.
         - 1 tiret "Environnement" : Liste des outils/technos utilisés.
-      - Total = 5 lignes par expérience MAXIMUM. C'est CRUCIAL pour tenir sur 1 page.
+      - Total = 4 lignes par expérience MAXIMUM. C'est CRUCIAL pour tenir sur 1 page.
       - Sépare CHAQUE point par un saut de ligne réel (\n).
       - Exemple :
         "- Action majeure 1...\n- Action majeure 2...\n- Action majeure 3...\n- Impact : Augmentation de 30%...\n- Environnement : React, Node.js, AWS"
