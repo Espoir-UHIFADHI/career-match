@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ThumbsUp, ThumbsDown, Loader2, Check } from "lucide-react";
 import { Button } from "../ui/Button";
-import { useTranslation } from "../../hooks/useTranslation";
+// import { useTranslation } from "../../hooks/useTranslation";
 import { trackEvent } from "../../utils/analytics";
 
 export function FeedbackWidget() {
