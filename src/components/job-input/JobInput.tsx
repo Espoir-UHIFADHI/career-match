@@ -9,6 +9,7 @@ import { generateJSON } from "../../services/ai/gemini";
 import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
+import { trackEvent } from "../../utils/analytics";
 
 export function JobInput() {
     const { t, language } = useTranslation();
@@ -38,7 +39,10 @@ export function JobInput() {
         }
 
         setIsProcessing(true);
+        setIsProcessing(true);
         setError(null);
+
+        trackEvent("start_analysis", { length: description.length });
 
         // Deduct Credit
         let token: string | null = null;
