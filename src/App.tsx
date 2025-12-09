@@ -192,8 +192,9 @@ function App() {
         const { createClerkSupabaseClient } = await import('./services/supabase');
         const supabase = createClerkSupabaseClient(token || "");
 
-        const { data, error } = await supabase.rpc('process_referral', {
-          referrer_id: storedRef
+        // Use Edge Function for secure processing + Email Notification
+        const { data, error } = await supabase.functions.invoke('process-referral', {
+          body: { referrer_id: storedRef }
         });
 
         console.log("Referral Process Result:", data, error);
