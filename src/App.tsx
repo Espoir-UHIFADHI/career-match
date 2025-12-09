@@ -71,7 +71,7 @@ function App() {
       const blob = await pdf(
         <CVDocument
           data={analysisResults.optimizedCV}
-          language={language} // Use the app language setting
+          language={analysisResults.analysisLanguage || language} // Use the persisted language, fallback to app language
         />
       ).toBlob();
 
@@ -263,7 +263,7 @@ function App() {
                   }}
                   className="transition-transform duration-200"
                 >
-                  <PrintableCV ref={printRef} data={analysisResults!.optimizedCV!} language={language} />
+                  <PrintableCV ref={printRef} data={analysisResults!.optimizedCV!} language={analysisResults.analysisLanguage || language} />
                 </div>
               </div>
             ) : (

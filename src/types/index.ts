@@ -63,6 +63,7 @@ export const MatchResultSchema = z.object({
         cultureFit: z.string(),
     }),
     optimizedCV: CVSchema.optional(), // The rewritten CV (optional if score is too low)
+    analysisLanguage: z.enum(["English", "French"]).optional(),
     recommendations: z.array(z.string()),
 });
 

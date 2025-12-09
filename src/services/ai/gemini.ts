@@ -139,11 +139,13 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - Structure : "Action + Contexte + Résultat Chiffré/Impact".
      - Exemple : Au lieu de "Vente de logiciels", écris "Génération de 50k€ de revenus additionnels (+20%) via la prospection de 15 grands comptes".
   
-  6. **LANGUE DE SORTIE (IMPÉRATIF)** :
-     - LE CV DOIT ÊTRE ENTIÈREMENT RÉDIGÉ EN : **${_language.toUpperCase()}**.
-     - Traduis tout le contenu (titres, descriptions, skills, summary) dans cette langue si nécessaire.
-     - Si la langue demandée est "ENGLISH", tout le texte doit être en anglais.
-     - Si la langue demandée est "FRENCH", tout le texte doit être en français.
+  6. **LANGUE DE SORTIE (CRITIQUE & ABSOLUE)** :
+     - LA SORTIE JSON DOIT ÊTRE EN : **${_language.toUpperCase()}**.
+     - C'est la règle LA PLUS IMPORTANTE.
+     - Si la langue demandée est "FRENCH" -> TOUT le contenu (Experience, Skills, Summary, Job Titles, Descriptions) DOIT être en FRANÇAIS.
+     - MÊME SI le CV original est en Anglais ou si l'Offre est en Anglais, TU DOIS TRADUIRE la sortie en FRANÇAIS.
+     - Si la langue demandée est "ENGLISH" -> TOUT le contenu DOIT être en ANGLAIS.
+     - Ne laisse AUCUN mot dans la mauvaise langue (sauf noms propres d'entreprises/outils).
 
    4. **FORMATAGE DE L'EXPÉRIENCE (RÈGLE DES 3+1+1)** :
       - Pour CHAQUE expérience, le champ "description" DOIT respecter STRICTEMENT cette structure :
@@ -171,6 +173,14 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
       - Ton but est que ce CV décroche l'entretien à coup sûr.
       - Utilise un langage d'impact, orienté résultats ("Augmenté de X%", "Réduit de Y%").
       - Sois précis, concis, et percutant. Chaque mot doit "vendre" le candidat.
+
+   9. **ACCORD DE GENRE (INTELLIGENT)** :
+      - ANALYSE le Prénom et le contenu du CV original pour détecter le genre.
+      - SI C'EST UNE FEMME (ex: Sophie, Marie... ou adjectifs féminins dans le CV source) :
+        - TU DOIS ACCORDER tous les titres et adjectifs au FÉMININ.
+        - Ex: "Ingénieure", "Directrice", "Experte", "Passionnée", "Spécialisée".
+        - C'est un détail qui change tout pour la candidate.
+      - Sinon, garde le masculin standard.
 
    PROCESSUS DE MATCHING :
   1. Calcule un Score de Pertinence (0-100).
@@ -200,6 +210,12 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
     },
     "recommendations": ["..."]
   }
+
+  IMPORTANT : VERIFIE UNE DERNIÈRE FOIS LA LANGUE DE SORTIE.
+  SI LA LANGUE DEMANDÉE EST "FRENCH", LE JSON DOIT CONTENIR UNIQUEMENT DU FRANÇAIS (Sauf noms propres).
+  SI LA LANGUE DEMANDÉE EST "ENGLISH", LE JSON DOIT CONTENIR UNIQUEMENT DE L'ANGLAIS.
+  C'EST LA RÈGLE LA PLUS IMPORTANTE.
+  TRADUIS INTEGRALEMENT LE CONTENU.
   `;
 
   try {
@@ -208,7 +224,8 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
       prompt: prompt, // Text-only prompt
       config: { responseMimeType: "application/json", temperature: 0 }
     }, token);
-    return JSON.parse(responseText) as MatchResult;
+    const result = JSON.parse(responseText) as MatchResult;
+    return { ...result, analysisLanguage: _language as "English" | "French" };
   } catch (error) {
     console.error("❌ Erreur Matching (Secure):", error);
     throw error;

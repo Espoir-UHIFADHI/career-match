@@ -403,7 +403,7 @@ export function MatchingDashboard() {
                     </CardHeader>
                     <CardContent className="p-0 bg-slate-100 overflow-x-auto relative min-h-[400px]">
                         {isUpdatingCV && (
-                            <div className="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                            <div className="absolute inset-0 z-50 bg-white backdrop-blur-sm flex flex-col items-center justify-center">
                                 <Loader2 className="h-8 w-8 text-indigo-600 animate-spin mb-4" />
                                 <p className="text-sm font-medium text-slate-600 animate-pulse">{t('dashboard.optimizing')}</p>
                             </div>
