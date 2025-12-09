@@ -156,11 +156,14 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
      - **NE PAS OUBLIER LE LIEN LINKEDIN** (field: contact.linkedin). C'est obligatoire.
      - Ne pas inventer d'infos de contact.
 
-  7. **GESTION DES COMPÉTENCES (LAYOUT 1 PAGE)** :
-     - Si le candidat possède beaucoup de compétences techniques (> 10), SUPPRIME les 2 compétences les MOINS pertinentes pour ce poste.
-     - Cela permet d'optimiser l'espace pour que le CV tienne sur une seule page.
+   7. **OPTIMISATION DES COMPÉTENCES TECHNIQUES (VITAL POUR LA CLARTÉ)** :
+      - **FORMAT** : Utilise le format "Catégorie : Compétence 1, Compétence 2, ..." (ex: "Frontend : React, TypeScript, Tailwind").
+      - **VOLUME** : Génère entre 4 et 6 catégories MAXIMUM.
+      - **DENSITÉ** : Pas de listes à rallonge. Garde uniquement les 5-6 mots-clés les plus percutants par ligne.
+      - **PERTINENCE** : Si une compétence n'est pas clé pour le poste, SUPPRIME-LA.
+      - **RÉSULTAT** : On doit pouvoir scanner la rubrique en 3 secondes. Évite les phrases, privilégie les mots-clés.
 
-  PROCESSUS DE MATCHING :
+   PROCESSUS DE MATCHING :
   1. Calcule un Score de Pertinence (0-100).
   2. SI SCORE < 45 : Renvoie "optimizedCV": null.
   3. SI SCORE >= 45 : Génère le JSON complet avec le CV optimisé selon les règles ci-dessus.
