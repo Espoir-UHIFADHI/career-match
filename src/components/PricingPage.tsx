@@ -5,6 +5,7 @@ import { cn } from "../lib/utils";
 import { useTranslation } from "../hooks/useTranslation";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
+import { trackEvent } from "../utils/analytics";
 
 export function PricingPage() {
     const { credits } = useUserStore();
@@ -72,6 +73,8 @@ export function PricingPage() {
         }
 
         setLoadingProduct(productSlug);
+
+        trackEvent("pricing_button_click", { plan: productSlug });
 
         // Gumroad URL construction with custom tracking parameters
         // These are critical for the webhook to credit the correct user

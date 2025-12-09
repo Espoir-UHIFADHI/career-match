@@ -3,6 +3,8 @@ import { Button } from "../ui/Button";
 import { useTranslation } from "../../hooks/useTranslation";
 import { AlertCircle, CreditCard } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
+import { useEffect } from "react";
+import { trackEvent } from "../../utils/analytics";
 
 interface InsufficientCreditsModalProps {
     isOpen: boolean;
@@ -12,6 +14,12 @@ interface InsufficientCreditsModalProps {
 export function InsufficientCreditsModal({ isOpen, onClose }: InsufficientCreditsModalProps) {
     const { t } = useTranslation();
     const { setStep } = useAppStore();
+
+    useEffect(() => {
+        if (isOpen) {
+            trackEvent("credits_exhausted_view");
+        }
+    }, [isOpen]);
 
     const handleViewPricing = () => {
         onClose();
