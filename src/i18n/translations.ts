@@ -29,7 +29,7 @@ export const translations = {
                 trust: "Trusted Technology",
                 ai: "Powered by AI"
             },
-            joinedTeams: "THEY JOINED THE BEST TEAMS",
+            joinedTeams: "Do you want to join these top companies?",
             freeCreditsOffer: "(7 credits offered on signup)"
         },
         features: {
@@ -524,7 +524,7 @@ export const translations = {
                 trust: "Technologie de Confiance",
                 ai: "Propulsé par l'IA"
             },
-            joinedTeams: "Ils ont rejoint les meilleures équipes",
+            joinedTeams: "Souhaitez-vous rejoindre ces entreprises ?",
             freeCreditsOffer: "(7 crédits offerts à l'inscription)"
         },
         features: {

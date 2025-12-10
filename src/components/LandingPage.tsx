@@ -203,26 +203,23 @@ export function LandingPage() {
                             <div className="flex items-center gap-16 shrink-0 transition-all duration-300">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" alt="Microsoft" className="h-8 md:h-10 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/L%27Or%C3%A9al_logo.svg" alt="L'Oréal" className="h-6 md:h-8 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" className="h-8 md:h-10 w-auto object-contain mt-2" />
+                                <img src="https://cdn.worldvectorlogo.com/logos/orange-2.svg" alt="Orange" className="h-8 md:h-12 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" className="h-6 md:h-8 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg" alt="Airbnb" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM" className="h-8 md:h-12 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/2560px-Salesforce.com_logo.svg.png" alt="Salesforce" className="h-8 md:h-16 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/2560px-Oracle_logo.svg.png" alt="Oracle" className="h-6 md:h-8 w-auto object-contain" />
                             </div>
 
                             <div className="flex items-center gap-16 shrink-0 transition-all duration-300" aria-hidden="true">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg" alt="Microsoft" className="h-8 md:h-10 w-auto object-contain" />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/L%27Or%C3%A9al_logo.svg" alt="L'Oréal" className="h-6 md:h-8 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" className="h-8 md:h-10 w-auto object-contain mt-2" />
+                                <img src="https://cdn.worldvectorlogo.com/logos/orange-2.svg" alt="Orange" className="h-8 md:h-12 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" className="h-8 md:h-10 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" className="h-6 md:h-8 w-auto object-contain" />
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg" alt="Airbnb" className="h-8 md:h-10 w-auto object-contain" />
-                                <img src="https://static.cdnlogo.com/logos/s/54/samsung.svg" alt="Samsung" className="h-8 md:h-12 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM" className="h-8 md:h-12 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/2560px-Salesforce.com_logo.svg.png" alt="Salesforce" className="h-8 md:h-16 w-auto object-contain" />
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/2560px-Oracle_logo.svg.png" alt="Oracle" className="h-6 md:h-8 w-auto object-contain" />
                             </div>
                         </div>
                     </div>

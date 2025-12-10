@@ -338,8 +338,8 @@ export function MatchingDashboard() {
             <NetworkingSection />
 
 
-            <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-xl shadow-slate-200/50 mx-auto max-w-5xl mb-12 relative overflow-hidden group border border-slate-800 ring-1 ring-white/5">
-                {/* Decorative Elements */}
+            {/* Referral Card - HIDDEN FOR NOW */}
+            {/* <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-xl shadow-slate-200/50 mx-auto max-w-5xl mb-12 relative overflow-hidden group border border-slate-800 ring-1 ring-white/5">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-slate-800/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none group-hover:bg-slate-800/70 transition-all duration-700 mixture-blend-overlay" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-slate-800/30 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
 
@@ -358,17 +358,17 @@ export function MatchingDashboard() {
 
                     <div className="flex flex-col gap-3 w-full lg:w-auto min-w-[340px]">
                         <div className="flex items-center gap-2 p-1.5 bg-black/40 backdrop-blur-xl rounded-xl border border-slate-700 focus-within:border-slate-500 focus-within:bg-black/50 transition-all shadow-lg">
-                            <div className="pl-3 text-slate-400">
+                             <div className="pl-3 text-slate-400">
                                 <LinkIcon className="h-4 w-4" />
-                            </div>
-                            <input
-                                type="text"
-                                readOnly
+                             </div>
+                             <input 
+                                type="text" 
+                                readOnly 
                                 value={`https://careermatch.fr?ref=${user?.id}`}
                                 className="bg-transparent border-none focus:ring-0 text-sm text-slate-200 w-full font-mono placeholder-slate-500 truncate"
                                 onClick={(e) => e.currentTarget.select()}
-                            />
-                            <Button
+                             />
+                             <Button 
                                 size="sm"
                                 className="bg-white text-slate-900 hover:bg-slate-100 border-0 font-bold shadow-lg shadow-black/10 hover:scale-105 active:scale-95 transition-all min-w-[100px]"
                                 onClick={(e) => {
@@ -378,17 +378,17 @@ export function MatchingDashboard() {
                                     btn.innerText = "Copié !";
                                     setTimeout(() => { btn.innerHTML = originalText; }, 2000);
                                 }}
-                            >
+                             >
                                 <Copy className="h-4 w-4 mr-2" />
                                 Copier
-                            </Button>
+                             </Button>
                         </div>
                         <p className="text-xs text-slate-400 text-center font-medium opacity-80">
                             Partagez ce lien sur LinkedIn ou WhatsApp
                         </p>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Action Bar */}
             <div className="sticky bottom-6 z-10">
