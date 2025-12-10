@@ -735,7 +735,7 @@ export const translations = {
             noProfiles: "Aucun profil direct trouvé. Essayez de chercher manuellement sur LinkedIn pour \"{company} {title}\"."
         },
         emailPredictor: {
-            title: "Prédicteur d'Email",
+            title: "Email Finder",
             subtitle: "Trouvez n'importe quel email professionnel en quelques secondes.",
             firstName: "Prénom",
             firstNamePlaceholder: "ex: Jean",

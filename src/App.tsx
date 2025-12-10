@@ -257,6 +257,24 @@ function App() {
     sendWelcome();
   }, [isLoaded, isSignedIn, user]);
 
+  // Redirect logged-in users away from Landing Page
+  useEffect(() => {
+    if (isLoaded && isSignedIn && step === 0) {
+      // Smart Resumption Logic
+      const { cvData, jobData, analysisResults } = useAppStore.getState();
+      if (analysisResults) {
+        setStep(3); // Analysis Dashboard
+      } else if (cvData && jobData) {
+        setStep(3); // Ready to analyze
+      } else if (cvData) {
+        setStep(2); // Job Input
+      } else {
+        setStep(1); // Upload
+      }
+    }
+  }, [isLoaded, isSignedIn, step, setStep, cvData, jobData, analysisResults]);
+
+
 
   const handleStepClick = (stepId: number) => {
     // ... existing logic

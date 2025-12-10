@@ -34,7 +34,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <div className="container mx-auto flex h-16 items-center justify-between px-6">
                     <div
                         className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => useAppStore.getState().setStep(0)}
+                        onClick={() => {
+                            if (!user) {
+                                useAppStore.getState().setStep(0);
+                            } else {
+                                // Smart Resumption Logic
+                                const { cvData, jobData, analysisResults } = useAppStore.getState();
+                                if (analysisResults) {
+                                    useAppStore.getState().setStep(3); // Analysis Dashboard
+                                } else if (cvData && jobData) {
+                                    useAppStore.getState().setStep(3); // Ready to analyze
+                                } else if (cvData) {
+                                    useAppStore.getState().setStep(2); // Job Input
+                                } else {
+                                    useAppStore.getState().setStep(1); // Upload
+                                }
+                            }
+                        }}
                     >
                         <img src="/career-match.png" alt="Career Match" className="h-10 w-10 object-contain" />
                         <span className="text-xl font-bold tracking-tight text-slate-900 hidden sm:inline-block">
