@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useRef } from "react";
-import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe, Link as LinkIcon, Copy } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
