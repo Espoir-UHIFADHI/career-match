@@ -48,7 +48,7 @@ const getEmailLayout = (content: string) => `
   <div class="container">
     <div class="header">
       <a href="https://careermatch.fr" style="text-decoration: none;">
-        <img src="https://careermatch.fr/logo.png" alt="Career Match" height="40" style="height: 40px; border: 0; line-height: 100%; outline: none; text-decoration: none; display: inline-block;">
+        <img src="https://careermatch.fr/career-match.png" alt="Career Match" height="40" style="height: 40px; border: 0; line-height: 100%; outline: none; text-decoration: none; display: inline-block;">
       </a>
     </div>
     <div class="content">
