@@ -235,7 +235,10 @@ export const translations = {
                 description: "We are actively working on this feature to bring you the best results.",
                 note: "This option will be enabled very shortly.",
                 button: "Got it, thanks!"
-            }
+            },
+            opportunities: "Networking Opportunities",
+            connectPrompt: "Connect with people at {company} to increase your chances.",
+            noProfiles: "No direct profiles found. Try searching LinkedIn manually for \"{company} {title}\"."
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -726,7 +729,10 @@ export const translations = {
                 description: "Nous travaillons activement sur cette fonctionnalité pour vous offrir les meilleurs résultats.",
                 note: "Cette option sera activée très prochainement.",
                 button: "Compris, merci !"
-            }
+            },
+            opportunities: "Opportunités de Réseautage",
+            connectPrompt: "Connectez-vous avec des personnes chez {company} pour augmenter vos chances.",
+            noProfiles: "Aucun profil direct trouvé. Essayez de chercher manuellement sur LinkedIn pour \"{company} {title}\"."
         },
         emailPredictor: {
             title: "Prédicteur d'Email",

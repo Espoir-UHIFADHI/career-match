@@ -68,19 +68,19 @@ const getEmailLayout = (content: string) => `
 
 const EMAIL_TEMPLATES = {
   welcome: (data: any) => ({
-    subject: "Bienvenue sur Career Match ! 🚀",
+    subject: "Bienvenue sur Career Match",
     html: getEmailLayout(`
-      <h1>Bienvenue, ${data?.name || 'cher utilisateur'} ! 👋</h1>
-      <p>Merci de nous avoir rejoints. Nous sommes ravis de vous aider à propulser votre carrière vers de nouveaux sommets.</p>
-      <p>Avec <strong>Career Match</strong>, vous avez désormais le pouvoir de :</p>
+      <h1>Bienvenue ${data?.name ? data.name : ''} !</h1>
+      <p>Merci de nous avoir rejoints.</p>
+      <p>Voici comment Career Match va vous aider concrètement dans votre recherche :</p>
       <ul>
-        <li>⚡ <strong>Optimiser</strong> votre CV pour battre les ATS</li>
-        <li>🎯 <strong>Trouver</strong> les emails directs des recruteurs et patrons</li>
-        <li>📈 <strong>Recevoir</strong> des analyses détaillées et personnalisées</li>
+        <li><strong>Optimiser votre CV</strong> pour qu'il passe les filtres des recruteurs</li>
+        <li><strong>Trouver l'email direct</strong> de n'importe quel décideur</li>
+        <li><strong>Obtenir des analyses</strong> pour améliorer vos candidatures</li>
       </ul>
-      <p>Prêt à décrocher le job de vos rêves ?</p>
+      <p>Hâte de voir vos premiers résultats.</p>
       <div style="text-align: center;">
-        <a href="https://careermatch.fr" class="button">Accéder à mon tableau de bord</a>
+        <a href="https://careermatch.fr" class="button">Commencer maintenant</a>
       </div>
     `),
   }),

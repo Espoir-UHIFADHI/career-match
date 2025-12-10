@@ -9,6 +9,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()], // Optimize deps trigger
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
+    },
     resolve: {
       alias: {
         // 'pako': 'pako', // Removing this as it caused issues

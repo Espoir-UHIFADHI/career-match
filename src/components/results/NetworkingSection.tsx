@@ -3,6 +3,7 @@ import { Users, ExternalLink, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { searchLinkedIn, type SearchResult } from "../../services/search/serper";
 import { useAppStore } from "../../store/useAppStore";
+import { useTranslation } from "../../hooks/useTranslation";
 
 import { useAuth } from "@clerk/clerk-react";
 
@@ -34,6 +35,8 @@ export function NetworkingSection() {
         }
     };
 
+    const { t } = useTranslation();
+
     if (!jobData) return null;
 
     return (
@@ -41,13 +44,13 @@ export function NetworkingSection() {
             <CardHeader className="border-b border-slate-100 pb-4">
                 <CardTitle className="flex items-center gap-2 text-slate-900">
                     <Users className="h-5 w-5 text-indigo-600" />
-                    Networking Opportunities
+                    {t('networking.opportunities')}
                 </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-                <p className="text-sm text-slate-600 mb-6">
-                    Connect with people at <strong>{jobData.company}</strong> to increase your chances.
-                </p>
+                <p className="text-sm text-slate-600 mb-6" dangerouslySetInnerHTML={{
+                    __html: t('networking.connectPrompt', { company: `<strong>${jobData.company}</strong>` })
+                }} />
 
                 {loading ? (
                     <div className="flex justify-center py-8">
@@ -74,7 +77,7 @@ export function NetworkingSection() {
                 ) : (
                     <div className="text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                         <p className="text-sm text-slate-500 italic">
-                            No direct profiles found. Try searching LinkedIn manually for "{jobData.company} {jobData.title}".
+                            {t('networking.noProfiles', { company: jobData.company, title: jobData.title })}
                         </p>
                     </div>
                 )}
