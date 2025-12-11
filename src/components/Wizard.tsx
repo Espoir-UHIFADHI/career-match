@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { Helmet } from "react-helmet-async";
 
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
@@ -336,8 +337,40 @@ function Wizard() {
 
 
 
+  const getSeoMetadata = (step: number) => {
+    switch (step) {
+      case 1:
+        return { title: t('seo.uploadTitle') || "Télécharger CV | Career Match", desc: t('seo.uploadDesc') || "Importez votre CV pour une analyse IA instantanée." };
+      case 2:
+        return { title: t('seo.jobTitle') || "Cibler une Offre | Career Match", desc: t('seo.jobDesc') || "Analysez une offre d'emploi spécifique pour vérifier votre compatibilité." };
+      case 3:
+        return { title: t('seo.analysisTitle') || "Analyse en Cours | Career Match", desc: t('seo.analysisDesc') || "Notre IA analyse votre profil par rapport au poste visé." };
+      case 4:
+        return { title: t('seo.resultsTitle') || "Résultats & Optimisation | Career Match", desc: t('seo.resultsDesc') || "Consultez votre score de match et téléchargez votre CV optimisé." };
+      case 5:
+        return { title: t('seo.networkingTitle') || "Réseautage | Career Match", desc: t('seo.networkingDesc') || "Identifiez les recruteurs et employés clés pour cette entreprise." };
+      case 6:
+        return { title: t('seo.emailTitle') || "Email Finder | Career Match", desc: t('seo.emailDesc') || "Trouvez les emails professionnels vérifiés de vos contacts." };
+      case 7:
+        return null; // Let PricingPage handle its own SEO
+      default:
+        return { title: "Career Match | Assistant Carrière IA", desc: "Optimisez votre recherche d'emploi avec l'IA." };
+    }
+  };
+
+  const seo = getSeoMetadata(step);
+
   return (
     <>
+      {seo && (
+        <Helmet>
+          <title>{seo.title}</title>
+          <meta name="description" content={seo.desc} />
+          <meta property="og:title" content={seo.title} />
+          <meta property="og:description" content={seo.desc} />
+          <link rel="canonical" href={`https://careermatch.fr/app/step-${step}`} />
+        </Helmet>
+      )}
       <div className="space-y-8">
         {step < 8 && step !== 5 && step !== 6 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
         {renderStep()}

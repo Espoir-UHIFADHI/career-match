@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 
     return (
-        <div className="min-h-screen flex flex-col font-sans text-slate-900 selection:bg-indigo-500/20 selection:text-indigo-900 bg-slate-50">
+        <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-slate-50">
             {/* Header */}
             <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
                 <div className="container mx-auto flex h-16 items-center justify-between px-6">

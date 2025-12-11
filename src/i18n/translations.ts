@@ -14,7 +14,22 @@ export const translations = {
             analysis: "Analysis",
             results: "Results",
             pricing: "Pricing"
-
+        },
+        seo: {
+            uploadTitle: "Upload CV | Career Match",
+            uploadDesc: "Upload your CV for instant AI analysis.",
+            jobTitle: "Target Job | Career Match",
+            jobDesc: "Analyze a specific job offer to check your compatibility.",
+            analysisTitle: "Analysis in Progress | Career Match",
+            analysisDesc: "Our AI is analyzing your profile against the target role.",
+            resultsTitle: "Results & Optimization | Career Match",
+            resultsDesc: "View your match score and download your optimized CV.",
+            networkingTitle: "Networking | Career Match",
+            networkingDesc: "Identify key recruiters and employees for this company.",
+            emailTitle: "Email Finder | Career Match",
+            emailDesc: "Find verified professional emails for your contacts.",
+            pricingTitle: "Pricing | Career Match",
+            pricingDesc: "Invest in your career with our flexible plans."
         },
         hero: {
             newVersion: "New AI 2.0 Version",
@@ -512,7 +527,22 @@ export const translations = {
             analysis: "Analyse",
             results: "Résultats",
             pricing: "Tarifs"
-
+        },
+        seo: {
+            uploadTitle: "Télécharger CV | Career Match",
+            uploadDesc: "Importez votre CV pour une analyse IA instantanée.",
+            jobTitle: "Cibler une Offre | Career Match",
+            jobDesc: "Analysez une offre d'emploi spécifique pour vérifier votre compatibilité.",
+            analysisTitle: "Analyse en Cours | Career Match",
+            analysisDesc: "Notre IA analyse votre profil par rapport au poste visé.",
+            resultsTitle: "Résultats & Optimisation | Career Match",
+            resultsDesc: "Consultez votre score de match et téléchargez votre CV optimisé.",
+            networkingTitle: "Réseautage | Career Match",
+            networkingDesc: "Identifiez les recruteurs et employés clés pour cette entreprise.",
+            emailTitle: "Email Finder | Career Match",
+            emailDesc: "Trouvez les emails professionnels vérifiés de vos contacts.",
+            pricingTitle: "Tarifs | Career Match",
+            pricingDesc: "Investissez dans votre carrière avec nos offres flexibles."
         },
         hero: {
             newVersion: "Nouvelle version AI 2.0",
