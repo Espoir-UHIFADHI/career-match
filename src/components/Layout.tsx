@@ -12,6 +12,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { t } = useTranslation();
     const { user } = useUser();
+    const [isSignInLoading, setIsSignInLoading] = useState(false);
+    const [isSignUpLoading, setIsSignUpLoading] = useState(false);
+
+    const handleSignInClick = () => {
+        setIsSignInLoading(true);
+        setTimeout(() => setIsSignInLoading(false), 3000);
+    };
+
+    const handleSignUpClick = () => {
+        setIsSignUpLoading(true);
+        setTimeout(() => setIsSignUpLoading(false), 3000);
+    };
 
     const navItems = [
         { id: 1, name: t('nav.uploadCV'), icon: FileText, activeSteps: [1, 2, 3, 4] },
@@ -101,12 +113,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <SignedOut>
                             <div className="flex items-center gap-4">
                                 <SignInButton mode="modal">
-                                    <button className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
-                                        {t('nav.signIn')}
+                                    <button
+                                        onClick={handleSignInClick}
+                                        disabled={isSignInLoading || isSignUpLoading}
+                                        className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors disabled:opacity-50">
+                                        {isSignInLoading ? t('common.loading') : t('nav.signIn')}
                                     </button>
                                 </SignInButton>
                                 <SignUpButton mode="modal">
-                                    <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 hover:shadow-slate-900/30">
+                                    <button
+                                        onClick={handleSignUpClick}
+                                        disabled={isSignInLoading || isSignUpLoading}
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 hover:shadow-slate-900/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {isSignUpLoading && <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />}
                                         {t('nav.signUp')}
                                     </button>
                                 </SignUpButton>

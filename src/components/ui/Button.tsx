@@ -19,13 +19,15 @@ const buttonSizes = {
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: keyof typeof buttonVariants;
     size?: keyof typeof buttonSizes;
+    isLoading?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", ...props }, ref) => {
+    ({ className, variant = "primary", size = "md", isLoading, children, disabled, ...props }, ref) => {
         return (
             <button
                 ref={ref}
+                disabled={isLoading || disabled}
                 className={cn(
                     "inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
                     buttonVariants[variant],
@@ -33,7 +35,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                     className
                 )}
                 {...props}
-            />
+            >
+                {isLoading && (
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                )}
+                {children}
+            </button>
         );
     }
 );

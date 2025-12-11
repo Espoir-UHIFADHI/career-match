@@ -1,5 +1,6 @@
 
 import { SignInButton, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useState } from "react";
 import { useAppStore } from "../store/useAppStore";
 import { Button } from "./ui/Button";
 
@@ -8,7 +9,12 @@ import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
     const { t } = useTranslation();
+    const [isLoading, setIsLoading] = useState(false);
 
+    const handleAuthClick = () => {
+        setIsLoading(true);
+        setTimeout(() => setIsLoading(false), 3000);
+    };
 
     return (
         <div className="flex flex-col bg-slate-50 overflow-x-hidden">
@@ -42,6 +48,8 @@ export function LandingPage() {
                                 <SignedOut>
                                     <SignInButton mode="modal">
                                         <Button
+                                            isLoading={isLoading}
+                                            onClick={handleAuthClick}
                                             className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-indigo-500/20 rounded-2xl transition-all hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
                                         >
                                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 backdrop-blur-sm" />
@@ -134,7 +142,7 @@ export function LandingPage() {
                                         </div>
 
                                         {/* Networking Suggestion */}
-                                        <div className="bg-slate-900 rounded-xl p-4 border border-slate-700 shadow-lg text-white relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-pointer">
+                                        <div className="bg-slate-900 rounded-xl p-4 border border-slate-700 shadow-lg text-white relative overflow-hidden group">
                                             <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
 
                                             <div className="flex items-center gap-3 mb-3">
