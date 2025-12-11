@@ -9,11 +9,12 @@ import type { ParsedCV } from "../../types";
 import { CVReview } from "./CVReview";
 import { useTranslation } from "../../hooks/useTranslation";
 
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useClerk } from "@clerk/clerk-react";
 
 export function CVUpload() {
     const { t } = useTranslation();
-    const { getToken } = useAuth();
+    const { getToken, isSignedIn } = useAuth();
+    const { openSignIn } = useClerk();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isReviewing, setIsReviewing] = useState(false);
@@ -49,8 +50,6 @@ export function CVUpload() {
         }
     }, [getToken, t]);
 
-
-
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
@@ -58,7 +57,20 @@ export function CVUpload() {
             "text/plain": [".txt"],
         },
         maxFiles: 1,
+        // Disable default click behavior if not signed in, so we can handle it manually
+        noClick: !isSignedIn,
+        // Also disable keyboard click if not signed in (optional but good for accessibility)
+        noKeyboard: !isSignedIn
     });
+
+    const handleZoneClick = () => {
+        if (!isSignedIn) {
+            openSignIn({
+                afterSignInUrl: '/app',
+                afterSignUpUrl: '/app',
+            });
+        }
+    };
 
     const handleSaveReview = (data: ParsedCV) => {
         setCvData(data);
@@ -94,7 +106,9 @@ export function CVUpload() {
             <Card className="glass-panel border-dashed border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 transition-all duration-300 group">
                 <CardContent className="p-0">
                     <div
-                        {...getRootProps()}
+                        {...getRootProps({
+                            onClick: handleZoneClick
+                        })}
                         className="flex flex-col items-center justify-center p-12 cursor-pointer min-h-[350px] relative overflow-hidden"
                     >
                         <input {...getInputProps()} />

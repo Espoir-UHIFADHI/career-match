@@ -1,4 +1,5 @@
 import { useTranslation } from "../../hooks/useTranslation";
+import { Helmet } from "react-helmet-async";
 
 // Helper for simple markdown parsing (bold and italic)
 const renderText = (text: string) => {
@@ -26,6 +27,11 @@ export function PrivacyPolicy() {
 
     return (
         <div className="max-w-4xl mx-auto py-12 px-6 animate-fade-in text-slate-600">
+            <Helmet>
+                <title>Politique de Confidentialité - Career Match</title>
+                <meta name="description" content="Consultez notre politique de confidentialité pour comprendre comment nous protégeons vos données personnelles." />
+                <link rel="canonical" href="https://careermatch.fr/privacy" />
+            </Helmet>
             {/* Header */}
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold mb-4 text-slate-900">{p.title}</h1>

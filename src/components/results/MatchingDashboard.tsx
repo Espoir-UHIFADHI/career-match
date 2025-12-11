@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useRef } from "react";
-import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe, Share2, ArrowRight } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
@@ -30,7 +30,110 @@ export function MatchingDashboard() {
     const [showPreview, setShowPreview] = useState(false);
     const printRef = useRef<HTMLDivElement>(null);
 
+    // Sharing Logic State
+    const [isSharing, setIsSharing] = useState(false);
+    const [shareUrl, setShareUrl] = useState<string | null>(null);
 
+    const handleShare = async () => {
+        if (!analysisResults) return;
+        if (shareUrl) {
+            navigator.clipboard.writeText(shareUrl);
+            return;
+        }
+
+        setIsSharing(true);
+        try {
+            const token = await getToken({ template: 'supabase' });
+            const { createClerkSupabaseClient } = await import('../../services/supabase');
+            const supabase = createClerkSupabaseClient(token || "");
+
+            const { data, error } = await supabase.from('public_analyses').insert({
+                content: analysisResults, // Store full result
+                user_id: user?.id,
+                career_slug: 'general' // Could be refined based on Job Title
+            }).select().single();
+
+            if (error) throw error;
+
+            const url = `${window.location.origin}/share/${data.id}`;
+            setShareUrl(url);
+            navigator.clipboard.writeText(url);
+
+
+
+        } catch (err: any) {
+            console.error("Sharing failed:", err);
+            // Display visible error to the user
+            alert(`Erreur lors du partage : ${err.message || "Impossible de contacter la base de données."}\n\nL'administrateur doit exécuter la migration SQL "create_public_analyses".`);
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
+
+
+    // Mentor Invite Logic State
+    const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
+    const [mentorEmail, setMentorEmail] = useState("");
+    const [mentorMessage, setMentorMessage] = useState("");
+    const [isSendingInvite, setIsSendingInvite] = useState(false);
+
+    const handleInviteMentor = async () => {
+        if (!mentorEmail) return;
+
+        setIsSendingInvite(true);
+        try {
+            const token = await getToken({ template: 'supabase' });
+
+            // 1. Ensure result is saved publicly first to get a link
+            const { createClerkSupabaseClient } = await import('../../services/supabase');
+            const supabase = createClerkSupabaseClient(token || "");
+
+            let currentShareUrl = shareUrl;
+
+            if (!currentShareUrl) {
+                const { data, error } = await supabase.from('public_analyses').insert({
+                    content: analysisResults,
+                    user_id: user?.id,
+                    career_slug: 'mentor-invite'
+                }).select().single();
+
+                if (error) throw error;
+                currentShareUrl = `${window.location.origin}/share/${data.id}`;
+                setShareUrl(currentShareUrl);
+            }
+
+            // 2. Send Email
+            const { sendTransactionalEmail } = await import("../../services/emailService");
+            const success = await sendTransactionalEmail(
+                mentorEmail,
+                'invite_mentor',
+                {
+                    menteeName: user?.firstName || "Un candidat",
+                    jobTitle: jobData?.title || "Ce poste",
+                    score: analysisResults?.score || 0,
+                    link: `${currentShareUrl}?mode=cv`, // Force CV mode for mentor
+                    message: mentorMessage
+                },
+                token || ""
+            );
+
+            if (success) {
+                alert("Invitation envoyée avec succès !");
+                setIsMentorModalOpen(false);
+                setMentorEmail("");
+                setMentorMessage("");
+            } else {
+                throw new Error("Erreur lors de l'envoi de l'email.");
+            }
+
+        } catch (err: any) {
+            console.error("Invite failed:", err);
+            alert(`Erreur : ${err.message}`);
+        } finally {
+            setIsSendingInvite(false);
+        }
+    };
 
     // ... existing imports ...
 
@@ -418,8 +521,28 @@ export function MatchingDashboard() {
                                         }`}
                                 >
                                     <Eye className="h-4 w-4" />
+
                                     {showPreview ? t('dashboard.hidePreview') : t('dashboard.previewCV')}
                                 </Button>
+
+                                <Button
+                                    variant="outline"
+                                    onClick={handleShare}
+                                    disabled={isSharing}
+                                    className="w-full sm:w-auto gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                                >
+                                    {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+                                    {shareUrl ? "Lien Copié !" : "Partager"}
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsMentorModalOpen(true)}
+                                    className="w-full sm:w-auto gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
+                                >
+                                    Inviter un Mentor
+                                </Button>
+
                                 <Button
                                     size="lg"
                                     onClick={handleDownload}
@@ -434,32 +557,124 @@ export function MatchingDashboard() {
                 </div>
             </div >
 
-            {showPreview && !isLowMatch && analysisResults.optimizedCV && (
-                <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500 relative">
-                    <CardHeader className="bg-slate-50 border-b border-slate-200 flex flex-row items-center justify-between py-4">
-                        <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
-                            <Sparkles className="h-4 w-4 text-indigo-600" />
-                            {t('dashboard.optimizedPreview')}
-                        </CardTitle>
-                        <Button size="sm" variant="ghost" onClick={() => setShowPreview(false)} className="text-slate-500 hover:text-slate-900">
-                            {t('dashboard.closePreview')}
-                        </Button>
-                    </CardHeader>
-                    <CardContent className="p-0 bg-slate-100 overflow-x-auto relative min-h-[400px]">
-                        {isUpdatingCV && (
-                            <div className="absolute inset-0 z-50 bg-white backdrop-blur-sm flex flex-col items-center justify-center">
-                                <Loader2 className="h-8 w-8 text-indigo-600 animate-spin mb-4" />
-                                <p className="text-sm font-medium text-slate-600 animate-pulse">{t('dashboard.optimizing')}</p>
+            {/* Mentor Invite Modal */}
+            {isMentorModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+                        {/* Interactive Background Elements */}
+                        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-purple-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
+
+                        <div className="flex justify-between items-start mb-8 relative z-10">
+                            <div>
+                                <div className="p-3 bg-indigo-50 rounded-2xl w-fit mb-4">
+                                    <Sparkles className="h-6 w-6 text-indigo-600" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-900">Demander un avis d'expert</h3>
+                                <p className="text-slate-500 mt-1">Invitez un mentor à revoir votre CV optimisé.</p>
                             </div>
-                        )}
-                        <div className="min-w-[800px] p-8 flex justify-center">
-                            <div className="shadow-2xl bg-white">
-                                {analysisResults?.optimizedCV && <PrintableCV data={analysisResults.optimizedCV} language={cvLanguage} />}
+                            <button
+                                onClick={() => setIsMentorModalOpen(false)}
+                                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <XCircle className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6 relative z-10">
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                    Email du Mentor <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    placeholder="ex: mentor@entreprise.com"
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-slate-50 hover:bg-white"
+                                    value={mentorEmail}
+                                    onChange={(e) => setMentorEmail(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Message personnel</label>
+                                <textarea
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 h-32 resize-none transition-all bg-slate-50 hover:bg-white"
+                                    placeholder="Salut, j'ai optimisé mon CV pour ce poste avec Career Match. Peux-tu me donner ton avis ?"
+                                    value={mentorMessage}
+                                    onChange={(e) => setMentorMessage(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl flex gap-3 border border-indigo-100/50">
+                                <div className="p-2 bg-white rounded-full shadow-sm h-fit shrink-0">
+                                    <Globe className="h-4 w-4 text-indigo-600" />
+                                </div>
+                                <p className="text-xs leading-relaxed text-indigo-900/80">
+                                    <span className="font-semibold block mb-0.5 text-indigo-900">Accès Sécurisé & Simplifié</span>
+                                    Votre mentor recevra un lien unique pour consulter la version PDF de votre CV directement dans son navigateur, sans inscription requise.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-4 pt-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsMentorModalOpen(false)}
+                                    className="flex-1 py-6 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    onClick={handleInviteMentor}
+                                    disabled={!mentorEmail || isSendingInvite}
+                                    className="flex-1 py-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all font-semibold"
+                                >
+                                    {isSendingInvite ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            Envoi en cours...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Envoyer l'invitation
+                                            <ArrowRight className="ml-2 h-5 w-5" />
+                                        </>
+                                    )}
+                                </Button>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             )}
+
+
+            {
+                showPreview && !isLowMatch && analysisResults.optimizedCV && (
+                    <Card className="mt-8 bg-white border-slate-200 shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 duration-500 relative">
+                        <CardHeader className="bg-slate-50 border-b border-slate-200 flex flex-row items-center justify-between py-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <Sparkles className="h-4 w-4 text-indigo-600" />
+                                {t('dashboard.optimizedPreview')}
+                            </CardTitle>
+                            <Button size="sm" variant="ghost" onClick={() => setShowPreview(false)} className="text-slate-500 hover:text-slate-900">
+                                {t('dashboard.closePreview')}
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-0 bg-slate-100 overflow-x-auto relative min-h-[400px]">
+                            {isUpdatingCV && (
+                                <div className="absolute inset-0 z-50 bg-white backdrop-blur-sm flex flex-col items-center justify-center">
+                                    <Loader2 className="h-8 w-8 text-indigo-600 animate-spin mb-4" />
+                                    <p className="text-sm font-medium text-slate-600 animate-pulse">{t('dashboard.optimizing')}</p>
+                                </div>
+                            )}
+                            <div className="min-w-[800px] p-8 flex justify-center">
+                                <div className="shadow-2xl bg-white">
+                                    {analysisResults?.optimizedCV && <PrintableCV data={analysisResults.optimizedCV} language={cvLanguage} />}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )
+            }
 
             {/* Hidden Printable Component */}
             {

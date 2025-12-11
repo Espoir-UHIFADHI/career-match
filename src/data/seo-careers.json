@@ -1,0 +1,47 @@
+[
+    {
+        "slug": "product-designer",
+        "title": "Product Designer",
+        "metaTitle": "Devenir Product Designer : Guide & Analyse de CV IA",
+        "metaDescription": "Découvrez comment optimiser votre CV pour devenir Product Designer. Analyse IA gratuite de vos compétences et matchmaking avec les meilleures offres.",
+        "heroTitle": "Devenez Product Designer",
+        "heroSubtitle": "Analysez votre CV actuel et découvrez exactement ce qu'il vous manque pour décrocher le poste de Product Designer de vos rêves.",
+        "keywords": [
+            "UX Design",
+            "UI Design",
+            "Figma",
+            "Prototypage",
+            "User Research"
+        ]
+    },
+    {
+        "slug": "software-engineer",
+        "title": "Software Engineer",
+        "metaTitle": "Devenir Software Engineer : Guide & Analyse de CV IA",
+        "metaDescription": "Optimisez votre CV pour les postes de Software Engineer. Analyse technique de vos compétences (React, Node, Python) et conseils personnalisés.",
+        "heroTitle": "Devenez Software Engineer",
+        "heroSubtitle": "Votre profil technique est-il à la hauteur ? Notre IA analyse votre code et votre expérience pour vous propulser vers les meilleurs postes tech.",
+        "keywords": [
+            "React",
+            "Node.js",
+            "System Design",
+            "Algorithms",
+            "TypeScript"
+        ]
+    },
+    {
+        "slug": "marketing-manager",
+        "title": "Marketing Manager",
+        "metaTitle": "Devenir Marketing Manager : Guide & Analyse de CV IA",
+        "metaDescription": "Boostez votre carrière en Marketing. Vérifiez l'impact de votre CV et alignez vos compétences avec les attentes des recruteurs en Growth et Brand.",
+        "heroTitle": "Devenez Marketing Manager",
+        "heroSubtitle": "Le marketing évolue vite. Assurez-vous que votre CV reflète les dernières tendances et compétences recherchées par les entreprises.",
+        "keywords": [
+            "Growth Hacking",
+            "SEO",
+            "Content Strategy",
+            "Analytics",
+            "Branding"
+        ]
+    }
+]

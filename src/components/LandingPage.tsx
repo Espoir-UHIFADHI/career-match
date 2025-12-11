@@ -1,10 +1,13 @@
 
 import { SignInButton, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { useAppStore } from "../store/useAppStore";
 import { Button } from "./ui/Button";
 
-import { ArrowRight, FileText, Mail, Zap, CheckCircle, User, Shield, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, FileText, Mail, Zap, CheckCircle, User, Shield, Lock, Sparkles, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
+import careersData from "../data/seo-careers.json";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
@@ -18,6 +21,11 @@ export function LandingPage() {
 
     return (
         <div className="flex flex-col bg-slate-50 overflow-x-hidden">
+            <Helmet>
+                <title>Career Match - Décroche plus d'entretiens</title>
+                <meta name="description" content="Passe les filtres ATS et optimise ta candidature en quelques secondes. L'outil pour adapter ton CV à chaque offre d'emploi." />
+                <link rel="canonical" href="https://careermatch.fr/" />
+            </Helmet>
             {/* Premium Hero Section */}
             <section className="relative pt-32 pb-32 lg:pt-40 lg:pb-40 overflow-visible">
                 {/* Advanced Gradient Mesh Background */}
@@ -397,6 +405,33 @@ export function LandingPage() {
                                 <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
                                 <p className="text-slate-600 leading-relaxed">{item.desc}</p>
                             </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* SEO / Internal Linking Section */}
+            <section className="py-20 bg-white border-t border-slate-100">
+                <div className="container mx-auto px-6">
+                    <div className="flex items-center gap-2 mb-8">
+                        <TrendingUp className="w-5 h-5 text-indigo-600" />
+                        <h3 className="text-lg font-bold text-slate-900">Explorer les Carrières Populaires</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {careersData.map((career) => (
+                            <Link
+                                key={career.slug}
+                                to={`/career/${career.slug}`}
+                                className="group p-4 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 transition-all duration-200"
+                            >
+                                <div className="font-medium text-slate-700 group-hover:text-indigo-700 transition-colors">
+                                    {career.title}
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1">
+                                    Guide Complet & Analyse
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 </div>

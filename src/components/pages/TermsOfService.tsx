@@ -1,4 +1,5 @@
 import { useTranslation } from "../../hooks/useTranslation";
+import { Helmet } from "react-helmet-async";
 import { AlertCircle } from "lucide-react";
 
 // Helper for simple markdown parsing (bold and italic)
@@ -28,6 +29,11 @@ export function TermsOfService() {
 
     return (
         <div className="max-w-4xl mx-auto py-12 px-6 animate-fade-in text-slate-600">
+            <Helmet>
+                <title>C.G.U. - Career Match</title>
+                <meta name="description" content="Conditions Générales d'Utilisation de Career Match. Tout ce que vous devez savoir sur l'utilisation de nos services." />
+                <link rel="canonical" href="https://careermatch.fr/terms" />
+            </Helmet>
             {/* Header */}
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold mb-4 text-slate-900">{terms.title}</h1>

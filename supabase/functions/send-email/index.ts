@@ -101,6 +101,28 @@ const EMAIL_TEMPLATES = {
       </div>
     `),
   }),
+  invite_mentor: (data: any) => ({
+    subject: `${data?.menteeName || 'Un contact'} sollicite votre avis d'expert 🤝`,
+    html: getEmailLayout(`
+      <h1>Demande de Feedback 💬</h1>
+      <p>Bonjour,</p>
+      <p><strong>${data?.menteeName || 'Un utilisateur de Career Match'}</strong> vient d'analyser son CV pour un poste de <strong>${data?.jobTitle || 'Cible'}</strong> et souhaiterait vous partager son cv.</p>
+      
+      <div class="highlight-box">
+        <p class="score-label">Score de Compatibilité Actuel</p>
+        <p class="score-value">${data?.score}%</p>
+      </div>
+
+      <p>"${data?.message || "Je travaille sur mon CV pour ce poste, qu'en penses-tu ?"}"</p>
+      
+      <div style="text-align: center;">
+        <a href="${data?.link}" class="button">Voir l'analyse et conseiller</a>
+      </div>
+      <p style="margin-top: 24px; font-size: 14px; text-align: center; color: #6b7280;">
+        Vous recevez cet email car vous avez été invité à collaborer. Pas d'inscription requise.
+      </p>
+    `),
+  }),
 };
 
 serve(async (req) => {

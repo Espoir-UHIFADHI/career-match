@@ -1,4 +1,5 @@
 import { Check, X, Zap, Coins, Rocket, Briefcase, Loader2 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "./ui/Button";
 import { useUserStore } from "../store/useUserStore";
 import { cn } from "../lib/utils";
@@ -154,6 +155,11 @@ export function PricingPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 animate-fade-in pb-20">
+            <Helmet>
+                <title>Tarifs - Career Match</title>
+                <meta name="description" content="Découvrez nos offres pour optimiser votre CV. De 7 crédits gratuits à des plans booster pour maximiser vos chances." />
+                <link rel="canonical" href="https://careermatch.fr/pricing" />
+            </Helmet>
             {/* Header Section */}
             <div className="text-center space-y-4 max-w-2xl mx-auto">
                 <h1 className="text-4xl font-bold tracking-tight text-slate-900">

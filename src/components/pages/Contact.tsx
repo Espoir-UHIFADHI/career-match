@@ -1,4 +1,5 @@
 import { Mail, MapPin, Clock, Send } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { useTranslation } from "../../hooks/useTranslation";
 import { Button } from "../ui/Button";
 import { useState } from "react";
@@ -20,6 +21,11 @@ export function Contact() {
 
     return (
         <div className="max-w-6xl mx-auto py-12 px-6 animate-fade-in">
+            <Helmet>
+                <title>Contact - Career Match</title>
+                <meta name="description" content="Contactez l'équipe de Career Match pour toute question ou support. Nous sommes là pour vous aider." />
+                <link rel="canonical" href="https://careermatch.fr/contact" />
+            </Helmet>
             <div className="text-center mb-12">
                 <h1 className="text-3xl font-bold mb-4 text-slate-900">{t('contact.title')}</h1>
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto">
