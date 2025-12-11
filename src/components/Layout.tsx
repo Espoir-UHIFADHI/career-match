@@ -219,11 +219,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
                     {step !== 7 && <p>{t('nav.rights')}</p>}
                     {step === 7 && (
-                        <div className="flex gap-6">
-                            <button onClick={() => useAppStore.getState().setStep(8)} className="hover:text-slate-900 transition-colors text-left">{t('nav.privacyPolicy')}</button>
-                            <button onClick={() => useAppStore.getState().setStep(9)} className="hover:text-slate-900 transition-colors text-left">{t('nav.termsOfService')}</button>
-                            <button onClick={() => useAppStore.getState().setStep(10)} className="hover:text-slate-900 transition-colors text-left">{t('nav.contact')}</button>
-                        </div>
+                        <p>© 2025 Career Match. Tous droits réservés.</p>
                     )}
                 </div>
             </footer>
