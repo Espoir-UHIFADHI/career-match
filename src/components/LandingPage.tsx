@@ -6,14 +6,20 @@ import { useAppStore } from "../store/useAppStore";
 import { Button } from "./ui/Button";
 
 import { ArrowRight, FileText, Mail, Zap, CheckCircle, User, Shield, Lock, Sparkles, TrendingUp } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import careersData from "../data/seo-careers.json";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { isSignedIn, isLoaded } = useUser();
     const [isLoading, setIsLoading] = useState(false);
+
+    if (isLoaded && isSignedIn) {
+        return <Navigate to="/app" replace />;
+    }
 
     const handleAuthClick = () => {
         setIsLoading(true);
