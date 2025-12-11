@@ -11,7 +11,9 @@
             "UI Design",
             "Figma",
             "Prototypage",
-            "User Research"
+            "User Research",
+            "Design System",
+            "Wireframing"
         ]
     },
     {
@@ -26,7 +28,9 @@
             "Node.js",
             "System Design",
             "Algorithms",
-            "TypeScript"
+            "TypeScript",
+            "CI/CD",
+            "Cloud Computing"
         ]
     },
     {
@@ -41,7 +45,128 @@
             "SEO",
             "Content Strategy",
             "Analytics",
-            "Branding"
+            "Branding",
+            "Social Media",
+            "Email Marketing"
+        ]
+    },
+    {
+        "slug": "data-scientist",
+        "title": "Data Scientist",
+        "metaTitle": "Devenir Data Scientist : Guide & Analyse de CV IA",
+        "metaDescription": "Optimisez votre CV pour les postes de Data Scientist. Mettez en avant vos compétences en Python, ML et statistiques avec notre analyse IA.",
+        "heroTitle": "Devenez Data Scientist",
+        "heroSubtitle": "Faites parler vos données. Notre IA vous aide à structurer vos projets et compétences techniques pour séduire les recruteurs Tech.",
+        "keywords": [
+            "Python",
+            "Machine Learning",
+            "SQL",
+            "Deep Learning",
+            "Statistics",
+            "Data Visualization",
+            "Big Data"
+        ]
+    },
+    {
+        "slug": "sales-manager",
+        "title": "Sales Manager",
+        "metaTitle": "Devenir Sales Manager : Guide & Analyse de CV IA",
+        "metaDescription": "Maximisez vos chances pour les postes de Sales Manager. Analyse de vos performances, KPIs et compétences de négociation par IA.",
+        "heroTitle": "Devenez Sales Manager",
+        "heroSubtitle": "Vous savez vendre, mais savez-vous vous vendre ? Optimisez votre CV pour démontrer votre impact et vos résultats chiffrés.",
+        "keywords": [
+            "B2B Sales",
+            "CRM (Salesforce)",
+            "Négociation",
+            "Pipeline Management",
+            "Leadership",
+            "Cold Calling",
+            "Closing"
+        ]
+    },
+    {
+        "slug": "project-manager",
+        "title": "Project Manager",
+        "metaTitle": "Devenir Chef de Projet : Guide & Analyse de CV IA",
+        "metaDescription": "Validez vos compétences en gestion de projet (Agile, Scrum). Notre IA optimise votre CV pour les postes de Project Manager.",
+        "heroTitle": "Devenez Chef de Projet",
+        "heroSubtitle": "Organisé et leader ? Assurez-vous que votre CV reflète votre capacité à livrer des projets complexes dans les temps.",
+        "keywords": [
+            "Agile / Scrum",
+            "JIRA",
+            "Risk Management",
+            "Communication",
+            "Budget Planning",
+            "Stakeholder Management",
+            "Kanban"
+        ]
+    },
+    {
+        "slug": "hr-manager",
+        "title": "HR Manager",
+        "metaTitle": "Devenir HR Manager : Guide & Analyse de CV IA",
+        "metaDescription": "Optimisez votre profil RH. Recrutement, gestion des talents, droit du travail : notre IA analyse la pertinence de votre CV.",
+        "heroTitle": "Devenez HR Manager",
+        "heroSubtitle": "Les RH sont au cœur de l'entreprise. Montrez que vous maîtrisez aussi bien l'humain que les processus stratégiques.",
+        "keywords": [
+            "Recrutement",
+            "GPEC",
+            "Droit du travail",
+            "Onboarding",
+            "Marque Employeur",
+            "Formation",
+            "Payroll"
+        ]
+    },
+    {
+        "slug": "customer-success-manager",
+        "title": "Customer Success Manager",
+        "metaTitle": "Devenir CSM : Guide & Analyse de CV IA",
+        "metaDescription": "Mettez en avant votre sens du client. Optimisation de CV pour Customer Success Manager : fidélisation et upselling.",
+        "heroTitle": "Devenez Customer Success Manager",
+        "heroSubtitle": "La satisfaction client est votre priorité. Notre IA vous aide à traduire votre empathie et vos résultats en un CV percutant.",
+        "keywords": [
+            "Fidélisation",
+            "Onboarding Client",
+            "Churn Reduction",
+            "Upselling",
+            "Communication",
+            "Zendesk / Intercom",
+            "Empathie"
+        ]
+    },
+    {
+        "slug": "financial-analyst",
+        "title": "Financial Analyst",
+        "metaTitle": "Devenir Analyste Financier : Guide & Analyse de CV IA",
+        "metaDescription": "Rigueur et précision. Optimisez votre CV pour la finance d'entreprise ou de marché avec notre analyseur IA spécialisé.",
+        "heroTitle": "Devenez Analyste Financier",
+        "heroSubtitle": "Les chiffres ne mentent pas, votre CV non plus. Structurez vos expériences pour démontrer votre fiabilité et votre esprit d'analyse.",
+        "keywords": [
+            "Excel (Advanced)",
+            "Financial Modeling",
+            "Comptabilité",
+            "Reporting",
+            "Valuation",
+            "Bloomberg",
+            "Audit"
+        ]
+    },
+    {
+        "slug": "legal-counsel",
+        "title": "Juriste d'Entreprise",
+        "metaTitle": "Devenir Juriste d'Entreprise : Guide & Analyse de CV IA",
+        "metaDescription": "Optimisez votre carrière juridique. Analyse de CV pour juristes : mettez en avant votre expertise en droit des affaires et contrats.",
+        "heroTitle": "Devenez Juriste d'Entreprise",
+        "heroSubtitle": "Protégez les intérêts de l'entreprise. Votre CV doit refléter votre rigueur juridique et votre vision business.",
+        "keywords": [
+            "Droit des Affaires",
+            "Contrats",
+            "RGPD",
+            "Compliance",
+            "Conseil",
+            "Litigation",
+            "Veille Juridique"
         ]
     }
 ]

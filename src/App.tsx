@@ -9,7 +9,7 @@ import { PrivacyPolicy } from "./components/pages/PrivacyPolicy";
 import { TermsOfService } from "./components/pages/TermsOfService";
 import { Contact } from "./components/pages/Contact";
 import { PublicAnalysis } from "./components/share/PublicAnalysis";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
 import { useEffect } from "react";
 
 // ScrollToTop component to ensure navigation resets scroll
@@ -26,7 +26,8 @@ function ScrollToTop() {
 function AppRoutes() {
   const { isLoaded } = useUser();
 
-  if (!isLoaded) return null;
+  // ClerkLoaded guarantees isLoaded is true, but we keep a safe fallback or simply render
+  // Actually, inside ClerkLoaded, isLoaded is guaranteed true.
 
   return (
     <Routes>
@@ -48,9 +49,16 @@ function App() {
     <HelmetProvider>
       <BrowserRouter>
         <ScrollToTop />
-        <Layout>
-          <AppRoutes />
-        </Layout>
+        <ClerkLoading>
+          <div className="flex items-center justify-center min-h-screen bg-slate-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        </ClerkLoading>
+        <ClerkLoaded>
+          <Layout>
+            <AppRoutes />
+          </Layout>
+        </ClerkLoaded>
       </BrowserRouter>
     </HelmetProvider>
   );
