@@ -116,80 +116,92 @@ export function LandingPage() {
 
                                     {/* App Body */}
                                     <div className="p-6 flex flex-col gap-4">
-                                        {/* Activity Card */}
-                                        <div className="bg-white/60 rounded-xl p-4 border border-white/60 shadow-sm">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-slate-800">Senior Product Designer</h4>
-                                                    <p className="text-xs text-slate-500">Google • Paris, France</p>
+                                        {/* Activity Card - Now Clickable */}
+                                        <SignInButton mode="modal">
+                                            <div className="bg-white/60 rounded-xl p-4 border border-white/60 shadow-sm cursor-pointer hover:bg-white/80 transition-colors">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-slate-800">Senior Product Designer</h4>
+                                                        <p className="text-xs text-slate-500">Google • Paris, France</p>
+                                                    </div>
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" className="w-6 h-6" />
                                                 </div>
-                                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="G" className="w-6 h-6" />
-                                            </div>
 
-                                            <div className="flex items-center gap-3 bg-white/50 rounded-lg p-2 border border-blue-100/50">
-                                                <div className="relative w-10 h-10 flex items-center justify-center">
-                                                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                                                        <path className="text-slate-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
-                                                        <path className="text-emerald-500 drop-shadow-md" strokeDasharray="92, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
-                                                    </svg>
-                                                    <span className="absolute text-[10px] font-bold text-emerald-600">92%</span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="text-xs font-semibold text-slate-700">Excellent Match</div>
-                                                    <div className="text-[10px] text-slate-500">Votre profil correspond aux attentes.</div>
+                                                <div className="flex items-center gap-3 bg-white/50 rounded-lg p-2 border border-blue-100/50">
+                                                    <div className="relative w-10 h-10 flex items-center justify-center">
+                                                        <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                                            <path className="text-slate-200" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
+                                                            <path className="text-emerald-500 drop-shadow-md" strokeDasharray="92, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
+                                                        </svg>
+                                                        <span className="absolute text-[10px] font-bold text-emerald-600">92%</span>
+                                                    </div>
+                                                    <div className="flex-1 text-left">
+                                                        <div className="text-xs font-semibold text-slate-700">Excellent Match</div>
+                                                        <div className="text-[10px] text-slate-500">Votre profil correspond aux attentes.</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </SignInButton>
 
-                                        {/* Networking Suggestion */}
-                                        <div className="bg-slate-900 rounded-xl p-4 border border-slate-700 shadow-lg text-white relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
+                                        {/* Networking Suggestion - Now Clickable */}
+                                        <SignInButton mode="modal">
+                                            <div className="bg-slate-900 rounded-xl p-4 border border-slate-700 shadow-lg text-white relative overflow-hidden group cursor-pointer hover:scale-[1.02] transition-transform duration-300">
+                                                <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity" />
 
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold border border-white/20">
-                                                    JD
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold border border-white/20">
+                                                        JD
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className="text-xs font-bold">Jean Dupont</div>
+                                                        <div className="text-[10px] text-slate-400">Head of Design @ Google</div>
+                                                    </div>
+                                                    <div className="ml-auto">
+                                                        <Mail className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="text-xs font-bold">Jean Dupont</div>
-                                                    <div className="text-[10px] text-slate-400">Head of Design @ Google</div>
-                                                </div>
-                                                <div className="ml-auto">
-                                                    <Mail className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
-                                                </div>
-                                            </div>
 
-                                            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                                <div className="h-full w-3/4 bg-indigo-500 rounded-full animate-pulse" />
+                                                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                                    <div className="h-full w-3/4 bg-indigo-500 rounded-full animate-pulse" />
+                                                </div>
+                                                <div className="flex justify-between mt-1.5">
+                                                    <span className="text-[9px] text-indigo-300 font-medium">Email Trouvé</span>
+                                                    <span className="text-[9px] text-slate-500">Confiance: High</span>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between mt-1.5">
-                                                <span className="text-[9px] text-indigo-300 font-medium">Email Trouvé</span>
-                                                <span className="text-[9px] text-slate-500">Confiance: High</span>
-                                            </div>
-                                        </div>
+                                        </SignInButton>
                                     </div>
                                 </div>
 
-                                {/* Floating Elements */}
-                                <div className="absolute -right-8 top-20 bg-white p-4 rounded-2xl shadow-xl shadow-purple-500/10 z-30 animate-bounce delay-700 duration-[3s]">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
-                                            <Sparkles className="w-6 h-6" />
+                                {/* Floating Elements - Now Clickable */}
+                                <div className="absolute -right-8 top-20 z-30 animate-bounce delay-700 duration-[3s]">
+                                    <SignInButton mode="modal">
+                                        <div className="bg-white p-4 rounded-2xl shadow-xl shadow-purple-500/10 cursor-pointer hover:scale-110 transition-transform">
+                                            <div className="flex items-center gap-3">
+                                                <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
+                                                    <Sparkles className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs text-slate-400 font-medium">CV Score</div>
+                                                    <div className="text-lg font-bold text-slate-800">Excellent</div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="text-xs text-slate-400 font-medium">CV Score</div>
-                                            <div className="text-lg font-bold text-slate-800">Excellent</div>
-                                        </div>
-                                    </div>
+                                    </SignInButton>
                                 </div>
 
-                                <div className="absolute -left-8 bottom-32 bg-slate-900 p-4 rounded-2xl shadow-xl shadow-indigo-500/20 z-30 animate-bounce delay-100 duration-[4s]">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle className="w-6 h-6 text-emerald-400" />
-                                        <div>
-                                            <div className="text-xs text-slate-400 font-medium">Offres Ciblées</div>
-                                            <div className="text-lg font-bold text-white">+15 New</div>
+                                <div className="absolute -left-8 bottom-32 z-30 animate-bounce delay-100 duration-[4s]">
+                                    <SignInButton mode="modal">
+                                        <div className="bg-slate-900 p-4 rounded-2xl shadow-xl shadow-indigo-500/20 cursor-pointer hover:scale-110 transition-transform">
+                                            <div className="flex items-center gap-3">
+                                                <CheckCircle className="w-6 h-6 text-emerald-400" />
+                                                <div>
+                                                    <div className="text-xs text-slate-400 font-medium">Offres Ciblées</div>
+                                                    <div className="text-lg font-bold text-white">+15 New</div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </SignInButton>
                                 </div>
                             </div>
                         </div>
@@ -247,103 +259,111 @@ export function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
                         {/* Feature 1 - Large */}
-                        <div className="md:col-span-2 p-10 rounded-[2rem] bg-white border border-slate-100 hover:border-indigo-100 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 group relative overflow-hidden">
-                            <div className="absolute -right-20 -top-20 w-96 h-96 bg-indigo-50/50 rounded-full blur-3xl group-hover:bg-indigo-50 transition-colors" />
-                            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10" />
+                        <SignInButton mode="modal">
+                            <div className="md:col-span-2 p-10 rounded-[2rem] bg-white border border-slate-100 hover:border-indigo-100 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left">
+                                <div className="absolute -right-20 -top-20 w-96 h-96 bg-indigo-50/50 rounded-full blur-3xl group-hover:bg-indigo-50 transition-colors" />
+                                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10" />
 
-                            <div className="relative z-20">
-                                <div className="flex items-start justify-between mb-8">
-                                    <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm">
-                                        <FileText className="w-8 h-8" />
+                                <div className="relative z-20">
+                                    <div className="flex items-start justify-between mb-8">
+                                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-sm">
+                                            <FileText className="w-8 h-8" />
+                                        </div>
+                                        <div className="hidden sm:flex px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold border border-emerald-100 items-center gap-1.5">
+                                            <span className="relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                            </span>
+                                            {t('features.cvOptimizer.badge')}
+                                        </div>
                                     </div>
-                                    <div className="hidden sm:flex px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold border border-emerald-100 items-center gap-1.5">
-                                        <span className="relative flex h-2 w-2">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                        </span>
-                                        {t('features.cvOptimizer.badge')}
-                                    </div>
-                                </div>
 
-                                <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">{t('features.cvOptimizer.title')}</h3>
-                                <p className="text-slate-600 mb-8 text-lg max-w-md leading-relaxed font-medium">
-                                    {t('features.cvOptimizer.description')}
-                                </p>
-                                <div className="flex flex-wrap gap-2.5">
-                                    {t('features.cvOptimizer.tags').map((tag: string, i: number) => (
-                                        <span key={i} className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 shadow-sm group-hover:border-indigo-200 group-hover:bg-white group-hover:text-indigo-600 transition-all duration-300 cursor-default">
-                                            {tag}
-                                        </span>
-                                    ))}
+                                    <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">{t('features.cvOptimizer.title')}</h3>
+                                    <p className="text-slate-600 mb-8 text-lg max-w-md leading-relaxed font-medium">
+                                        {t('features.cvOptimizer.description')}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {t('features.cvOptimizer.tags').map((tag: string, i: number) => (
+                                            <span key={i} className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 shadow-sm group-hover:border-indigo-200 group-hover:bg-white group-hover:text-indigo-600 transition-all duration-300">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </SignInButton>
 
                         {/* Feature 2 - Tall (Dark) */}
-                        <div className="md:row-span-2 p-10 rounded-[2rem] bg-slate-900 text-white shadow-2xl shadow-slate-900/20 hover:shadow-indigo-900/20 transition-all duration-300 group overflow-hidden relative flex flex-col justify-between">
-                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-indigo-600/30 rounded-full blur-[80px] group-hover:opacity-60 transition-opacity" />
-                            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/90 z-10" />
+                        <SignInButton mode="modal">
+                            <div className="md:row-span-2 p-10 rounded-[2rem] bg-slate-900 text-white shadow-2xl shadow-slate-900/20 hover:shadow-indigo-900/20 transition-all duration-300 group overflow-hidden relative flex flex-col justify-between cursor-pointer text-left">
+                                <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-indigo-600/30 rounded-full blur-[80px] group-hover:opacity-60 transition-opacity" />
+                                <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/90 z-10" />
 
-                            <div className="relative z-20">
-                                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center mb-8 text-indigo-300 group-hover:bg-indigo-500/20 group-hover:border-indigo-500/30 transition-all duration-300 shadow-inner">
-                                    <Sparkles className="w-8 h-8" />
+                                <div className="relative z-20">
+                                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center mb-8 text-indigo-300 group-hover:bg-indigo-500/20 group-hover:border-indigo-500/30 transition-all duration-300 shadow-inner">
+                                        <Sparkles className="w-8 h-8" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold mb-4 text-white">{t('features.networking.title')}</h3>
+                                    <p className="text-slate-300 mb-8 leading-relaxed font-medium opacity-90">
+                                        {t('features.networking.description')}
+                                    </p>
                                 </div>
-                                <h3 className="text-2xl font-bold mb-4 text-white">{t('features.networking.title')}</h3>
-                                <p className="text-slate-300 mb-8 leading-relaxed font-medium opacity-90">
-                                    {t('features.networking.description')}
-                                </p>
-                            </div>
 
-                            <div className="relative z-20 space-y-4 mt-auto">
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group/card">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-1.5 rounded-lg bg-indigo-500/20">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                                <div className="relative z-20 space-y-4 mt-auto">
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group/card">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="p-1.5 rounded-lg bg-indigo-500/20">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                                            </div>
+                                            <div className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">{t('features.networking.target')}</div>
                                         </div>
-                                        <div className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">{t('features.networking.target')}</div>
+                                        <div className="font-semibold text-lg text-white group-hover/card:text-indigo-200 transition-colors">{t('features.networking.targetVal')}</div>
                                     </div>
-                                    <div className="font-semibold text-lg text-white group-hover/card:text-indigo-200 transition-colors">{t('features.networking.targetVal')}</div>
-                                </div>
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group/card">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-1.5 rounded-lg bg-emerald-500/20">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group/card">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="p-1.5 rounded-lg bg-emerald-500/20">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                            </div>
+                                            <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest">{t('features.networking.action')}</div>
                                         </div>
-                                        <div className="text-[10px] text-emerald-300 font-bold uppercase tracking-widest">{t('features.networking.action')}</div>
+                                        <div className="font-semibold text-lg text-white group-hover/card:text-emerald-200 transition-colors">{t('features.networking.actionVal')}</div>
                                     </div>
-                                    <div className="font-semibold text-lg text-white group-hover/card:text-emerald-200 transition-colors">{t('features.networking.actionVal')}</div>
                                 </div>
                             </div>
-                        </div>
+                        </SignInButton>
 
                         {/* Feature 3 */}
-                        <div className="p-10 rounded-[2rem] bg-white border border-slate-100 hover:border-purple-200 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50/50 rounded-bl-[4rem] -mr-8 -mt-8 transition-all group-hover:scale-110" />
+                        <SignInButton mode="modal">
+                            <div className="p-10 rounded-[2rem] bg-white border border-slate-100 hover:border-purple-200 shadow-lg shadow-slate-200/50 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group relative overflow-hidden cursor-pointer text-left">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50/50 rounded-bl-[4rem] -mr-8 -mt-8 transition-all group-hover:scale-110" />
 
-                            <div className="relative z-10">
-                                <div className="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
-                                    <Mail className="w-8 h-8" />
+                                <div className="relative z-10">
+                                    <div className="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                                        <Mail className="w-8 h-8" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-purple-700 transition-colors">{t('features.emailFinder.title')}</h3>
+                                    <p className="text-slate-600 leading-relaxed font-medium">
+                                        {t('features.emailFinder.description')}
+                                    </p>
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-purple-700 transition-colors">{t('features.emailFinder.title')}</h3>
-                                <p className="text-slate-600 leading-relaxed font-medium">
-                                    {t('features.emailFinder.description')}
-                                </p>
                             </div>
-                        </div>
+                        </SignInButton>
 
                         {/* Feature 4 */}
-                        <div className="p-10 rounded-[2rem] bg-gradient-to-br from-indigo-50/80 to-white border border-indigo-100 hover:border-indigo-200 hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
-                            <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+                        <SignInButton mode="modal">
+                            <div className="p-10 rounded-[2rem] bg-gradient-to-br from-indigo-50/80 to-white border border-indigo-100 hover:border-indigo-200 hover:shadow-xl transition-all duration-300 group relative overflow-hidden cursor-pointer text-left">
+                                <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
 
-                            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-indigo-50 flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                                <Zap className="w-8 h-8" />
+                                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-indigo-50 flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                    <Zap className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-700 transition-colors">{t('features.speed.title')}</h3>
+                                <p className="text-slate-600 leading-relaxed font-medium">
+                                    {t('features.speed.description')}
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-700 transition-colors">{t('features.speed.title')}</h3>
-                            <p className="text-slate-600 leading-relaxed font-medium">
-                                {t('features.speed.description')}
-                            </p>
-                        </div>
+                        </SignInButton>
                     </div>
                 </div>
             </section>
