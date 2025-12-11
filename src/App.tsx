@@ -9,7 +9,7 @@ import { PrivacyPolicy } from "./components/pages/PrivacyPolicy";
 import { TermsOfService } from "./components/pages/TermsOfService";
 import { Contact } from "./components/pages/Contact";
 import { PublicAnalysis } from "./components/share/PublicAnalysis";
-import { useUser, ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
+import { ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
 import { useEffect } from "react";
 
 // ScrollToTop component to ensure navigation resets scroll
@@ -24,10 +24,6 @@ function ScrollToTop() {
 }
 
 function AppRoutes() {
-  const { isLoaded } = useUser();
-
-  // ClerkLoaded guarantees isLoaded is true, but we keep a safe fallback or simply render
-  // Actually, inside ClerkLoaded, isLoaded is guaranteed true.
 
   return (
     <Routes>
