@@ -6,6 +6,8 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } 
 import { cn } from "../lib/utils";
 import { useTranslation } from "../hooks/useTranslation";
 
+import { useNavigate } from "react-router-dom";
+
 export function Layout({ children }: { children: React.ReactNode }) {
     const { step } = useAppStore();
     const { credits } = useUserStore();
@@ -14,6 +16,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const { user } = useUser();
     const [isSignInLoading, setIsSignInLoading] = useState(false);
     const [isSignUpLoading, setIsSignUpLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleSignInClick = () => {
         setIsSignInLoading(true);
@@ -34,6 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
     const handleNavClick = (id: number) => {
         useAppStore.getState().setStep(id);
+        navigate('/app');
         setIsMobileMenuOpen(false);
     };
 
@@ -49,6 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         onClick={() => {
                             if (!user) {
                                 useAppStore.getState().setStep(0);
+                                navigate('/');
                             } else {
                                 // Smart Resumption Logic
                                 const { cvData, jobData, analysisResults } = useAppStore.getState();
@@ -61,6 +66,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 } else {
                                     useAppStore.getState().setStep(1); // Upload
                                 }
+                                navigate('/app');
                             }
                         }}
                     >
@@ -78,7 +84,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 return (
                                     <button
                                         key={item.id}
-                                        onClick={() => useAppStore.getState().setStep(item.id)}
+                                        onClick={() => {
+                                            useAppStore.getState().setStep(item.id);
+                                            navigate('/app');
+                                        }}
                                         className={cn(
                                             "flex items-center gap-2 text-sm font-medium transition-colors hover:text-indigo-600",
                                             isActive ? "text-indigo-600" : "text-slate-600"
@@ -100,7 +109,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             {/* Credits Display */}
                             <div
                                 className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
-                                onClick={() => useAppStore.getState().setStep(7)}
+                                onClick={() => {
+                                    useAppStore.getState().setStep(7);
+                                    navigate('/app');
+                                }}
                             >
                                 <Coins className="h-4 w-4 text-amber-500" />
                                 <span className="text-sm font-bold text-slate-900">
@@ -148,7 +160,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <SignedIn>
                             <div
                                 className="flex items-center gap-2 px-2 py-1 bg-white border border-slate-200 rounded-full shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
-                                onClick={() => useAppStore.getState().setStep(7)}
+                                onClick={() => {
+                                    useAppStore.getState().setStep(7);
+                                    navigate('/app');
+                                }}
                             >
                                 <Coins className="h-3 w-3 text-amber-500" />
                                 <span className="text-xs font-bold text-slate-900">

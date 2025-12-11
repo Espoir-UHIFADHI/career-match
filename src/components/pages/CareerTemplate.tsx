@@ -3,12 +3,12 @@ import { Helmet } from "react-helmet-async";
 import careersData from "../../data/seo-careers.json";
 import { Button } from "../ui/Button";
 import { ArrowRight, CheckCircle, Sparkles } from "lucide-react";
-import { useTranslation } from "../../hooks/useTranslation";
+
 
 export function CareerTemplate() {
     const { slug } = useParams<{ slug: string }>();
     const career = careersData.find((c) => c.slug === slug);
-    const { t } = useTranslation();
+
 
     if (!career) {
         return <Navigate to="/" replace />;

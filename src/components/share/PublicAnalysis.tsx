@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import { Button } from "../ui/Button"; // Adjusted path
-import { ArrowRight, Sparkles, CheckCircle, AlertTriangle, FileText } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle, AlertTriangle } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { PrintableCV } from "../results/PrintableCV";
 
@@ -100,7 +100,7 @@ export function PublicAnalysis() {
     // Verify data structure (MatchResult)
     const score = data.score || 0;
     const strengths = data.analysis?.strengths || [];
-    const weaknesses = data.analysis?.weaknesses || [];
+
     const improvements = data.analysis?.missingKeywords?.length > 0
         ? data.analysis.missingKeywords
         : (data.analysis?.weaknesses || []);
@@ -142,8 +142,8 @@ export function PublicAnalysis() {
                             </svg>
                             <div className="absolute flex flex-col items-center">
                                 <span className={`text - 6xl font - black tracking - tighter ${score >= 80 ? "text-emerald-600" :
-                                        score >= 60 ? "text-indigo-600" :
-                                            score >= 45 ? "text-amber-600" : "text-red-600"
+                                    score >= 60 ? "text-indigo-600" :
+                                        score >= 45 ? "text-amber-600" : "text-red-600"
                                     } `}>
                                     {score}%
                                 </span>

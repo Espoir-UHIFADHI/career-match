@@ -6,12 +6,13 @@ import { useAppStore } from "../store/useAppStore";
 import { Button } from "./ui/Button";
 
 import { ArrowRight, FileText, Mail, Zap, CheckCircle, User, Shield, Lock, Sparkles, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import careersData from "../data/seo-careers.json";
 import { useTranslation } from "../hooks/useTranslation";
 
 export function LandingPage() {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAuthClick = () => {
@@ -70,7 +71,10 @@ export function LandingPage() {
                                 </SignedOut>
                                 <SignedIn>
                                     <Button
-                                        onClick={() => useAppStore.getState().setStep(1)}
+                                        onClick={() => {
+                                            useAppStore.getState().setStep(1);
+                                            navigate('/app');
+                                        }}
                                         className="h-14 px-8 text-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/20 rounded-2xl transition-all hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
                                     >
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 backdrop-blur-sm" />

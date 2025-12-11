@@ -334,7 +334,7 @@ function Wizard() {
     }
   };
 
-  const isPublicPage = step === 0 || step === 8 || step === 9 || step === 10;
+
 
   return (
     <>
