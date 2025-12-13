@@ -359,7 +359,7 @@ export async function sendTransactionalEmail(
     console.log(`🚀 Sending email '${type}' to ${to}...`);
     try {
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const { error } = await supabase.functions.invoke('send-email', {
+        const { data: resData, error } = await supabase.functions.invoke('send-email', {
             body: {
                 to,
                 type,
@@ -372,7 +372,7 @@ export async function sendTransactionalEmail(
             console.error("❌ Error sending email:", error);
             return false;
         }
-        console.log("✅ Email sent successfully.");
+        console.log("✅ Email sent successfully. Response:", resData);
         return true;
     } catch (e) {
         console.error("❌ Exception sending email:", e);

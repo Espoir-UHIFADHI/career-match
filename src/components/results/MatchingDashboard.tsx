@@ -33,11 +33,13 @@ export function MatchingDashboard() {
     // Sharing Logic State
     const [isSharing, setIsSharing] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
 
     const handleShare = async () => {
         if (!analysisResults) return;
         if (shareUrl) {
-            navigator.clipboard.writeText(shareUrl);
+            setIsShareModalOpen(true);
             return;
         }
 
@@ -57,7 +59,8 @@ export function MatchingDashboard() {
 
             const url = `${window.location.origin}/share/${data.id}`;
             setShareUrl(url);
-            navigator.clipboard.writeText(url);
+            setIsShareModalOpen(true);
+
 
 
 
@@ -77,6 +80,8 @@ export function MatchingDashboard() {
     const [mentorEmail, setMentorEmail] = useState("");
     const [mentorMessage, setMentorMessage] = useState("");
     const [isSendingInvite, setIsSendingInvite] = useState(false);
+    const [inviteSuccess, setInviteSuccess] = useState(false);
+
 
     const handleInviteMentor = async () => {
         if (!mentorEmail) return;
@@ -119,8 +124,7 @@ export function MatchingDashboard() {
             );
 
             if (success) {
-                alert("Invitation envoyée avec succès !");
-                setIsMentorModalOpen(false);
+                setInviteSuccess(true);
                 setMentorEmail("");
                 setMentorMessage("");
             } else {
@@ -532,16 +536,16 @@ export function MatchingDashboard() {
                                     className="w-full sm:w-auto gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
                                 >
                                     {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
-                                    {shareUrl ? "Lien Copié !" : "Partager"}
+                                    {shareUrl ? "Partager" : "Partager"}
                                 </Button>
 
-                                <Button
+                                {/* <Button
                                     variant="outline"
                                     onClick={() => setIsMentorModalOpen(true)}
                                     className="w-full sm:w-auto gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
                                 >
                                     Inviter un Mentor
-                                </Button>
+                                </Button> */}
 
                                 <Button
                                     size="lg"
@@ -567,81 +571,110 @@ export function MatchingDashboard() {
 
                         <div className="flex justify-between items-start mb-8 relative z-10">
                             <div>
-                                <div className="p-3 bg-indigo-50 rounded-2xl w-fit mb-4">
-                                    <Sparkles className="h-6 w-6 text-indigo-600" />
+                                <div className={`p-3 rounded-2xl w-fit mb-4 ${inviteSuccess ? "bg-emerald-50" : "bg-indigo-50"}`}>
+                                    {inviteSuccess ? (
+                                        <CheckCircle className="h-6 w-6 text-emerald-600" />
+                                    ) : (
+                                        <Sparkles className="h-6 w-6 text-indigo-600" />
+                                    )}
                                 </div>
-                                <h3 className="text-2xl font-bold text-slate-900">Demander un avis d'expert</h3>
-                                <p className="text-slate-500 mt-1">Invitez un mentor à revoir votre CV optimisé.</p>
+                                <h3 className="text-2xl font-bold text-slate-900">
+                                    {inviteSuccess ? "Invitation envoyée !" : "Demander un avis d'expert"}
+                                </h3>
+                                <p className="text-slate-500 mt-1">
+                                    {inviteSuccess
+                                        ? "Votre mentor a bien reçu votre demande. Surveillez vos notifications !"
+                                        : "Invitez un mentor à revoir votre CV optimisé."}
+                                </p>
                             </div>
                             <button
-                                onClick={() => setIsMentorModalOpen(false)}
+                                onClick={() => { setIsMentorModalOpen(false); setInviteSuccess(false); }}
                                 className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
                             >
                                 <XCircle className="h-6 w-6" />
                             </button>
                         </div>
 
-                        <div className="space-y-6 relative z-10">
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                                    Email du Mentor <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    placeholder="ex: mentor@entreprise.com"
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-slate-50 hover:bg-white"
-                                    value={mentorEmail}
-                                    onChange={(e) => setMentorEmail(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Message personnel</label>
-                                <textarea
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 h-32 resize-none transition-all bg-slate-50 hover:bg-white"
-                                    placeholder="Salut, j'ai optimisé mon CV pour ce poste avec Career Match. Peux-tu me donner ton avis ?"
-                                    value={mentorMessage}
-                                    onChange={(e) => setMentorMessage(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl flex gap-3 border border-indigo-100/50">
-                                <div className="p-2 bg-white rounded-full shadow-sm h-fit shrink-0">
-                                    <Globe className="h-4 w-4 text-indigo-600" />
+                        {inviteSuccess ? (
+                            <div className="text-center py-8 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+                                <div className="inline-block p-4 bg-emerald-100 rounded-full mb-6">
+                                    <div className="bg-emerald-500 rounded-full p-2 animate-bounce">
+                                        <CheckCircle className="h-8 w-8 text-white" />
+                                    </div>
                                 </div>
-                                <p className="text-xs leading-relaxed text-indigo-900/80">
-                                    <span className="font-semibold block mb-0.5 text-indigo-900">Accès Sécurisé & Simplifié</span>
-                                    Votre mentor recevra un lien unique pour consulter la version PDF de votre CV directement dans son navigateur, sans inscription requise.
+                                <p className="text-slate-600 mb-8 max-w-sm mx-auto">
+                                    Nous préviendrons dès que votre mentor aura consulté votre CV.
                                 </p>
+                                <Button
+                                    onClick={() => { setIsMentorModalOpen(false); setInviteSuccess(false); }}
+                                    className="w-full py-4 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all font-semibold"
+                                >
+                                    Retour au tableau de bord
+                                </Button>
                             </div>
+                        ) : (
+                            <div className="space-y-6 relative z-10">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                        Email du Mentor <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        placeholder="ex: mentor@entreprise.com"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all bg-slate-50 hover:bg-white"
+                                        value={mentorEmail}
+                                        onChange={(e) => setMentorEmail(e.target.value)}
+                                    />
+                                </div>
 
-                            <div className="flex gap-4 pt-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsMentorModalOpen(false)}
-                                    className="flex-1 py-6 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-slate-900 font-medium"
-                                >
-                                    Annuler
-                                </Button>
-                                <Button
-                                    onClick={handleInviteMentor}
-                                    disabled={!mentorEmail || isSendingInvite}
-                                    className="flex-1 py-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all font-semibold"
-                                >
-                                    {isSendingInvite ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            Envoi en cours...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Envoyer l'invitation
-                                            <ArrowRight className="ml-2 h-5 w-5" />
-                                        </>
-                                    )}
-                                </Button>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700">Message personnel</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 h-32 resize-none transition-all bg-slate-50 hover:bg-white"
+                                        placeholder="Salut, j'ai optimisé mon CV pour ce poste avec Career Match. Peux-tu me donner ton avis ?"
+                                        value={mentorMessage}
+                                        onChange={(e) => setMentorMessage(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl flex gap-3 border border-indigo-100/50">
+                                    <div className="p-2 bg-white rounded-full shadow-sm h-fit shrink-0">
+                                        <Globe className="h-4 w-4 text-indigo-600" />
+                                    </div>
+                                    <p className="text-xs leading-relaxed text-indigo-900/80">
+                                        <span className="font-semibold block mb-0.5 text-indigo-900">Accès Sécurisé & Simplifié</span>
+                                        Votre mentor recevra un lien unique pour consulter la version PDF de votre CV directement dans son navigateur, sans inscription requise.
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 pt-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setIsMentorModalOpen(false)}
+                                        className="flex-1 py-6 rounded-xl border-slate-200 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                                    >
+                                        Annuler
+                                    </Button>
+                                    <Button
+                                        onClick={handleInviteMentor}
+                                        disabled={!mentorEmail || isSendingInvite}
+                                        className="flex-1 py-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all font-semibold"
+                                    >
+                                        {isSendingInvite ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                Envoi en cours...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Envoyer l'invitation
+                                                <ArrowRight className="ml-2 h-5 w-5" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -684,6 +717,55 @@ export function MatchingDashboard() {
                     </div>
                 )
             }
+
+            {/* Share Modal */}
+            {isShareModalOpen && shareUrl && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+                        {/* Interactive Background Elements */}
+                        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-50 pointer-events-none" />
+
+                        <div className="flex justify-between items-start mb-6 relative z-10">
+                            <div>
+                                <h3 className="text-2xl font-bold text-slate-900">Partager l'analyse</h3>
+                                <p className="text-slate-500 mt-1">Copiez le lien ci-dessous pour partager ce résultat.</p>
+                            </div>
+                            <button
+                                onClick={() => setIsShareModalOpen(false)}
+                                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <XCircle className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 relative z-10">
+                            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <Share2 className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={shareUrl}
+                                    className="bg-transparent border-none text-slate-600 text-sm w-full focus:ring-0 p-0 font-medium"
+                                    onClick={(e) => e.currentTarget.select()}
+                                />
+                            </div>
+
+                            <Button
+                                onClick={(e) => {
+                                    navigator.clipboard.writeText(shareUrl);
+                                    const btn = e.currentTarget;
+                                    const original = btn.innerText;
+                                    btn.innerText = 'Copié !';
+                                    setTimeout(() => { btn.innerText = original }, 2000);
+                                }}
+                                className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all shadow-lg shadow-indigo-200"
+                            >
+                                Copier le lien
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }

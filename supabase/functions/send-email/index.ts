@@ -155,7 +155,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Career Match <contact@careermatch.fr>",
+        from: "Career Match <onboarding@resend.dev>",
         to: [to],
         subject: subject,
         html: html,

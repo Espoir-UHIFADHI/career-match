@@ -8,19 +8,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.error('CRITICAL: Missing Supabase environment variables. Please check your .env file or deployment settings.');
 }
 
-console.log("Supabase URL:", supabaseUrl); // Debug: Check if URL is loaded
+// Logs removed for security
 
 // Fallback to prevent crash if env vars are missing
 // This allows the app to load and show a UI, even if auth fails
 const validUrl = supabaseUrl || "https://placeholder.supabase.co";
 const validKey = supabaseAnonKey || "placeholder-key";
 
-// Debug logging to help identify Vercel issues
-console.log("🔍 Supabase Config Check:");
-console.log("- VITE_SUPABASE_URL:", supabaseUrl ? "Defined (Starts with " + supabaseUrl.substring(0, 8) + "...)" : "MISSING");
-console.log("- VITE_SUPABASE_ANON_KEY:", supabaseAnonKey ? "Defined (Length: " + supabaseAnonKey.length + ")" : "MISSING");
-console.log("- VITE_GEMINI_API_KEY:", import.meta.env.VITE_GEMINI_API_KEY ? "Defined" : "MISSING");
-console.log("- isSupabaseConfigured:", !!supabaseUrl && !!supabaseAnonKey);
+// Config check removed
 
 export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
 

@@ -5,7 +5,7 @@ import { useUserStore } from "../../store/useUserStore";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { generateJSON } from "../../services/ai/gemini";
+import { analyzeJobPosting } from "../../services/ai/gemini";
 import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
@@ -65,31 +65,11 @@ export function JobInput() {
         }
 
         try {
-            const prompt = `
-        Analyze the following job posting and extract the key requirements.
-        
-        Job Content:
-        ${description}
-        
-        Return a JSON object matching this schema:
-        {
-          "title": "Job Title",
-          "company": "Company Name",
-          "description": "Brief summary of the role and key responsibilities (max 3-4 sentences)",
-          "requirements": {
-            "hardSkills": ["skill1", "skill2"],
-            "softSkills": ["skill1", "skill2"],
-            "culture": ["value1", "value2"],
-            "experienceLevel": "Junior/Mid/Senior"
-          }
-        }
-
-        IMPORTANT: Provide the response in ${language === 'fr' ? 'French' : 'English'}.
-      `;
-
-            const analysis = await generateJSON(prompt, token || undefined);
+            const targetLanguage = language === 'fr' ? 'French' : 'English';
+            const analysis = await analyzeJobPosting(description, targetLanguage, token || undefined);
             console.log("Job Analysis Result:", analysis);
             setPreviewData({ ...analysis });
+
         } catch (err) {
             console.error(err);
             setError("Failed to analyze job. Please try again or paste text manually.");
