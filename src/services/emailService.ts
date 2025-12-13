@@ -1,10 +1,19 @@
 import { searchGoogle } from "./search/serper";
 import { supabase, createClerkSupabaseClient } from "./supabase";
 
-const HUNTER_API_KEY = import.meta.env.VITE_HUNTER_API_KEY;
+// Helper to call the Secure Backend
+async function callBackend(action: string, payload: any, token?: string): Promise<any> {
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+    const { data, error } = await supabase.functions.invoke('career-match-api', {
+        body: { action, payload },
+        headers: headers
+    });
 
-if (!HUNTER_API_KEY) {
-    console.warn("Missing VITE_HUNTER_API_KEY in .env");
+    if (error) {
+        console.error(`Status ${error.status}: ${error.message}`);
+        throw new Error(error.message || "Erreur de communication avec le serveur sécurisé.");
+    }
+    return data;
 }
 
 interface HunterResponse {
@@ -20,7 +29,6 @@ interface HunterResponse {
         };
     };
 }
-
 /**
  * Finds the company domain using Serper API
  * @param companyName Name of the company (e.g. "CIMPA")
@@ -62,11 +70,6 @@ export async function findCompanyDomain(companyName: string, token?: string): Pr
  * @returns The email pattern (e.g. "{first}.{last}") or null
  */
 export async function getEmailPattern(domain: string, token?: string): Promise<string | null> {
-    if (!HUNTER_API_KEY) {
-        console.error("Hunter API Key is missing");
-        return null;
-    }
-
     // Use authenticated client if token is provided
     const client = token ? createClerkSupabaseClient(token) : supabase;
 
@@ -86,22 +89,16 @@ export async function getEmailPattern(domain: string, token?: string): Promise<s
         console.warn("Error checking global cache:", e);
     }
 
-    // 2. Call API if not in cache
+    // 2. Call Backend if not in cache (Secure Relay)
     try {
-        const response = await fetch(`https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${HUNTER_API_KEY}`);
-
-        if (!response.ok) {
-            console.error(`Hunter API Error: ${response.status} ${response.statusText}`);
-            return null;
-        }
-
-        const data: HunterResponse = await response.json();
+        // Note: The backend returns the full Hunter response structure
+        const data: HunterResponse = await callBackend('hunter-domain-search', { domain }, token);
         const pattern = data.data.pattern;
 
         // 3. Save to Global Cache
         if (pattern) {
             try {
-                // We reuse the client which might be authenticated
+                const client = token ? createClerkSupabaseClient(token) : supabase;
                 await client.from('domain_patterns').upsert({
                     domain,
                     pattern
@@ -114,7 +111,7 @@ export async function getEmailPattern(domain: string, token?: string): Promise<s
 
         return pattern;
     } catch (error) {
-        console.error("Error fetching email pattern:", error);
+        console.error("Error fetching email pattern (Backend):", error);
         return null;
     }
 }
@@ -175,23 +172,11 @@ export interface VerificationResponse {
 }
 
 export async function verifyEmail(email: string): Promise<VerificationResponse['data'] | null> {
-    if (!HUNTER_API_KEY) {
-        console.error("Hunter API Key is missing");
-        return null;
-    }
-
     try {
-        const response = await fetch(`https://api.hunter.io/v2/email-verifier?email=${email}&api_key=${HUNTER_API_KEY}`);
-
-        if (!response.ok) {
-            console.error(`Hunter API Error: ${response.status} ${response.statusText}`);
-            return null;
-        }
-
-        const data: VerificationResponse = await response.json();
+        const data: VerificationResponse = await callBackend('hunter-email-verifier', { email });
         return data.data;
     } catch (error) {
-        console.error("Error verifying email:", error);
+        console.error("Error verifying email (Backend):", error);
         return null;
     }
 }
@@ -305,21 +290,18 @@ export async function findEmail(firstName: string, lastName: string, domain: str
     const cached = await getCachedEmail(cleanFirst, cleanLast, domain, token);
     if (cached) return cached;
 
+    // 2. Call Backend (Secure Relay)
     try {
-        console.log(`[Hunter API] Searching for ${cleanFirst} ${cleanLast} at ${domain}...`);
-        const response = await fetch(`https://api.hunter.io/v2/email-finder?domain=${domain}&first_name=${encodeURIComponent(cleanFirst)}&last_name=${encodeURIComponent(cleanLast)}&api_key=${HUNTER_API_KEY}`);
+        console.log(`[Hunter Backend] Searching for ${cleanFirst} ${cleanLast} at ${domain}...`);
 
-        if (!response.ok) {
-            console.error(`Hunter API Error: ${response.status} ${response.statusText}`);
-            if (response.status === 429) throw new Error("quota_exceeded");
-            if (response.status === 401) throw new Error("invalid_api_key");
-            throw new Error(`api_error_${response.status}`);
-        }
-
-        const data: EmailFinderResponse = await response.json();
+        const data: EmailFinderResponse = await callBackend('hunter-email-finder', {
+            domain,
+            first_name: cleanFirst,
+            last_name: cleanLast
+        }, token);
 
         if (data.data && data.data.email) {
-            console.log(`[Hunter API] Result found: ${data.data.email} (Score: ${data.data.score})`);
+            console.log(`[Hunter Backend] Result found: ${data.data.email} (Score: ${data.data.score})`);
 
             // 2. Save to Global Cache
             try {
@@ -337,12 +319,12 @@ export async function findEmail(firstName: string, lastName: string, domain: str
                 console.error("Error saving email to cache:", e);
             }
         } else {
-            console.log(`[Hunter API] No result found for ${cleanFirst} ${cleanLast}`);
+            console.log(`[Hunter Backend] No result found for ${cleanFirst} ${cleanLast}`);
         }
 
         return data.data;
     } catch (error) {
-        console.error("Error finding email:", error);
+        console.error("Error finding email (Backend):", error);
         return null;
     }
 }

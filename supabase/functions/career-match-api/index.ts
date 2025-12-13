@@ -62,6 +62,12 @@ serve(async (req) => {
                 return await handleGenerateNetworkingQueries(payload)
             case 'generate-networking-message':
                 return await handleGenerateNetworkingMessage(payload)
+            case 'hunter-domain-search':
+                return await handleHunterDomainSearch(payload)
+            case 'hunter-email-finder':
+                return await handleHunterEmailFinder(payload)
+            case 'hunter-email-verifier':
+                return await handleHunterEmailVerifier(payload)
             default:
                 throw new Error(`Unknown or deprecated action: ${action}`)
         }
@@ -412,4 +418,79 @@ async function handleGenerateNetworkingMessage(payload: any) {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
+}
+
+// --- HUNTER HANDLERS ---
+
+async function callHunterRaw(endpoint: string, params: Record<string, string>) {
+    const apiKey = Deno.env.get('HUNTER_API_KEY')
+    if (!apiKey) throw new Error("Missing HUNTER_API_KEY")
+
+    const queryParams = new URLSearchParams(params)
+    queryParams.append('api_key', apiKey)
+
+    const url = `https://api.hunter.io/v2/${endpoint}?${queryParams.toString()}`
+
+    const response = await fetch(url)
+
+    if (!response.ok) {
+        // Pass through the error status from Hunter
+        const errorText = await response.text()
+        console.error(`Hunter API Error (${endpoint}): ${response.status} ${errorText}`)
+        throw new Error(`Hunter API Error: ${response.status}`)
+    }
+
+    return await response.json()
+}
+
+async function handleHunterDomainSearch(payload: any) {
+    const { domain } = payload
+    try {
+        const data = await callHunterRaw('domain-search', { domain })
+        return new Response(JSON.stringify(data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500, // Or 400 depending on error
+        })
+    }
+}
+
+async function handleHunterEmailFinder(payload: any) {
+    const { domain, first_name, last_name } = payload
+    try {
+        const data = await callHunterRaw('email-finder', {
+            domain,
+            first_name,
+            last_name
+        })
+        return new Response(JSON.stringify(data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+        })
+    }
+}
+
+async function handleHunterEmailVerifier(payload: any) {
+    const { email } = payload
+    try {
+        const data = await callHunterRaw('email-verifier', { email })
+        return new Response(JSON.stringify(data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+        })
+    }
 }
