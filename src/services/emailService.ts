@@ -278,11 +278,6 @@ export async function getCachedEmail(firstName: string, lastName: string, domain
  * Finds the professional email address using Hunter.io Email Finder API
  */
 export async function findEmail(firstName: string, lastName: string, domain: string, token?: string): Promise<EmailFinderResponse['data'] | null> {
-    if (!HUNTER_API_KEY) {
-        console.error("Hunter API Key is missing");
-        return null;
-    }
-
     const cleanFirst = cleanName(firstName);
     const cleanLast = cleanName(lastName);
 
