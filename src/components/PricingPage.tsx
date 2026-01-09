@@ -97,7 +97,7 @@ export function PricingPage() {
         {
             id: "free",
             name: t('pricingPage.plans.free.name'),
-            price: "TwR 0",
+            price: "Gratuit",
             credits: "7 Crédits",
             description: t('pricingPage.plans.free.description'),
             features: [

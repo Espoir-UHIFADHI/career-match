@@ -23,6 +23,11 @@ function ScrollToTop() {
   return null;
 }
 
+import { About } from "./components/pages/About";
+import { Blog } from "./components/pages/Blog";
+
+// ... existing imports
+
 function AppRoutes() {
 
   return (
@@ -35,6 +40,8 @@ function AppRoutes() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/blog" element={<Blog />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

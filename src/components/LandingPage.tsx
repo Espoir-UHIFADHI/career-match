@@ -10,6 +10,7 @@ import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import careersData from "../data/seo-careers.json";
 import { useTranslation } from "../hooks/useTranslation";
+import { QuickScan } from "./QuickScan";
 
 export function LandingPage() {
     const { t } = useTranslation();
@@ -105,6 +106,10 @@ export function LandingPage() {
                                     <Lock className="w-4 h-4 text-indigo-500" />
                                     <span className="text-sm font-medium text-slate-700">{t('hero.badges.trust')}</span>
                                 </div>
+                                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:shadow-md transition-shadow">
+                                    <Shield className="w-4 h-4 text-blue-500" />
+                                    <span className="text-sm font-medium text-slate-700">100% Côté Candidat</span>
+                                </div>
 
                             </div>
                         </div>
@@ -121,7 +126,7 @@ export function LandingPage() {
                                                 <User className="w-4 h-4 text-indigo-600" />
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-slate-800">Alex Martin</span>
+                                                <span className="text-sm font-bold text-slate-800">Votre Profil</span>
                                                 <span className="text-[10px] text-slate-500 font-medium">Free Plan</span>
                                             </div>
                                         </div>
@@ -168,11 +173,11 @@ export function LandingPage() {
 
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-xs font-bold border border-white/20">
-                                                        JD
+                                                        TR
                                                     </div>
                                                     <div className="text-left">
-                                                        <div className="text-xs font-bold">Jean Dupont</div>
-                                                        <div className="text-[10px] text-slate-400">Head of Design @ Google</div>
+                                                        <div className="text-xs font-bold">Thomas R.</div>
+                                                        <div className="text-[10px] text-slate-400">Talent Acquisition Manager</div>
                                                     </div>
                                                     <div className="ml-auto">
                                                         <Mail className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
@@ -226,6 +231,9 @@ export function LandingPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Quick Scan Section */}
+            <QuickScan />
 
             {/* Social Proof */}
             <section className="py-10 border-y border-slate-100 bg-white/50 backdrop-blur-sm">

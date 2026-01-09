@@ -15,6 +15,98 @@ export const translations = {
             results: "Results",
             pricing: "Pricing"
         },
+        about: {
+            hero: {
+                title: "We believe talent shouldn't be filtered by a robot.",
+                subtitle: "The recruitment market is broken. 75% of qualified CVs are rejected by ATS algorithms before they even reach a human. We built the technology to fight back."
+            },
+            stats: {
+                rejected: "CVs Rejected by AI",
+                interview: "Avg. Interview Rate",
+                time: "Time Saved/App"
+            },
+            story: {
+                title: "Our Mission: Transparency",
+                p1: "For years, recruitment software (ATS) has been a 'black box'. Candidates send their CVs into a void, hoping for a response that never comes. We discovered that it's often not the candidate's skills that are the problem, but their formatting or keywords.",
+                p2: "Career Match was born from a simple idea: give candidates the same weapon recruiters use—Artificial Intelligence. We reverse-engineered the logic of ATS to create a tool that speaks their language, while preserving your unique human story."
+            },
+            values: {
+                title: "Our Core Values",
+                transparency: "Radical Transparency",
+                transparencyDesc: "We tell you exactly why your CV isn't working. No sugar-coating.",
+                privacy: "Privacy First",
+                privacyDesc: "Your career data belongs to you. We don't sell your CVs to third parties.",
+                empowerment: "Candidate Empowerment",
+                empowermentDesc: "We build tools for YOU, not for HR departments."
+            },
+            cta: {
+                title: "Don't let an algorithm decide your future.",
+                subtitle: "Join 15,000+ candidates who reclaimed their power. Optimized for 50+ ATS systems.",
+                button: "Start Free Analysis",
+                guarantee: "No credit card required • Instant Results"
+            },
+            tech: {
+                title: "Inside the Technology",
+                subtitle: "We didn't just wrap ChatGPT. We built a proprietary analysis engine.",
+                p1: "Our engine runs your CV through the same parsing libraries used by Taleo, Workday, and Greenhouse.",
+                cards: {
+                    parsing: { title: "ATS Parsing", desc: "Verifies if robots can read your contact info and work history." },
+                    keywords: { title: "Semantic Matching", desc: "Compares your vocabulary against the job description's vector embeddings." },
+                    formatting: { title: "Format Compliance", desc: "Checks for layout errors that cause auto-rejection." }
+                }
+            },
+            faq: {
+                title: "Common Questions",
+                q1: "Is using AI for my CV cheating?",
+                a1: "Recruiters use AI to filter you out. Using AI to optimize your application is fairness, not cheating.",
+                q2: "Will anyone know I used Career Match?",
+                a2: "No. Our output is 100% human-readable standard text. No watermarks, no 'AI written' style."
+            }
+        },
+        blog: {
+            title: "Career Hacking Center",
+            subtitle: "Expert guides to master modern recruitment algorithms, networking, and salary negotiation.",
+            readMore: "Read Article",
+            categories: {
+                ats: "ATS Algorithms",
+                networking: "Networking Strategy",
+                salary: "Negotiation"
+            },
+            articles: {
+                art1: {
+                    title: "How ATS actually read your resume in 2025",
+                    desc: "We analyzed 50+ Applicant Tracking Systems. Here are the 5 formatting mistakes that automatically disqualify you.",
+                    date: "Jan 2, 2025"
+                },
+                art2: {
+                    title: "The 'Hidden Job Market' is a myth (sort of)",
+                    desc: "Why applying online isn't dead, but relying on it 100% is a mistake. How to balance applications and outreach.",
+                    date: "Dec 28, 2024"
+                },
+                art3: {
+                    title: "3 Email Templates that get responses from CEOs",
+                    desc: "Stop sending 'I'm motivated' emails. Use these psychological triggers to get a reply from busy executives.",
+                    date: "Dec 15, 2024"
+                }
+            }
+        },
+        footer: {
+            mission: "Empowering your career with the most advanced AI technology. We help you break through the noise and connect with the right people.",
+            product: "Product",
+            company: "Company",
+            legal: "Legal",
+            resources: "Resources",
+            features: "Features",
+            pricing: "Pricing",
+            about: "About Us",
+            blog: "Career Blog",
+            privacy: "Privacy Policy",
+            terms: "Terms of Service",
+            cookies: "Cookie Policy",
+            contact: "Contact",
+            rights: "© 2025 Career Match. All rights reserved.",
+            madeWith: "Made with ❤️ in Paris, France."
+        },
         seo: {
             uploadTitle: "Upload CV | Career Match",
             uploadDesc: "Upload your CV for instant AI analysis.",
@@ -309,7 +401,7 @@ export const translations = {
                 free: {
                     name: "Discovery",
                     description: "To test the power of AI.",
-                    button: "Current Plan",
+                    button: "Starting Credits",
                     features: {
                         feat1: "CV & Job Analysis",
                         feat2: "Basic CV Optimization",
@@ -527,6 +619,110 @@ export const translations = {
             analysis: "Analyse",
             results: "Résultats",
             pricing: "Tarifs"
+        },
+        about: {
+            hero: {
+                title: "Ne soyez plus jamais invisible.",
+                subtitle: "L'automatisation du recrutement a rompu le contrat de confiance. Notre technologie de sens sémantique rétablit l'équité en traduisant votre parcours pour les algorithmes, sans jamais dénaturer votre histoire."
+            },
+            stats: {
+                rejected: "CV Sauvés de l'Oubli",
+                interview: "Fois Plus d'Entretiens",
+                time: "Temps Gagné"
+            },
+            story: {
+                title: "Votre Passeport Technologique",
+                p1: "La compétence ne suffit plus si elle n'est pas détectée. Le marché du travail est désormais un environnement automatisé où les systèmes de filtrage décident qui passe l'étape du premier tri.",
+                p2: "Career Match est votre passeport technologique. Nous ne sommes pas un simple éditeur, mais une couche d'intelligence qui aligne mathématiquement votre profil avec les attentes des systèmes ATS, garantissant que votre talent soit enfin vu à sa juste valeur."
+            },
+            howItWorks: {
+                title: "Une optimisation en trois temps",
+                step1Title: "Importation Universelle",
+                step1Desc: "Chargez votre CV (PDF) ou URL LinkedIn. Notre système sécurisé ingère instantanément vos données.",
+                step2Title: "Analyse Propriétaire",
+                step2Desc: "Notre moteur scanne votre profil avec la rigueur d'un ATS pour identifier les points de friction.",
+                step3Title: "Optimisation de Précision",
+                step3Desc: "L'algorithme restructure l'information et calibre le vocabulaire pour maximiser votre score."
+            },
+            socialProof: {
+                title: "Nos utilisateurs ont été recrutés par l'élite."
+            },
+            values: {
+                title: "Nos Piliers",
+                transparency: "Vérité des Données",
+                transparencyDesc: "Un diagnostic brut et honnête. Nous vous révélons ce que les algorithmes voient vraiment.",
+                privacy: "Souveraineté Numérique",
+                privacyDesc: "Vos données ne servent pas à entraîner d'autres modèles. Elles restent votre propriété exclusive.",
+                empowerment: "Avantage Candidat",
+                empowermentDesc: "Nous construisons une technologie offensive pour maximiser vos chances de réussite."
+            },
+            tech: {
+                title: "L'Avantage Technologique",
+                subtitle: "Au-delà des mots-clés, une compréhension structurelle.",
+                p1: "Notre algorithme ne devine pas, il calcule. Il assure une compatibilité technique totale avec les standards du marché.",
+                cards: {
+                    parsing: { title: "Lecture Robotique Certifiée", desc: "Garantit que chaque ligne de votre expérience est parfaitement indexée." },
+                    keywords: { title: "Alignement Sémantique", desc: "Synchronise votre vocabulaire avec les attentes précises du poste visé." },
+                    formatting: { title: "Structure Anti-Rejet", desc: "Élimine les erreurs de formatage invisibles qui provoquent le rejet automatique." }
+                }
+            },
+            faq: {
+                title: "Questions Légitimes",
+                q1: "Est-ce éthique d'utiliser cet outil ?",
+                a1: "Les recruteurs utilisent des algorithmes pour filtrer massivement. Utiliser notre technologie pour assurer votre visibilité n'est pas de la triche, c'est rétablir l'égalité des armes.",
+                q2: "Est-ce détectable par les recruteurs ?",
+                a2: "Absolument pas. Le résultat final est un document 100% naturel, humain et authentique. Aucune signature robotique, aucun filigrane."
+            },
+            cta: {
+                title: "Ne laissez pas un algorithme décider de votre avenir.",
+                subtitle: "Rejoignez ceux qui ont choisi de maîtriser leur destin professionnel. Compatible avec plus de 50 systèmes ATS dont Workday, Taleo et Greenhouse.",
+                button: "Voir mon score ATS",
+                guarantee: "Analyse gratuite • Résultat immédiat"
+            }
+        },
+        blog: {
+            title: "Le Lab du Candidat",
+            subtitle: "Guides experts pour maîtriser les algorithmes de recrutement, le réseautage et la négociation.",
+            readMore: "Lire l'article",
+            categories: {
+                ats: "Algorithmes ATS",
+                networking: "Stratégie Réseau",
+                salary: "Négociation"
+            },
+            articles: {
+                art1: {
+                    title: "Comment les ATS lisent vraiment votre CV en 2025",
+                    desc: "Nous avons analysé plus de 50 systèmes de suivi. Voici les 5 erreurs de formatage qui vous disqualifient automatiquement.",
+                    date: "2 Jan 2025"
+                },
+                art2: {
+                    title: "Le 'Marché Caché' est-il un mythe ?",
+                    desc: "Pourquoi postuler en ligne n'est pas mort, mais s'y fier à 100% est une erreur. Comment équilibrer candidatures et réseautage.",
+                    date: "28 Dec 2024"
+                },
+                art3: {
+                    title: "3 modèles d'emails pour obtenir une réponse d'un CEO",
+                    desc: "Arrêtez d'envoyer des emails 'Je suis motivé'. Utilisez ces déclencheurs psychologiques pour obtenir une réponse.",
+                    date: "15 Dec 2024"
+                }
+            }
+        },
+        footer: {
+            mission: "Propulser votre carrière avec la technologie IA la plus avancée. Nous vous aidons à sortir du lot et à rencontrer les bonnes personnes.",
+            product: "Produit",
+            company: "Entreprise",
+            legal: "Légal",
+            resources: "Ressources",
+            features: "Fonctionnalités",
+            pricing: "Tarifs",
+            about: "À propos",
+            blog: "Blog Carrière",
+            privacy: "Politique de Confidentialité",
+            terms: "CGU / CGV",
+            cookies: "Politique de Cookies",
+            contact: "Contact",
+            rights: "© 2025 Career Match. Tous droits réservés.",
+            madeWith: "Fait avec ❤️ à Paris, France."
         },
         seo: {
             uploadTitle: "Télécharger CV | Career Match",
@@ -818,7 +1014,7 @@ export const translations = {
                 free: {
                     name: "Découverte",
                     description: "Pour tester la puissance de l'IA.",
-                    button: "Plan Actuel",
+                    button: "Crédits de départ",
                     features: {
                         feat1: "Analyse CV & Offre",
                         feat2: "Optimisation CV de base",
