@@ -320,10 +320,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <p className="text-slate-400 text-sm">
                             {t('footer.rights')}
                         </p>
-                        <div className="text-slate-400 text-xs text-right">
-                            <p>Édité par Espoir Adouwekonou (Micro-entreprise)</p>
-                            <p>Siège social : Bordeaux, France • Contact : appcareermatch@gmail.com</p>
-                        </div>
+
                     </div>
                 </div>
             </footer>
