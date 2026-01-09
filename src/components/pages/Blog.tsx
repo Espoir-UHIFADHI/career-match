@@ -1,6 +1,6 @@
 
 import { useTranslation } from "../../hooks/useTranslation";
-import { ArrowRight, BookOpen, Clock, Tag } from "lucide-react";
+import { ArrowRight, BookOpen, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Blog() {

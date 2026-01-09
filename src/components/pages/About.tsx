@@ -1,6 +1,6 @@
 
 import { useTranslation } from "../../hooks/useTranslation";
-import { Shield, TrendingUp, Unlock, Users, Sparkles, Target, Search, FileCheck, Upload, Cpu, CheckCircle2 } from "lucide-react";
+import { Shield, TrendingUp, Unlock, Users, Sparkles, Target, Upload, Cpu, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useAppStore } from "../../store/useAppStore";
