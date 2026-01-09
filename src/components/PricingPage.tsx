@@ -32,7 +32,7 @@ export function PricingPage() {
 
         try {
             const token = await getToken({ template: 'supabase' });
-            if (!token) throw new Error("Erreur d'authentification");
+            if (!token) throw new Error(t('pricingPage.license.authError'));
 
             // Needed to import supabase client here or use the service
             // Dynamic import to avoid circular dep issues or just assume standard import
@@ -45,7 +45,7 @@ export function PricingPage() {
 
             if (error) {
                 // Supabase function error (network/500)
-                throw new Error(error.message || "Erreur lors de la vérification.");
+                throw new Error(error.message || t('pricingPage.license.verifyError'));
             }
 
             if (data?.error) {
@@ -61,7 +61,7 @@ export function PricingPage() {
 
         } catch (err: any) {
             console.error("Redemption failed:", err);
-            setRedemptionError(err.message || "Impossible de valider ce code.");
+            setRedemptionError(err.message || t('pricingPage.license.error'));
         } finally {
             setRedeeming(false);
         }
@@ -69,7 +69,7 @@ export function PricingPage() {
 
     const handleCheckout = (productSlug: string) => {
         if (!user) {
-            alert("Veuillez vous connecter pour acheter des crédits.");
+            alert(t('pricingPage.license.loginRequired'));
             return;
         }
 
@@ -97,7 +97,7 @@ export function PricingPage() {
         {
             id: "free",
             name: t('pricingPage.plans.free.name'),
-            price: "Gratuit",
+            price: t('pricingPage.plans.free.price'),
             credits: "7 Crédits",
             description: t('pricingPage.plans.free.description'),
             features: [
@@ -262,12 +262,12 @@ export function PricingPage() {
                 {/* License Key Redemption Section */}
                 <div className="max-w-md mx-auto mt-8 pt-8 border-t border-slate-100">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                        Vous avez reçu un code de licence ?
+                        {t('pricingPage.license.title')}
                     </h3>
                     <div className="flex gap-2">
                         <input
                             type="text"
-                            placeholder="Ex: 569803C2-..."
+                            placeholder={t('pricingPage.license.placeholder')}
                             className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             value={licenseKey}
                             onChange={(e) => setLicenseKey(e.target.value)}
@@ -277,14 +277,14 @@ export function PricingPage() {
                             disabled={!licenseKey || redeeming}
                             className="bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
                         >
-                            {redeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : "Activer"}
+                            {redeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : t('pricingPage.license.button')}
                         </Button>
                     </div>
                     {redemptionError && (
                         <p className="text-red-600 text-sm mt-2">{redemptionError}</p>
                     )}
                     {redemptionSuccess && (
-                        <p className="text-green-600 text-sm mt-2">Code validé ! Vos crédits ont été ajoutés.</p>
+                        <p className="text-green-600 text-sm mt-2">{t('pricingPage.license.success')}</p>
                     )}
                 </div>
             </div>

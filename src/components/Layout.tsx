@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser, u
 import { cn } from "../lib/utils";
 import { useTranslation } from "../hooks/useTranslation";
 import { useNavigate, Link } from "react-router-dom";
+import { LanguageSelector } from "./LanguageSelector";
 
 export function Layout({ children }: { children: React.ReactNode }) {
     const { step } = useAppStore();
@@ -111,6 +112,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center gap-4">
 
+                        <LanguageSelector />
+
                         <SignedIn>
 
                             {/* Credits Display */}
@@ -193,6 +196,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-slate-200 shadow-xl animate-slide-down max-h-[calc(100vh-4rem)] overflow-y-auto">
                         <div className="p-4 space-y-2">
+                            <div className="px-4 pb-2">
+                                <LanguageSelector className="justify-center w-full" />
+                            </div>
+
                             <SignedIn>
                                 {navItems.map((item) => {
                                     const isActive = item.activeSteps.includes(step);

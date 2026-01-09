@@ -397,9 +397,21 @@ export const translations = {
             securePayment: "Secure payment via Gumroad. Invoice available immediately.",
             recommended: "Recommended",
             unique: "/ one-time",
+            license: {
+                title: "Received a license key?",
+                placeholder: "Ex: 569803C2-...",
+                button: "Redeem",
+                loading: "Redeeming...",
+                success: "Code redeemed! Credits added.",
+                error: "Unable to redeem code.",
+                authError: "Authentication error",
+                verifyError: "Verification error",
+                loginRequired: "Please sign in to buy credits."
+            },
             plans: {
                 free: {
                     name: "Discovery",
+                    price: "Free",
                     description: "To test the power of AI.",
                     button: "Starting Credits",
                     features: {
@@ -1010,9 +1022,21 @@ export const translations = {
             securePayment: "Paiement sécurisé via Gumroad. Facture disponible immédiatement.",
             recommended: "Recommandé",
             unique: "/ unique",
+            license: {
+                title: "Vous avez reçu un code de licence ?",
+                placeholder: "Ex: 569803C2-...",
+                button: "Activer",
+                loading: "Activation...",
+                success: "Code validé ! Vos crédits ont été ajoutés.",
+                error: "Impossible de valider ce code.",
+                authError: "Erreur d'authentification",
+                verifyError: "Erreur lors de la vérification.",
+                loginRequired: "Veuillez vous connecter pour acheter des crédits."
+            },
             plans: {
                 free: {
                     name: "Découverte",
+                    price: "Gratuit",
                     description: "Pour tester la puissance de l'IA.",
                     button: "Crédits de départ",
                     features: {
