@@ -133,7 +133,7 @@ export function About() {
             </section>
 
             {/* Technology Section */}
-            <section className="py-24 bg-[#0B0F19] text-white relative overflow-hidden">
+            <section className="py-24 bg-[#0B0F19] text-white relative overflow-hidden rounded-[2.5rem] mx-2 md:mx-4 my-8">
                 {/* Background Gradients */}
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -148,7 +148,7 @@ export function About() {
                             <p className="text-slate-200 text-lg md:text-xl mb-8 leading-relaxed font-light">
                                 {t('about.tech.subtitle')}
                             </p>
-                            <div className="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
+                            <div className="p-6 bg-white/5 border border-white/10 rounded-[40px] backdrop-blur-sm">
                                 <p className="text-slate-200 leading-relaxed">
                                     {t('about.tech.p1')}
                                 </p>
@@ -157,7 +157,7 @@ export function About() {
 
                         <div className="lg:w-1/2 grid grid-cols-1 gap-6">
                             {/* Card 1 - Parsing */}
-                            <div className="group bg-white/5 border border-slate-700 p-8 rounded-2xl hover:bg-white/10 hover:border-indigo-500/50 transition-all duration-300 shadow-xl relative overflow-hidden">
+                            <div className="group bg-white/5 border border-slate-700 p-8 rounded-[40px] hover:bg-white/10 hover:border-indigo-500/50 transition-all duration-300 shadow-xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
                                 <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-3">
                                     <div className="relative flex items-center justify-center w-3 h-3">
@@ -170,7 +170,7 @@ export function About() {
                             </div>
 
                             {/* Card 2 - Semantic */}
-                            <div className="group bg-white/5 border border-slate-700 p-8 rounded-2xl hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300 shadow-xl relative overflow-hidden">
+                            <div className="group bg-white/5 border border-slate-700 p-8 rounded-[40px] hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300 shadow-xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors" />
                                 <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-3">
                                     <div className="relative flex items-center justify-center w-3 h-3">
@@ -183,7 +183,7 @@ export function About() {
                             </div>
 
                             {/* Card 3 - Formatting */}
-                            <div className="group bg-white/5 border border-slate-700 p-8 rounded-2xl hover:bg-white/10 hover:border-emerald-500/50 transition-all duration-300 shadow-xl relative overflow-hidden">
+                            <div className="group bg-white/5 border border-slate-700 p-8 rounded-[40px] hover:bg-white/10 hover:border-emerald-500/50 transition-all duration-300 shadow-xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors" />
                                 <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-3">
                                     <div className="relative flex items-center justify-center w-3 h-3">
@@ -284,7 +284,7 @@ export function About() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-24 relative overflow-hidden bg-slate-900">
+            <section className="py-24 relative overflow-hidden bg-slate-900 rounded-[2.5rem] mx-2 md:mx-4 my-8">
                 <div className="absolute inset-0 bg-slate-900 z-0">
                     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-900/40 rounded-full blur-[120px]" />
                     <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[100px]" />

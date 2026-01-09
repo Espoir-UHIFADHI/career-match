@@ -2,10 +2,9 @@ import { useState } from "react";
 import { FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser, useClerk } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
 import { useTranslation } from "../hooks/useTranslation";
-
 import { useNavigate, Link } from "react-router-dom";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -14,6 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { t } = useTranslation();
     const { user } = useUser();
+    const clerk = useClerk();
     const [isSignInLoading, setIsSignInLoading] = useState(false);
     const [isSignUpLoading, setIsSignUpLoading] = useState(false);
     const navigate = useNavigate();
@@ -28,6 +28,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         setTimeout(() => setIsSignUpLoading(false), 3000);
     };
 
+    const handleProtectedNavigation = (stepId: number) => {
+        if (!user) {
+            clerk.openSignIn();
+        } else {
+            useAppStore.getState().setStep(stepId);
+            navigate('/app');
+        }
+    };
+
     const navItems = [
         { id: 1, name: t('nav.uploadCV'), icon: FileText, activeSteps: [1, 2, 3, 4] },
         { id: 5, name: t('nav.networking'), icon: User, activeSteps: [5] },
@@ -40,8 +49,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         navigate('/app');
         setIsMobileMenuOpen(false);
     };
-
-
 
     return (
         <div className="min-h-screen flex flex-col font-sans text-slate-900 bg-slate-50">
@@ -209,12 +216,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                             {/* Mobile Menu Items */}
                             <div className="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-4">
-                                {/* Language and Credits moved to top bar for mobile */}
-                                {/* Keep them here? No, requested "Navigation Bar" usually means top. 
-                                    If user wants them in menu, they wouldn't say "Fais le sur mobile" after I put them in menu. 
-                                    I will remove them from here to avoid clutter. 
-                                */}
-
                                 <div className="px-4 pb-4">
                                     <SignedOut>
                                         <div className="flex flex-col gap-3">
@@ -282,12 +283,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                 <li><Link to="/" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">{t('footer.features')}</Link></li>
                                 <li><Link to="/pricing" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">{t('footer.pricing')}</Link></li>
                                 <li>
-                                    <button onClick={() => { useAppStore.getState().setStep(5); navigate('/app'); }} className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">
+                                    <button onClick={() => handleProtectedNavigation(5)} className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">
                                         {t('nav.networking')}
                                     </button>
                                 </li>
                                 <li>
-                                    <button onClick={() => { useAppStore.getState().setStep(6); navigate('/app'); }} className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">
+                                    <button onClick={() => handleProtectedNavigation(6)} className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">
                                         {t('nav.emailPredictor')}
                                     </button>
                                 </li>
@@ -329,4 +330,3 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
     );
 }
-
