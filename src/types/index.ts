@@ -49,6 +49,22 @@ export const JobAnalysisSchema = z.object({
         culture: z.array(z.string()),
         experienceLevel: z.string(),
     }),
+    multilingual: z.object({
+        fr: z.object({
+            description: z.string(),
+            requirements: z.object({
+                hardSkills: z.array(z.string()),
+                softSkills: z.array(z.string()),
+            }),
+        }),
+        en: z.object({
+            description: z.string(),
+            requirements: z.object({
+                hardSkills: z.array(z.string()),
+                softSkills: z.array(z.string()),
+            }),
+        }),
+    }).optional(),
 });
 
 export type JobAnalysis = z.infer<typeof JobAnalysisSchema>;
@@ -65,6 +81,24 @@ export const MatchResultSchema = z.object({
     optimizedCV: CVSchema.optional(), // The rewritten CV (optional if score is too low)
     analysisLanguage: z.enum(["English", "French"]).optional(),
     recommendations: z.array(z.string()),
+    multilingual: z.object({
+        fr: z.object({
+            analysis: z.object({
+                strengths: z.array(z.string()),
+                weaknesses: z.array(z.string()),
+                cultureFit: z.string(),
+            }),
+            recommendations: z.array(z.string()),
+        }),
+        en: z.object({
+            analysis: z.object({
+                strengths: z.array(z.string()),
+                weaknesses: z.array(z.string()),
+                cultureFit: z.string(),
+            }),
+            recommendations: z.array(z.string()),
+        }),
+    }).optional(),
 });
 
 export type MatchResult = z.infer<typeof MatchResultSchema>;

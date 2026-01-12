@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Loader2, AlertCircle, Building2, Briefcase, Globe, ArrowRight } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
@@ -87,7 +87,28 @@ export function JobInput() {
         }
     };
 
-    if (previewData) {
+    const displayContent = useMemo(() => {
+        if (!previewData) return null;
+        const lang = language === 'fr' ? 'fr' : 'en';
+
+        // Check if we have the multilingual structure (new backend response)
+        if (previewData.multilingual && previewData.multilingual[lang]) {
+            return {
+                description: previewData.multilingual[lang].description,
+                hardSkills: previewData.multilingual[lang].requirements.hardSkills || [],
+                softSkills: previewData.multilingual[lang].requirements.softSkills || []
+            };
+        }
+
+        // Fallback to legacy/root structure
+        return {
+            description: previewData.description,
+            hardSkills: previewData.requirements?.hardSkills || [],
+            softSkills: previewData.requirements?.softSkills || []
+        };
+    }, [previewData, language]);
+
+    if (previewData && displayContent) {
         return (
             <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
                 <div className="text-center space-y-2">
@@ -122,7 +143,7 @@ export function JobInput() {
                         <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
                             <h4 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">{t('cvReview.description')}</h4>
                             <p className="text-slate-700 leading-relaxed text-sm">
-                                {previewData.description || "No description available."}
+                                {displayContent.description || "No description available."}
                             </p>
                         </div>
 
@@ -130,12 +151,12 @@ export function JobInput() {
                             <div>
                                 <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">{t('jobInput.hardSkills')}</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {(previewData.requirements?.hardSkills || []).map((skill, i) => (
+                                    {(displayContent.hardSkills).map((skill, i) => (
                                         <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-medium rounded-md border border-slate-200 shadow-sm">
                                             {skill}
                                         </span>
                                     ))}
-                                    {(!previewData.requirements?.hardSkills || previewData.requirements.hardSkills.length === 0) && (
+                                    {(displayContent.hardSkills.length === 0) && (
                                         <span className="text-sm text-slate-400 italic">{t('jobInput.noneDetected')}</span>
                                     )}
                                 </div>
@@ -143,12 +164,12 @@ export function JobInput() {
                             <div>
                                 <h4 className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-widest">{t('jobInput.softSkills')}</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {(previewData.requirements?.softSkills || []).map((skill, i) => (
+                                    {(displayContent.softSkills).map((skill, i) => (
                                         <span key={i} className="px-2.5 py-1 bg-white text-slate-700 text-xs font-medium rounded-md border border-slate-200 shadow-sm">
                                             {skill}
                                         </span>
                                     ))}
-                                    {(!previewData.requirements?.softSkills || previewData.requirements.softSkills.length === 0) && (
+                                    {(displayContent.softSkills.length === 0) && (
                                         <span className="text-sm text-slate-400 italic">{t('jobInput.noneDetected')}</span>
                                     )}
                                 </div>

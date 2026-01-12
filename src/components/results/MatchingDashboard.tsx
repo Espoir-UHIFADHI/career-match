@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe, Share2, ArrowRight } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
@@ -19,7 +19,7 @@ import { pdf } from "@react-pdf/renderer";
 import { CVDocument } from "./CVDocument";
 
 export function MatchingDashboard() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const { user } = useUser();
     const { getToken } = useAuth();
     const { cvData, jobData, analysisResults, setAnalysisResults } = useAppStore();
@@ -268,7 +268,25 @@ export function MatchingDashboard() {
     const { score, analysis, recommendations } = analysisResults;
     const isLowMatch = score < 45 || !analysisResults.optimizedCV;
 
+    // Multilingual Content Selection
+    const displayContent = useMemo(() => {
+        const lang = language === 'fr' ? 'fr' : 'en';
+        if (analysisResults.multilingual && analysisResults.multilingual[lang]) {
+            return {
+                analysis: {
+                    ...analysis,
+                    strengths: analysisResults.multilingual[lang].analysis.strengths,
+                    cultureFit: analysisResults.multilingual[lang].analysis.cultureFit,
+                    // Weaknesses not currently displayed but available
+                },
+                recommendations: analysisResults.multilingual[lang].recommendations
+            };
+        }
+        return { analysis, recommendations };
+    }, [analysisResults, language]);
+
     // Helper to determine score color
+
     const getScoreColor = (s: number) => {
         if (s >= 80) return "text-emerald-600";
         if (s >= 60) return "text-indigo-600";
@@ -371,7 +389,7 @@ export function MatchingDashboard() {
                                 </h4>
                                 <div className="bg-emerald-50/30 rounded-xl p-5 border border-emerald-100/50">
                                     <ul className="space-y-3">
-                                        {analysis.strengths.map((s, i) => (
+                                        {displayContent.analysis.strengths.map((s, i) => (
                                             <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
                                                 <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                                                 <span className="leading-relaxed">{s}</span>
@@ -391,7 +409,7 @@ export function MatchingDashboard() {
                                 </h4>
                                 <div className="bg-red-50/30 rounded-xl p-5 border border-red-100/50">
                                     <div className="flex flex-wrap gap-2">
-                                        {analysis.missingKeywords.map((k, i) => (
+                                        {displayContent.analysis.missingKeywords.map((k, i) => (
                                             <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium bg-white text-red-700 border border-red-200 shadow-sm">
                                                 {k}
                                             </span>
@@ -408,7 +426,7 @@ export function MatchingDashboard() {
                                 {t('dashboard.cultureFit')}
                             </h4>
                             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-sm text-slate-600 leading-relaxed">
-                                {analysis.cultureFit}
+                                {displayContent.analysis.cultureFit}
                             </div>
                         </div>
                     </CardContent>
@@ -428,7 +446,7 @@ export function MatchingDashboard() {
                 </CardHeader>
                 <CardContent className="pt-6">
                     <div className="grid grid-cols-1 gap-4">
-                        {recommendations.map((rec, i) => (
+                        {displayContent.recommendations.map((rec, i) => (
                             <div key={i} className="group flex gap-4 items-start p-5 bg-slate-50 border border-slate-200 rounded-xl hover:bg-white hover:shadow-md hover:border-indigo-200 transition-all duration-300">
                                 <div className="flex-shrink-0 mt-0.5">
                                     <div className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors shadow-sm">

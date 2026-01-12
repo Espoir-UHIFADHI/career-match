@@ -981,7 +981,7 @@ export const translations = {
             lastNamePlaceholder: "ex: Dupont",
             companyName: "Nom de l'entreprise",
             companyPlaceholder: "ex: Google",
-            analyzePatterns: "Analyse des Patrons...",
+            analyzePatterns: "Analyse en cours...",
             findEmail: "Trouver Email",
             findPattern: "Trouver Email (1 crédit)",
             signIn: "Connectez-vous pour utiliser",

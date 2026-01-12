@@ -215,16 +215,29 @@ async function handleAnalyzeJob(payload: any) {
         {
           "title": "Job Title",
           "company": "Company Name",
-          "description": "Brief summary of the role and key responsibilities (max 3-4 sentences)",
+          "description": "Brief summary of the role and key responsibilities (max 3-4 sentences) in ${language === 'fr' ? 'French' : 'English'}",
           "requirements": {
             "hardSkills": ["skill1", "skill2"],
             "softSkills": ["skill1", "skill2"],
             "culture": ["value1", "value2"],
             "experienceLevel": "Junior/Mid/Senior"
+          },
+          "multilingual": {
+            "fr": {
+               "description": "Résumé du poste en français",
+               "requirements": { "hardSkills": ["compétence1"], "softSkills": ["softSkill1"] }
+            },
+            "en": {
+               "description": "Job summary in English",
+               "requirements": { "hardSkills": ["skill1"], "softSkills": ["softSkill1"] }
+            }
           }
         }
 
-        IMPORTANT: Provide the response in ${language === 'fr' ? 'French' : 'English'}.
+        IMPORTANT:
+        - Populate "multilingual.fr" with French content.
+        - Populate "multilingual.en" with English content.
+        - The root "description" and "requirements" should match the language: ${language === 'fr' ? 'French' : 'English'}.
     `;
 
     const body = {
@@ -339,13 +352,33 @@ async function handleOptimizeCV(payload: any) {
       "certifications": ["Certification 1", ...],
       "interests": ["Intérêt 1", ...]
     },
-    "recommendations": ["..."]
+    "recommendations": ["..."],
+    "multilingual": {
+      "fr": {
+        "analysis": {
+            "strengths": ["Force 1", "Force 2"],
+            "weaknesses": ["Faiblesse 1"],
+            "cultureFit": "Analyse culturelle en français"
+        },
+        "recommendations": ["Recommandation 1", "Recommandation 2"]
+      },
+      "en": {
+        "analysis": {
+            "strengths": ["Strength 1", "Strength 2"],
+            "weaknesses": ["Weakness 1"],
+            "cultureFit": "Cultural analysis in English"
+        },
+        "recommendations": ["Recommendation 1", "Recommendation 2"]
+      }
+    }
   }
 
-  IMPORTANT : VERIFIE UNE DERNIÈRE FOIS LA LANGUE DE SORTIE.
-  SI LA LANGUE DEMANDÉE EST "FRENCH", LE JSON DOIT CONTENIR UNIQUEMENT DU FRANÇAIS (Sauf noms propres).
-  SI LA LANGUE DEMANDÉE EST "ENGLISH", LE JSON DOIT CONTENIR UNIQUEMENT DE L'ANGLAIS.
-  C'EST LA RÈGLE LA PLUS IMPORTANTE.
+  IMPORTANT : 
+  1. LE CHAMP "multilingual" EST OBLIGATOIRE.
+  2. REMPLIS "multilingual.fr" AVEC DU CONTENU EN FRANÇAIS.
+  3. REMPLIS "multilingual.en" AVEC DU CONTENU EN ANGLAIS.
+  4. La racine "analysis" et "recommendations" doit correspondre à la langue demandée (${_language}).
+  5. C'EST LA RÈGLE LA PLUS IMPORTANTE.
   TRADUIS INTEGRALEMENT LE CONTENU.
   `;
 

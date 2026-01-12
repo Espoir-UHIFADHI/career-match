@@ -246,7 +246,7 @@ export function EmailPredictorTool() {
                                             value={company}
                                             onChange={(e) => setEmailPredictorState({ company: e.target.value })}
                                             className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
-                                            disabled={true}
+                                            disabled={status === 'loading'}
                                         />
                                     </div>
                                 </div>
@@ -260,7 +260,7 @@ export function EmailPredictorTool() {
                                                 value={firstName}
                                                 onChange={(e) => setEmailPredictorState({ firstName: e.target.value })}
                                                 className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
-                                                disabled={true}
+                                                disabled={status === 'loading'}
                                             />
                                         </div>
                                     </div>
@@ -271,7 +271,7 @@ export function EmailPredictorTool() {
                                             value={lastName}
                                             onChange={(e) => setEmailPredictorState({ lastName: e.target.value })}
                                             className="h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
-                                            disabled={true}
+                                            disabled={status === 'loading'}
                                         />
                                     </div>
                                 </div>
@@ -280,7 +280,7 @@ export function EmailPredictorTool() {
                             {isSignedIn ? (
                                 <Button
                                     onClick={handlePredict}
-                                    disabled={true}
+                                    disabled={status === 'loading'}
                                     className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all text-base"
                                 >
                                     {status === 'loading' ? (
@@ -388,7 +388,7 @@ export function EmailPredictorTool() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full opacity-60 hover:opacity-100 transition-opacity">
+                        <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full transition-opacity">
                             <CardHeader className="border-b border-slate-100 pb-4">
                                 <CardTitle className="text-lg text-slate-900 flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
@@ -398,9 +398,6 @@ export function EmailPredictorTool() {
                                         {t('emailPredictor.noPrediction')}
                                     </div>
                                     <div className="flex gap-2">
-                                        <span className="text-xs font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded-full uppercase tracking-wider">
-                                            {t('emailPredictor.inDevelopment')}
-                                        </span>
                                         <span className="text-xs font-bold px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase tracking-wider">
                                             Exemple
                                         </span>
