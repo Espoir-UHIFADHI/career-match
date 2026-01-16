@@ -109,14 +109,27 @@ async function handleSerperSearch(payload: any) {
     const apiKey = Deno.env.get('SERPER_API_KEY')
     if (!apiKey) throw new Error("Missing SERPER_API_KEY")
 
+    const { q, num, start, tbs, language } = payload;
+    const gl = language === 'fr' ? 'fr' : 'us'; // Geolocation
+    const hl = language === 'fr' ? 'fr' : 'en'; // Host Language (Interface/Snippets)
+
     const myHeaders = new Headers()
     myHeaders.append("X-API-KEY", apiKey)
     myHeaders.append("Content-Type", "application/json")
 
+    const bodyPayload = {
+        q,
+        num,
+        start,
+        tbs,
+        gl,
+        hl
+    };
+
     const response = await fetch("https://google.serper.dev/search", {
         method: 'POST',
         headers: myHeaders,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(bodyPayload),
     })
 
     if (!response.ok) {
@@ -176,6 +189,7 @@ async function handleParseCV(payload: any) {
     - Pour contact.firstName et contact.lastName, si tu ne trouves pas le nom complet, mets au moins une valeur par défaut comme "Non" et "Spécifié"
     - Assure-toi que TOUS les champs requis sont présents dans la réponse
     - N'invente AUCUNE information, utilise uniquement ce qui est dans le CV
+    - IMPORTANT : Cherche bien l'URL LinkedIn (linkedin.com/in/...) même en bas de page ou en petit. C'est très important.
     `;
 
     const body = {
@@ -396,22 +410,44 @@ async function handleOptimizeCV(payload: any) {
     })
 }
 
-async function handleGenerateNetworkingQueries(payload: any) {
-    const { company, role, location } = payload;
+export async function handleGenerateNetworkingQueries(payload: any) {
+    const { company, role, location, language } = payload;
+    const isFrench = language === 'fr';
 
     const prompt = `
-  Rôle : Expert en recherche LinkedIn et networking professionnel.
-  Action : Génère 3-5 requêtes de recherche optimisées pour trouver des contacts pertinents sur LinkedIn.
+  Rôle : Expert en recherche LinkedIn et "Google Dorking" pour le recrutement.
+  Action : Génère des requêtes de recherche Google ultra-précises pour trouver des profils sur LinkedIn.
   
   Paramètres :
   - Entreprise : ${company || "Non spécifié"}
-  - Rôle : ${role || "Non spécifié"}
+  - Rôle visé par le candidat : ${role || "Non spécifié"}
   - Localisation : ${location || "Non spécifié"}
+  - Langue cible pour les titres : ${isFrench ? 'FRANÇAIS' : 'ANGLAIS'}
   
-  Structure JSON attendue :
+  Stratégie :
+  Tu dois générer 4 types de listes de requêtes (Personas) pour maximiser les chances de contact :
+  1. "gatekeeper" : RH, Recruteurs, Talent Acquisition (ceux qui filtrent).
+  2. "peer" : Les futurs collègues (même métier que le candidat).
+  3. "decision_maker" : Les chefs, Managers, Lead, CTO, VP (ceux qui décident).
+  4. "email_finder" : Recherche de profils ayant potentiellement leur email public dans leur bio (Ex: "@entreprise.com").
+
+  Règles STRICTES de Dorking :
+  - Utilise TOUJOURS : site:linkedin.com/in/
+  - Exclus TOUJOURS les offres d'emploi : -intitle:jobs -intitle:offre -inurl:jobs
+  - Utilise l'opérateur OR entre parenthèses pour les synonymes de titres. Ex: ("Recruteur" OR "Talent Acquisition" OR "RH")
+  - Si une localisation est fournie, inclus-la.
+  - IMPORTANT : ADAPTE LES TITRES À LA LANGUE (${isFrench ? 'Recruteur, DRH' : 'Recruiter, HR Manager'}).
+  
+  Structure JSON attendue STRICTEMENT :
   {
-    "queries": ["site:linkedin.com/in/ ...", ...]
+    "gatekeeper": ["query1", "query2"],
+    "peer": ["query1", "query2"],
+    "decision_maker": ["query1", "query2"],
+    "email_finder": ["query1"]
   }
+  
+  Exemple de logique pour "email_finder" si Entreprise="Stripe" :
+  "site:linkedin.com/in/ Stripe \"@stripe.com\" -intitle:jobs"
   `;
 
     const body = {

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
-import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle } from "lucide-react";
+import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle, Linkedin } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { useTranslation } from "../../hooks/useTranslation";
 import { cn } from "../../lib/utils";
@@ -195,6 +195,17 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                     onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, email: e.target.value } })}
                                     placeholder={t('cvReview.email')}
                                     className={cn(isInvalid(formData.contact.email) && "border-red-500 focus-visible:ring-red-500")}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <Linkedin className="h-3 w-3 text-indigo-600" />
+                                    LinkedIn
+                                </Label>
+                                <Input
+                                    value={formData.contact.linkedin || ""}
+                                    onChange={(e) => setFormData({ ...formData, contact: { ...formData.contact, linkedin: e.target.value } })}
+                                    placeholder="https://linkedin.com/in/otoby"
                                 />
                             </div>
                             <div className="space-y-2">

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
-import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle, Construction, MapPin } from "lucide-react";
+import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle, Construction, MapPin, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -28,10 +28,23 @@ interface Contact {
     emailErrorType?: string;
 }
 
+
+// Persona / Strategy Types
+type SearchStrategy = 'gatekeeper' | 'peer' | 'decision_maker';
+
+// Badge Helpers
+const getBadgeForTitle = (title: string) => {
+    const t = title.toLowerCase();
+    if (t.includes('senior') || t.includes('principal') || t.includes('staff') || t.includes('lead')) return { label: 'Senior', color: 'bg-amber-100 text-amber-700 border-amber-200' };
+    if (t.includes('head') || t.includes('director') || t.includes('vp') || t.includes('chief') || t.includes('manager')) return { label: 'Decision Maker', color: 'bg-purple-100 text-purple-700 border-purple-200' };
+    if (t.includes('recruiter') || t.includes('talent') || t.includes('rh') || t.includes('hr')) return { label: 'Recrutement', color: 'bg-pink-100 text-pink-700 border-pink-200' };
+    return null;
+};
+
 export function NetworkingSearch() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const { networking, setNetworkingState } = useAppStore();
-    const { useCredit, credits } = useUserStore(); // hook usage
+    const { useCredit, credits } = useUserStore();
 
     // Derived state from store
     const { company, role, location, results, hasSearched } = networking;
@@ -39,10 +52,14 @@ export function NetworkingSearch() {
     // Local UI state
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [showDevModal, setShowDevModal] = useState(false); // Modal state instead of notification
+    const [showDevModal, setShowDevModal] = useState(false);
     const { isSignedIn, user } = useUser();
-    const { getToken } = useAuth(); // START-MODIFICATION: Move hook call here to fix scope
-    // END-MODIFICATION
+    const { getToken } = useAuth();
+
+    // Advanced Search State
+    const [activeStrategy, setActiveStrategy] = useState<SearchStrategy>('gatekeeper');
+    const [personaQueries, setPersonaQueries] = useState<{ [key in SearchStrategy]?: string[] }>({});
+    const [dateFilter, setDateFilter] = useState(false);
 
     // Ensure results is treated as typed array even if store has any[]
     const typedResults = (results || []) as Contact[];
@@ -58,10 +75,11 @@ export function NetworkingSearch() {
     const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
-
-
-    const handleSearch = async (isLoadMore = false) => {
+    const handleSearch = async (isLoadMore = false, strategyOverride?: SearchStrategy) => {
         if (!company && !role && !location) return;
+
+        const strategyToUse = strategyOverride || activeStrategy;
+        if (strategyOverride) setActiveStrategy(strategyOverride);
 
         if (!isSignedIn || !user) {
             setError(t('networking.signInRequired') || "Veuillez vous connecter pour effectuer une recherche.");
@@ -83,25 +101,49 @@ export function NetworkingSearch() {
         }
 
         try {
-            let queries = [`site:linkedin.com/in/ ${role} ${company} ${location || ''}`.trim()];
-
             const token = await getToken({ template: 'supabase' });
 
-            try {
-                const response = await generateNetworkingQueries(company, role, location, token || undefined);
-                if (response && response.queries && response.queries.length > 0) {
-                    queries = response.queries;
+            // 1. Generate Queries if needed (only on first search or if criteria changed)
+            // We store them in state to reuse when switching tabs
+            let currentPersonaQueries = personaQueries;
+
+            // If we don't have queries OR if this is a fresh search (not load more), we regenerate
+            // Optimization: We could check if company/role changed, but for now let's assume "rechercher" means new params
+            if (!isLoadMore && (!currentPersonaQueries[strategyToUse] || currentPersonaQueries[strategyToUse]?.length === 0)) {
+                try {
+                    // Pass language to generate queries in the correct language
+                    const response = await generateNetworkingQueries(company, role, location, token || undefined, language);
+                    if (response) {
+                        currentPersonaQueries = {
+                            gatekeeper: response.gatekeeper || [],
+                            peer: response.peer || [],
+                            decision_maker: response.decision_maker || []
+                        };
+                        setPersonaQueries(currentPersonaQueries);
+                    }
+                } catch (e) {
+                    console.warn("Gemini query generation failed, using fallback", e);
+                    // Fallback logic
+                    const fallbackQuery = `site:linkedin.com/in/ ${role} ${company} ${location || ''}`.trim();
+                    currentPersonaQueries = {
+                        gatekeeper: [fallbackQuery],
+                        peer: [fallbackQuery],
+                        decision_maker: [fallbackQuery]
+                    };
+                    setPersonaQueries(currentPersonaQueries);
                 }
-            } catch (e) {
-                console.warn("Gemini query generation failed, using fallback", e);
             }
 
-            const queryToUse = queries[0];
+            // 2. Select Query based on Strategy
+            const queries = currentPersonaQueries[strategyToUse] || [];
+            // Use the first query for now, or randomize? First is usually best from AI
+            const queryToUse = queries[0] || `site:linkedin.com/in/ ${company} ${role}`;
 
-            // Pagination logic
+            // 3. Execution
             const startOffset = isLoadMore ? typedResults.length : 0;
 
-            const searchResults = await searchGoogle(queryToUse, 10, startOffset, token || undefined);
+            // Pass dateFilter and language to serper
+            const searchResults = await searchGoogle(queryToUse, 10, startOffset, token || undefined, dateFilter, language);
 
             const newContacts: Contact[] = searchResults.map(((r: any) => ({
                 name: r.title.split('|')[0].split('-')[0].trim(),
@@ -124,17 +166,11 @@ export function NetworkingSearch() {
             }
             setNetworkingState({ hasSearched: true });
 
-            // Deduct Credit AFTER success - BUT ONLY IF WE HAVE NEW UNIQUE RESULTS
+            // Deduct Credit passed checks
             if (addedCount > 0) {
                 try {
-                    const { success, error: creditError } = await useCredit(user.id, 1, token || undefined);
-                    if (!success) {
-                        if (creditError === 'insufficient_funds_local' || creditError === 'insufficient_funds_server') {
-                            setShowCreditModal(true);
-                        } else {
-                            console.error("Credit deduction failed after search:", creditError);
-                        }
-                    }
+                    const { success } = await useCredit(user.id, 1, token || undefined);
+                    if (!success && credits < 1) setShowCreditModal(true); // Double check
                 } catch (err) {
                     console.error("Credit deduction failed:", err);
                 }
@@ -148,99 +184,14 @@ export function NetworkingSearch() {
         }
     };
 
-    const handleGuessEmail = async (_contactIndex: number) => {
-        // TEMPORARY: Disable email search and show "Coming Soon" notification
-        setShowDevModal(true);
-        return;
-
-        /* Original Logic Commented Out
-        const contact = typedResults[contactIndex];
-        if (!contact || !company) return;
-
-        if (!isSignedIn || !user) {
-            alert(t('common.signInRequired') || "Veuillez vous connecter pour utiliser cette fonctionnalité.");
-            return;
-        }
-
-        if (credits < 1 && user?.primaryEmailAddress?.emailAddress !== 'espoiradouwekonou20@gmail.com') {
-            setShowCreditModal(true);
-            return;
-        }
-
-        const newResults = [...typedResults];
-        newResults[contactIndex] = { ...contact, emailStatus: 'loading' };
-        setNetworkingState({ results: newResults });
-
-        let token: string | null = null;
-        try {
-            token = await getToken({ template: 'supabase' });
-            const domain = await findCompanyDomain(company, token || undefined);
-            if (!domain) throw new Error("Domaine introuvable");
-
-            const pattern = await getEmailPattern(domain, token || undefined);
-
-            const cleanedName = cleanName(contact.name);
-            const nameParts = cleanedName.split(" ");
-            const first = nameParts[0];
-            const last = nameParts.slice(1).join(" ");
-
-            let emailFound = undefined;
-            let score = undefined;
-
-            if (first && last) {
-                if (pattern) {
-                    emailFound = generateEmail(first, last, pattern, domain);
-                    if (emailFound) {
-                        score = 80;
-                    }
-                }
-
-                if (!emailFound) {
-                    const result = await findEmail(first, last, domain, token || undefined);
-                    if (result) {
-                        emailFound = result.email;
-                        score = result.score;
-                    }
-                }
-            }
-
-            const updatedResults = [...typedResults];
-            updatedResults[contactIndex] = {
-                ...contact,
-                emailStatus: 'success',
-                email: emailFound || undefined,
-                emailConfidence: score,
-                emailPattern: pattern || undefined,
-                domain: domain
-            };
-            setNetworkingState({ results: updatedResults });
-
-            // Deduct Credit AFTER success - ONLY IF EMAIL FOUND
-            if (emailFound) {
-                try {
-                    const { success } = await useCredit(user.id, 1, token || undefined);
-                    if (!success) {
-                        console.error("Credit deduction failed after email find");
-                    }
-                } catch (err) {
-                    console.error("Credit deduction failed:", err);
-                }
-            }
-
-        } catch (error) {
-            console.error(error);
-            const updatedResults = [...typedResults];
-            let errorMsg = 'error';
-            if (error instanceof Error) {
-                if (error.message === 'quota_exceeded') errorMsg = 'quota';
-                else if (error.message === 'invalid_api_key') errorMsg = 'apikey';
-            }
-            updatedResults[contactIndex] = { ...contact, emailStatus: 'error', emailErrorType: errorMsg };
-            setNetworkingState({ results: updatedResults });
-        }
-        */
+    const handleStrategyClick = (s: SearchStrategy) => {
+        if (activeStrategy === s) return;
+        handleSearch(false, s);
     };
 
+    const handleGuessEmail = async (_contactIndex: number) => {
+        setShowDevModal(true);
+    };
 
     const handleGenerateMessage = async (contact: Contact) => {
         setSelectedContact(contact);
@@ -250,14 +201,7 @@ export function NetworkingSearch() {
 
         try {
             const token = await getToken({ template: 'supabase' });
-            const msg = await generateNetworkingMessage(
-                null,
-                company + " " + role,
-                contact.title,
-                company,
-                "cold-outreach",
-                token || undefined
-            );
+            const msg = await generateNetworkingMessage(null, company + " " + role, contact.title, company, "cold-outreach", token || undefined);
             setGeneratedMessage(msg);
         } catch (e) {
             setGeneratedMessage(t('networking.genError') || "Error generating message. Please try again.");
@@ -337,87 +281,133 @@ export function NetworkingSearch() {
                                 </div>
                             </div>
                         </div>
-                        <Button
-                            onClick={() => handleSearch(false)}
-                            disabled={isSearching || (!company && !role && !location)}
-                            className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm"
-                        >
-                            {isSearching ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Search className="h-5 w-5 mr-2" />}
-                            {isSearching ? t('networking.searching') : t('networking.searchBtn')}
-                        </Button>
+
+                        {/* Action Bar: Search + Filters */}
+                        <div className="flex flex-col md:flex-row gap-4 items-center">
+                            <Button
+                                onClick={() => handleSearch(false)}
+                                disabled={isSearching || (!company && !role && !location)}
+                                className="w-full md:w-auto min-w-[150px] h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition-all"
+                            >
+                                {isSearching ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Search className="h-5 w-5 mr-2" />}
+                                {isSearching ? t('networking.searching') : t('networking.searchBtn')}
+                            </Button>
+
+                            <div className="flex flex-wrap gap-2 items-center flex-1 justify-center md:justify-start pt-2 md:pt-0">
+                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Cibler :</span>
+                                <button
+                                    onClick={() => handleStrategyClick('gatekeeper')}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${activeStrategy === 'gatekeeper' ? 'bg-pink-50 border-pink-200 text-pink-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-pink-200 hover:text-pink-600'}`}
+                                >
+                                    <Users className="w-3 h-3" /> RH & Recruteurs
+                                </button>
+                                <button
+                                    onClick={() => handleStrategyClick('peer')}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${activeStrategy === 'peer' ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-600'}`}
+                                >
+                                    <Construction className="w-3 h-3" /> Pairs (Tech/Métier)
+                                </button>
+                                <button
+                                    onClick={() => handleStrategyClick('decision_maker')}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${activeStrategy === 'decision_maker' ? 'bg-purple-50 border-purple-200 text-purple-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:text-purple-600'}`}
+                                >
+                                    <Sparkles className="w-3 h-3" /> Décideurs (Managers)
+                                </button>
+
+                                <div className="h-4 w-px bg-slate-200 mx-1 hidden md:block"></div>
+
+                                <button
+                                    onClick={() => setDateFilter(!dateFilter)}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${dateFilter ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}
+                                >
+                                    {dateFilter ? <Check className="w-3 h-3" /> : null}
+                                    📅 &lt; 1 an
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Results List */}
                         <div className="space-y-4 pt-2">
                             {hasSearched && typedResults.length === 0 && !isSearching ? (
                                 <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                     <p className="text-slate-500">{t('networking.noResults')}</p>
+                                    <p className="text-xs text-slate-400 mt-2">Essayez d'élargir la localisation ou de changer de cible (RH, Pairs...).</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {typedResults.map((contact, idx) => (
-                                        <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col justify-between h-full">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex gap-3 items-start">
-                                                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-lg flex-shrink-0">
-                                                        {contact.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">{contact.name}</h4>
-                                                        <p className="text-sm text-slate-600 line-clamp-2">{contact.title}</p>
-                                                        <a href={contact.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-1">
-                                                            <Linkedin className="h-3 w-3" /> {t('networking.viewProfile')}
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    {typedResults.map((contact, idx) => {
+                                        const badge = getBadgeForTitle(contact.title);
+                                        return (
+                                            <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col justify-between h-full relative overflow-hidden">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex gap-3 items-start w-full">
+                                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-lg flex-shrink-0 border border-slate-200">
+                                                            {contact.name.charAt(0)}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <h4 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors truncate">{contact.name}</h4>
+                                                                {badge && (
+                                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-bold tracking-wider ${badge.color}`}>
+                                                                        {badge.label}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 line-clamp-2 mt-0.5">{contact.title}</p>
+                                                            {/* Snippet validation / cleanup if needed */}
+                                                            <p className="text-xs text-slate-400 line-clamp-1 mt-1">{contact.snippet.replace(/\s\.\.\./g, '')}</p>
 
-                                            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
-                                                <div className="text-sm">
-                                                    {contact.email ? (
-                                                        <div className="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">
-                                                            <Mail className="h-3 w-3" />
-                                                            <span className="font-mono text-xs select-all">{contact.email}</span>
+                                                            <a href={contact.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-2 font-medium">
+                                                                <Linkedin className="h-3 w-3" /> {t('networking.viewProfile')}
+                                                            </a>
                                                         </div>
-                                                    ) : contact.emailStatus === 'loading' ? (
-                                                        <span className="flex items-center text-slate-400 text-xs">
-                                                            <Loader2 className="h-3 w-3 animate-spin mr-1" /> {t('networking.findingEmail')}
-                                                        </span>
-                                                    ) : contact.emailStatus === 'error' ? (
-                                                        <div className="flex items-center gap-1 text-red-500 text-xs font-medium" title={t('networking.emailError')}>
-                                                            <AlertCircle className="h-3 w-3" />
-                                                            <span>
-                                                                {contact.emailErrorType === 'quota' ? t('networking.emailQuota') :
-                                                                    contact.emailErrorType === 'apikey' ? t('networking.emailApiKey') :
-                                                                        t('networking.emailError')}
-                                                            </span>
-                                                        </div>
-                                                    ) : (contact.emailStatus === 'success' && !contact.email) ? (
-                                                        <div className="flex items-center gap-1 text-slate-400 text-xs italic" title="Email introuvable">
-                                                            <Mail className="h-3 w-3 opacity-50" />
-                                                            <span>{t('networking.emailNotFound')}</span>
-                                                        </div>
-                                                    ) : (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleGuessEmail(idx)}
-                                                            className="text-xs text-slate-500 h-7"
-                                                        >
-                                                            {t('networking.findEmail')}
-                                                        </Button>
-                                                    )}
+                                                    </div>
                                                 </div>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-8 text-xs border-slate-200 hover:bg-slate-50"
-                                                    onClick={() => handleGenerateMessage(contact)}
-                                                >
-                                                    {t('networking.draftMessage')}
-                                                </Button>
+
+                                                <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                                                    <div className="text-sm">
+                                                        {contact.email ? (
+                                                            <div className="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">
+                                                                <Mail className="h-3 w-3" />
+                                                                <span className="font-mono text-xs select-all">{contact.email}</span>
+                                                            </div>
+                                                        ) : contact.emailStatus === 'loading' ? (
+                                                            <span className="flex items-center text-slate-400 text-xs">
+                                                                <Loader2 className="h-3 w-3 animate-spin mr-1" /> {t('networking.findingEmail')}
+                                                            </span>
+                                                        ) : contact.emailStatus === 'error' ? (
+                                                            <div className="flex items-center gap-1 text-red-500 text-xs font-medium" title={t('networking.emailError')}>
+                                                                <AlertCircle className="h-3 w-3" />
+                                                                <span>Error</span>
+                                                            </div>
+                                                        ) : (contact.emailStatus === 'success' && !contact.email) ? (
+                                                            <div className="flex items-center gap-1 text-slate-400 text-xs italic">
+                                                                <Mail className="h-3 w-3 opacity-50" />
+                                                                <span>{t('networking.emailNotFound')}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleGuessEmail(idx)}
+                                                                className="text-xs text-slate-500 h-7 px-2 hover:bg-slate-100"
+                                                            >
+                                                                {t('networking.findEmail')}
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-8 text-xs border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200"
+                                                        onClick={() => handleGenerateMessage(contact)}
+                                                    >
+                                                        {t('networking.draftMessage')}
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             )}
                             {isSearching && (

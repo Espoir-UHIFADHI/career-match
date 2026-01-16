@@ -101,22 +101,31 @@ export async function analyzeJobPosting(description: string, language: string, t
   }
 }
 
+export interface NetworkingQueriesResponse {
+  gatekeeper: string[];
+  peer: string[];
+  decision_maker: string[];
+  email_finder?: string[];
+}
+
 export async function generateNetworkingQueries(
   company: string,
   role: string,
   location: string = "",
-  token?: string
-): Promise<{ queries: string[] }> {
-  console.log("🚀 Génération requêtes (Secure Backend)...", { hasToken: !!token });
+  token?: string,
+  language: string = "fr"
+): Promise<NetworkingQueriesResponse> {
+  console.log("🚀 Génération requêtes (Secure Backend)...", { hasToken: !!token, language });
 
   try {
     const responseData = await callBackend('generate-networking-queries', {
       company,
       role,
-      location
+      location,
+      language
     }, token);
 
-    return JSON.parse(responseData.text) as { queries: string[] };
+    return JSON.parse(responseData.text) as NetworkingQueriesResponse;
   } catch (error) {
     console.error("❌ Erreur Requêtes (Secure):", error);
     throw error;

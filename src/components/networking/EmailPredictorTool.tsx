@@ -387,6 +387,30 @@ export function EmailPredictorTool() {
                                 )}
                             </CardContent>
                         </Card>
+                    ) : status === 'error' && error ? (
+                        <Card className="bg-red-50/50 border-red-200 shadow-sm h-full animate-slide-up">
+                            <CardHeader className="border-b border-red-100 pb-4">
+                                <CardTitle className="text-lg text-red-900 flex items-center gap-2">
+                                    <div className="p-2 bg-red-100 rounded-lg">
+                                        <XCircle className="w-5 h-5 text-red-600" />
+                                    </div>
+                                    Error
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6 h-[calc(100%-80px)]">
+                                <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center border border-red-100">
+                                    <AlertCircle className="w-10 h-10 text-red-600" />
+                                </div>
+                                <div className="w-full text-center space-y-2 px-4">
+                                    <h3 className="font-semibold text-red-900">
+                                        An error occurred
+                                    </h3>
+                                    <p className="text-red-600 font-medium">
+                                        {error}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
                     ) : (
                         <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full transition-opacity">
                             <CardHeader className="border-b border-slate-100 pb-4">
@@ -431,13 +455,6 @@ export function EmailPredictorTool() {
                     )}
                 </div>
             </div>
-
-            {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 flex items-center gap-3 shadow-sm max-w-2xl mx-auto">
-                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                    <p className="text-sm font-medium">{error}</p>
-                </div>
-            )}
 
 
             <InsufficientCreditsModal

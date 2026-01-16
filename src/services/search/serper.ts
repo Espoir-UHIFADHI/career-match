@@ -9,8 +9,8 @@ export interface SearchResult {
     imageUrl?: string; // Optional
 }
 
-export async function searchGoogle(query: string, num: number = 10, start: number = 0, token?: string): Promise<SearchResult[]> {
-    console.log("🚀 Serper Search (Secure Backend)...", { query, hasToken: !!token });
+export async function searchGoogle(query: string, num: number = 10, start: number = 0, token?: string, dateFilter: boolean = false, language: string = 'fr'): Promise<SearchResult[]> {
+    console.log("🚀 Serper Search (Secure Backend)...", { query, hasToken: !!token, language });
 
     // Use authenticated client if token is available, otherwise fall back to anonymous (which will likely fail per RLS/Function policies, but valid fallback)
     const client = token ? createClerkSupabaseClient(token) : supabase;
@@ -18,7 +18,7 @@ export async function searchGoogle(query: string, num: number = 10, start: numbe
     const { data: result, error } = await client.functions.invoke('career-match-api', {
         body: {
             action: 'serper-search',
-            payload: { q: query, num, start }
+            payload: { q: query, num, start, tbs: dateFilter ? 'qdr:y' : undefined, language }
         }
     });
 

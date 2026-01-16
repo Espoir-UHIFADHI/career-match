@@ -37,6 +37,13 @@ export function CVUpload() {
 
             console.log("Parsed Data:", parsedData);
 
+            // PRESERVATION DU LINKEDIN : Si l'IA n'a pas trouvé le LinkedIn mais qu'il était déjà là (ex: rentré manuellement avant), on le garde.
+            const existingCvData = useAppStore.getState().cvData;
+            if (!parsedData.contact.linkedin && existingCvData?.contact?.linkedin) {
+                console.log("Restoring existing LinkedIn:", existingCvData.contact.linkedin);
+                parsedData.contact.linkedin = existingCvData.contact.linkedin;
+            }
+
             // Toujours afficher l'écran de révision, même si certaines données manquent
             // L'utilisateur pourra compléter les informations manquantes
             setTempCvData(parsedData as ParsedCV);
