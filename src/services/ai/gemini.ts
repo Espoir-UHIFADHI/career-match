@@ -102,10 +102,13 @@ export async function analyzeJobPosting(description: string, language: string, t
 }
 
 export interface NetworkingQueriesResponse {
-  gatekeeper: string[];
-  peer: string[];
-  decision_maker: string[];
-  email_finder?: string[];
+  role_synonyms: string[];
+  keywords: {
+    gatekeeper: string;
+    peer: string;
+    decision_maker: string;
+    email_finder?: string;
+  };
 }
 
 export async function generateNetworkingQueries(

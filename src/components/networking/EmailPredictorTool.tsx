@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, type VerificationResponse } from "../../services/emailService";
+import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, findEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
@@ -85,32 +85,51 @@ export function EmailPredictorTool() {
             if (!domain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
 
             // 2. Get pattern
-            const pattern = await getEmailPattern(domain, token || undefined);
-            if (!pattern) throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
+            let pattern = await getEmailPattern(domain, token || undefined);
 
             // 3. Find or Generate email
             let email: string | undefined;
             let score: number | undefined;
             let source: 'finder' | 'pattern' | 'cache' = 'pattern';
 
-            if (firstName && lastName) {
-                // 1. Check Cache first (Free for us)
-                const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
-
-                if (cached) {
-                    email = cached.email;
-                    score = cached.score;
-                    source = 'cache';
+            // FALLBACK STRATEGY: If pattern not found, try deep search if names are present
+            if (!pattern) {
+                if (firstName && lastName) {
+                    console.log("Pattern not found, trying deep search...");
+                    const deepResult = await findEmail(firstName, lastName, domain, token || undefined);
+                    if (deepResult && deepResult.email) {
+                        email = deepResult.email;
+                        score = deepResult.score;
+                        source = 'finder'; // It was found by Hunter directly
+                        // We can't infer pattern reliably from one email, so leave it null
+                    } else {
+                        // Truly failed
+                        throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
+                    }
                 } else {
-                    // 2. Generate Pattern Suggestion (No API call yet)
-                    const generated = generateEmail(firstName, lastName, pattern, domain);
-                    email = generated || undefined;
-                    source = 'pattern';
+                    throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
+                }
+            } else {
+                // Standard flow: We have a pattern
+                if (firstName && lastName) {
+                    // 1. Check Cache first (Free for us)
+                    const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
+
+                    if (cached) {
+                        email = cached.email;
+                        score = cached.score;
+                        source = 'cache';
+                    } else {
+                        // 2. Generate Pattern Suggestion (No API call yet)
+                        const generated = generateEmail(firstName, lastName, pattern!, domain);
+                        email = generated || undefined;
+                        source = 'pattern';
+                    }
                 }
             }
 
             setEmailPredictorState({
-                result: { email, domain, pattern, score, source }
+                result: { email, domain, pattern: pattern || "", score, source }
             });
             // Deduct Credit AFTER success - Only if we found something useful (pattern or email)
             if (email || pattern) {
@@ -146,31 +165,22 @@ export function EmailPredictorTool() {
     const handleVerify = async () => {
         if (!result?.email) return;
 
-        // COST SAVING: If we have a pattern, we trust it (as per user request)
-        if (result.source === 'pattern') {
-            setVerificationResult({
-                status: 'valid',
-                score: 95, // High confidence because pattern is certified
-                result: 'deliverable',
-                email: result.email,
-                regexp: true,
-                gibberish: false,
-                disposable: false,
-                webmail: false,
-                mx_records: true,
-                smtp_server: true,
-                smtp_check: true,
-                accept_all: false,
-                block: false,
-                sources: []
-            });
-            setVerificationStatus('verified');
-            return;
+
+
+
+        // Get token for secure call
+        let token: string | null = null;
+        try {
+            if (isSignedIn) {
+                token = await getToken({ template: 'supabase', skipCache: true });
+            }
+        } catch (e) {
+            console.error("Error getting token for verification:", e);
         }
 
         setVerificationStatus('verifying');
         try {
-            const data = await verifyEmail(result.email);
+            const data = await verifyEmail(result.email, token || undefined);
             if (data) {
                 setVerificationResult(data);
                 setVerificationStatus('verified');
@@ -368,7 +378,23 @@ export function EmailPredictorTool() {
                                                         <Loader2 className="h-3 w-3 animate-spin" /> {t('emailPredictor.verifying')}
                                                     </div>
                                                 )}
-                                                {verificationStatus !== 'idle' && verificationStatus !== 'verifying' && getVerificationBadge()}
+                                                {verificationStatus === 'error' && (
+                                                    <div className="flex flex-col items-center gap-2 w-full animate-fade-in">
+                                                        <div className="text-red-500 text-sm flex items-center gap-1 font-medium bg-red-50 px-3 py-1 rounded-full border border-red-100">
+                                                            <AlertCircle className="w-3.5 h-3.5" />
+                                                            {t('emailPredictor.errors.verificationFailed') || "Vérification échouée"}
+                                                        </div>
+                                                        <Button
+                                                            onClick={handleVerify}
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 h-8 font-medium"
+                                                        >
+                                                            {t('common.retry') || "Réessayer"}
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                                {verificationStatus !== 'idle' && verificationStatus !== 'verifying' && verificationStatus !== 'error' && getVerificationBadge()}
                                             </div>
                                         )}
                                     </>

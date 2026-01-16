@@ -171,9 +171,9 @@ export interface VerificationResponse {
     };
 }
 
-export async function verifyEmail(email: string): Promise<VerificationResponse['data'] | null> {
+export async function verifyEmail(email: string, token?: string): Promise<VerificationResponse['data'] | null> {
     try {
-        const data: VerificationResponse = await callBackend('hunter-email-verifier', { email });
+        const data: VerificationResponse = await callBackend('hunter-email-verifier', { email }, token);
         return data.data;
     } catch (error) {
         console.error("Error verifying email (Backend):", error);

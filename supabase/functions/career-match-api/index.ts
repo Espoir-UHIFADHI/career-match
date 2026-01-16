@@ -415,39 +415,39 @@ export async function handleGenerateNetworkingQueries(payload: any) {
     const isFrench = language === 'fr';
 
     const prompt = `
-  Rôle : Expert en recherche LinkedIn et "Google Dorking" pour le recrutement.
-  Action : Génère des requêtes de recherche Google ultra-précises pour trouver des profils sur LinkedIn.
+  Rôle : Expert en recherche LinkedIn et "Google Dorking".
+  Objectif : Fournir les **briques de recherche** pour construire une requête booléenne précise.
   
-  Paramètres :
-  - Entreprise : ${company || "Non spécifié"}
-  - Rôle visé par le candidat : ${role || "Non spécifié"}
-  - Localisation : ${location || "Non spécifié"}
-  - Langue cible pour les titres : ${isFrench ? 'FRANÇAIS' : 'ANGLAIS'}
+  Contexte :
+  - Entreprise cible : ${company || "Non spécifié"}
+  - Rôle recherché par l'utilisateur : ${role || "Non spécifié"} (Le candidat cherche ce poste OU cherche des gens ayant ce poste).
+  - Langue : ${isFrench ? 'FRANÇAIS' : 'ANGLAIS'}
   
-  Stratégie :
-  Tu dois générer 4 types de listes de requêtes (Personas) pour maximiser les chances de contact :
-  1. "gatekeeper" : RH, Recruteurs, Talent Acquisition (ceux qui filtrent).
-  2. "peer" : Les futurs collègues (même métier que le candidat).
-  3. "decision_maker" : Les chefs, Managers, Lead, CTO, VP (ceux qui décident).
-  4. "email_finder" : Recherche de profils ayant potentiellement leur email public dans leur bio (Ex: "@entreprise.com").
+  TA MISSION :
+  1. Analyser le "Rôle recherché" et trouver 2-3 synonymes pertinents (ex: "Sales" -> "Business Developer", "Account Executive").
+  2. Générer les **opérateurs booléens** pour cibler les personas suivants (SANS inclure l'entreprise ni le lieu, juste les titres) :
+     - "gatekeeper" : RH, Recruteurs (ex: (intitle:RH OR intitle:Recruiter ...))
+     - "peer" : Des pairs qui font le MEME métier que le "Rôle recherché" (ex: si rôle=Dev, (intitle:Développeur OR intitle:Ingénieur))
+     - "decision_maker" : Les N+1 potentiels (Managers, Head of, VP, CTO...) liés au "Rôle recherché".
+     - "email_finder" : Mots clés pour trouver des emails (ex: "@${company ? company.replace(/\s+/g, '').toLowerCase() : 'email'}.com" OR "email" OR "contact")
 
-  Règles STRICTES de Dorking :
-  - Utilise TOUJOURS : site:linkedin.com/in/
-  - Exclus TOUJOURS les offres d'emploi : -intitle:jobs -intitle:offre -inurl:jobs
-  - Utilise l'opérateur OR entre parenthèses pour les synonymes de titres. Ex: ("Recruteur" OR "Talent Acquisition" OR "RH")
-  - Si une localisation est fournie, inclus-la.
-  - IMPORTANT : ADAPTE LES TITRES À LA LANGUE (${isFrench ? 'Recruteur, DRH' : 'Recruiter, HR Manager'}).
-  
+  RÈGLES DORKING :
+  - Utilise TOUJOURS des parenthèses groupantes.
+  - Utilise l'opérateur OR.
+  - NE METS PAS "site:linkedin.com". Ça sera ajouté par le code.
+  - NE METS PAS l'Entreprise ni la Localisation. Ça sera ajouté par le code.
+  - Les synonymes doivent être des chaînes simples.
+
   Structure JSON attendue STRICTEMENT :
   {
-    "gatekeeper": ["query1", "query2"],
-    "peer": ["query1", "query2"],
-    "decision_maker": ["query1", "query2"],
-    "email_finder": ["query1"]
+    "role_synonyms": ["Synonyme1", "Synonyme2"],
+    "keywords": {
+      "gatekeeper": "(intitle:Daide OR intitle:...",
+      "peer": "(intitle:SynonymeRole1 OR intitle:...",
+      "decision_maker": "(intitle:Manager OR intitle:Head ...)",
+      "email_finder": "(\"@domain.com\" OR ...)"
+    }
   }
-  
-  Exemple de logique pour "email_finder" si Entreprise="Stripe" :
-  "site:linkedin.com/in/ Stripe \"@stripe.com\" -intitle:jobs"
   `;
 
     const body = {

@@ -317,6 +317,7 @@ export const translations = {
             searching: "Searching...",
             noResults: "No results found. Try broader terms.",
             viewProfile: "View Profile",
+            downloadList: "Download List",
             findEmail: "Find Email (1 credit)",
             findingEmail: "Finding email...",
             draftMessage: "Draft Message",
@@ -345,7 +346,9 @@ export const translations = {
             },
             opportunities: "Networking Opportunities",
             connectPrompt: "Connect with people at {company} to increase your chances.",
-            noProfiles: "No direct profiles found. Try searching LinkedIn manually for \"{company} {title}\"."
+            noProfiles: "No direct profiles found. Try searching LinkedIn manually for \"{company} {title}\".",
+            dateFilter: "Recent (< 1 year)",
+            hiringFilter: "🔥 Hiring Now"
         },
         emailPredictor: {
             title: "Email Predictor",
@@ -357,7 +360,7 @@ export const translations = {
             lastNamePlaceholder: "e.g. Dupont",
             companyPlaceholder: "e.g. Google",
             analyzePatterns: "Analyzing Patterns...",
-            findEmail: "Find Email",
+            findEmail: "Find Email (1 credit)",
             findPattern: "Find Pattern (1 credit)",
             signIn: "Sign in to use tool",
             result: "Result",
@@ -942,6 +945,7 @@ export const translations = {
             searching: "Recherche...",
             noResults: "Aucun résultat trouvé. Essayez des termes plus larges.",
             viewProfile: "Voir Profil",
+            downloadList: "Télécharger la liste",
             findEmail: "Trouver Email (1 crédit)",
             findingEmail: "Recherche email...",
             draftMessage: "Rédiger Message",
@@ -968,9 +972,11 @@ export const translations = {
                 note: "Cette option sera activée très prochainement.",
                 button: "Compris, merci !"
             },
-            opportunities: "Opportunités de Réseautage",
-            connectPrompt: "Connectez-vous avec des personnes chez {company} pour augmenter vos chances.",
-            noProfiles: "Aucun profil direct trouvé. Essayez de chercher manuellement sur LinkedIn pour \"{company} {title}\"."
+            opportunities: "Opportunités Réseautage",
+            connectPrompt: "Connectez-vous avec des employés chez {company} pour augmenter vos chances.",
+            noProfiles: "Aucun profil direct trouvé. Essayez de chercher manuellement sur LinkedIn pour \"{company} {title}\".",
+            dateFilter: "Récents (< 1 an)",
+            hiringFilter: "🔥 Recrute Actuellement"
         },
         emailPredictor: {
             title: "Email Finder",
@@ -982,7 +988,7 @@ export const translations = {
             companyName: "Nom de l'entreprise",
             companyPlaceholder: "ex: Google",
             analyzePatterns: "Analyse en cours...",
-            findEmail: "Trouver Email",
+            findEmail: "Trouver Email (1 crédit)",
             findPattern: "Trouver Email (1 crédit)",
             signIn: "Connectez-vous pour utiliser",
             result: "Résultat",

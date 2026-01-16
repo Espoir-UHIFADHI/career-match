@@ -1,19 +1,20 @@
 import { useState } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import { useUserStore } from "../../store/useUserStore";
-import { Search, Loader2, User, Linkedin, Mail, Copy, Check, Sparkles, Building2, AlertCircle, Construction, MapPin, Users } from "lucide-react";
+import { Search, Loader2, User, Linkedin, Copy, Check, Sparkles, Building2, AlertCircle, Construction, MapPin, Users, Download, Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
 import { searchGoogle } from "../../services/search/serper";
 // import { findCompanyDomain, getEmailPattern, findEmail, cleanName, generateEmail } from "../../services/emailService";
-import { generateNetworkingQueries, generateNetworkingMessage } from "../../services/ai/gemini";
+import { generateNetworkingQueries, generateNetworkingMessage, type NetworkingQueriesResponse } from "../../services/ai/gemini";
 import { NetworkingGuide } from "./NetworkingGuide";
 import { Modal } from "../ui/Modal";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { downloadAsExcel } from "../../utils/excelExport";
 
 interface Contact {
     name: string;
@@ -30,13 +31,14 @@ interface Contact {
 
 
 // Persona / Strategy Types
+// Persona / Strategy Types
 type SearchStrategy = 'gatekeeper' | 'peer' | 'decision_maker';
 
 // Badge Helpers
 const getBadgeForTitle = (title: string) => {
     const t = title.toLowerCase();
-    if (t.includes('senior') || t.includes('principal') || t.includes('staff') || t.includes('lead')) return { label: 'Senior', color: 'bg-amber-100 text-amber-700 border-amber-200' };
-    if (t.includes('head') || t.includes('director') || t.includes('vp') || t.includes('chief') || t.includes('manager')) return { label: 'Decision Maker', color: 'bg-purple-100 text-purple-700 border-purple-200' };
+    if (t.includes('founder') || t.includes('ceo') || t.includes('cto') || t.includes('vp') || t.includes('directeur général') || t.includes('head') || t.includes('director') || t.includes('manager') || t.includes('lead')) return { label: 'Decision Maker', color: 'bg-purple-100 text-purple-700 border-purple-200' };
+    if (t.includes('senior') || t.includes('principal') || t.includes('staff')) return { label: 'Senior', color: 'bg-amber-100 text-amber-700 border-amber-200' };
     if (t.includes('recruiter') || t.includes('talent') || t.includes('rh') || t.includes('hr')) return { label: 'Recrutement', color: 'bg-pink-100 text-pink-700 border-pink-200' };
     return null;
 };
@@ -52,13 +54,15 @@ export function NetworkingSearch() {
     // Local UI state
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [showDevModal, setShowDevModal] = useState(false);
+    // const [showDevModal, setShowDevModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
 
     // Advanced Search State
     const [activeStrategy, setActiveStrategy] = useState<SearchStrategy>('gatekeeper');
-    const [personaQueries, setPersonaQueries] = useState<{ [key in SearchStrategy]?: string[] }>({});
+    const [hiringFilter, setHiringFilter] = useState(false);
+    // const [personaQueries, setPersonaQueries] = useState<{ [key in SearchStrategy]?: string[] }>({}); // Removed in favor of structured data
+    const [aiSearchData, setAiSearchData] = useState<NetworkingQueriesResponse | null>(null);
     const [dateFilter, setDateFilter] = useState(false);
 
     // Ensure results is treated as typed array even if store has any[]
@@ -75,10 +79,13 @@ export function NetworkingSearch() {
     const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
-    const handleSearch = async (isLoadMore = false, strategyOverride?: SearchStrategy) => {
+    const handleSearch = async (isLoadMore = false, strategyOverride?: SearchStrategy, filtersOverride?: { hiring?: boolean, date?: boolean }) => {
         if (!company && !role && !location) return;
 
         const strategyToUse = strategyOverride || activeStrategy;
+        const hiringToUse = filtersOverride?.hiring !== undefined ? filtersOverride.hiring : hiringFilter;
+        const dateToUse = filtersOverride?.date !== undefined ? filtersOverride.date : dateFilter;
+
         if (strategyOverride) setActiveStrategy(strategyOverride);
 
         if (!isSignedIn || !user) {
@@ -103,47 +110,84 @@ export function NetworkingSearch() {
         try {
             const token = await getToken({ template: 'supabase' });
 
-            // 1. Generate Queries if needed (only on first search or if criteria changed)
-            // We store them in state to reuse when switching tabs
-            let currentPersonaQueries = personaQueries;
+            // 1. Generate Query Parts if needed (only on first search or if fresh search)
+            let currentAiData = aiSearchData;
 
-            // If we don't have queries OR if this is a fresh search (not load more), we regenerate
-            // Optimization: We could check if company/role changed, but for now let's assume "rechercher" means new params
-            if (!isLoadMore && (!currentPersonaQueries[strategyToUse] || currentPersonaQueries[strategyToUse]?.length === 0)) {
+            if (!isLoadMore && !currentAiData) {
                 try {
                     // Pass language to generate queries in the correct language
                     const response = await generateNetworkingQueries(company, role, location, token || undefined, language);
-                    if (response) {
-                        currentPersonaQueries = {
-                            gatekeeper: response.gatekeeper || [],
-                            peer: response.peer || [],
-                            decision_maker: response.decision_maker || []
+
+                    if (response && response.keywords) {
+                        // New Backend Format
+                        currentAiData = response;
+                    } else {
+                        // Old Backend Format (or error) -> Fallback to client-side heuristics
+                        console.warn("Backend returned legacy format or invalid data. Using strict fallback.");
+                        currentAiData = {
+                            role_synonyms: [],
+                            keywords: {
+                                gatekeeper: '(intitle:RH OR intitle:Recruteur OR intitle:"Talent Acquisition" OR intitle:"Human Resources")',
+                                peer: role ? `(intitle:"${role.trim()}")` : '',
+                                decision_maker: '(intitle:Manager OR intitle:Head OR intitle:Director OR intitle:VP OR intitle:Chief OR intitle:CEO OR intitle:Founder)',
+                                email_finder: '("email" OR "contact" OR "@")'
+                            }
                         };
-                        setPersonaQueries(currentPersonaQueries);
                     }
+                    setAiSearchData(currentAiData);
                 } catch (e) {
                     console.warn("Gemini query generation failed, using fallback", e);
                     // Fallback logic
-                    const fallbackQuery = `site:linkedin.com/in/ ${role} ${company} ${location || ''}`.trim();
-                    currentPersonaQueries = {
-                        gatekeeper: [fallbackQuery],
-                        peer: [fallbackQuery],
-                        decision_maker: [fallbackQuery]
+                    currentAiData = {
+                        role_synonyms: [],
+                        keywords: {
+                            gatekeeper: '(intitle:RH OR intitle:Recruteur OR intitle:"Talent Acquisition")',
+                            peer: `(intitle:"${role}")`,
+                            decision_maker: '(intitle:Manager OR intitle:Head OR intitle:Director)',
+                            email_finder: '("email" OR "contact")'
+                        }
                     };
-                    setPersonaQueries(currentPersonaQueries);
+                    setAiSearchData(currentAiData);
                 }
             }
 
-            // 2. Select Query based on Strategy
-            const queries = currentPersonaQueries[strategyToUse] || [];
-            // Use the first query for now, or randomize? First is usually best from AI
-            const queryToUse = queries[0] || `site:linkedin.com/in/ ${company} ${role}`;
+            // 2. Strict Query Construction
+            const baseQuery = `site:linkedin.com/in/`;
+
+            // Scope (Company "AND" Location) - STRICT
+            const scopeParts = [];
+            if (company) scopeParts.push(`"${company.trim()}"`);
+            if (location) scopeParts.push(`"${location.trim()}"`);
+
+            // Role (User Input "OR" Synonyms)
+            let rolePart = "";
+            if (role) {
+                const synonyms = currentAiData?.role_synonyms || [];
+                // Filter out synonyms that are identical to role to avoid dupes
+                const uniqueSynonyms = synonyms.filter(s => s.toLowerCase() !== role.toLowerCase());
+                const allRoles = [`"${role.trim()}"`, ...uniqueSynonyms.map(s => `"${s}"`)];
+                rolePart = `(${allRoles.join(" OR ")})`;
+            }
+
+            // Strategy Keywords (Persona)
+            const keywordPart = currentAiData?.keywords[strategyToUse] || "";
+
+            // Hiring Filter
+            const hiringPart = hiringToUse ? `(intitle:hiring OR "recrute" OR "#hiring")` : "";
+
+            // Construct Final Query
+            // We use exclusion operators to clean up results
+            const cleanUp = `-intitle:jobs -intitle:offre -inurl:jobs`;
+
+            const queryToUse = `${baseQuery} ${scopeParts.join(" ")} ${rolePart} ${keywordPart} ${hiringPart} ${cleanUp}`.trim();
+
+            console.log("🔒 Strict Networking Search Query:", queryToUse);
 
             // 3. Execution
             const startOffset = isLoadMore ? typedResults.length : 0;
 
             // Pass dateFilter and language to serper
-            const searchResults = await searchGoogle(queryToUse, 10, startOffset, token || undefined, dateFilter, language);
+            const searchResults = await searchGoogle(queryToUse, 10, startOffset, token || undefined, dateToUse, language);
 
             const newContacts: Contact[] = searchResults.map(((r: any) => ({
                 name: r.title.split('|')[0].split('-')[0].trim(),
@@ -189,9 +233,21 @@ export function NetworkingSearch() {
         handleSearch(false, s);
     };
 
-    const handleGuessEmail = async (_contactIndex: number) => {
-        setShowDevModal(true);
+    const handleHiringToggle = () => {
+        const newVal = !hiringFilter;
+        setHiringFilter(newVal);
+        handleSearch(false, undefined, { hiring: newVal });
     };
+
+    const handleDateToggle = () => {
+        const newVal = !dateFilter;
+        setDateFilter(newVal);
+        handleSearch(false, undefined, { date: newVal });
+    };
+
+    // const handleGuessEmail = async (_contactIndex: number) => {
+    //     setShowDevModal(true);
+    // };
 
     const handleGenerateMessage = async (contact: Contact) => {
         setSelectedContact(contact);
@@ -214,6 +270,31 @@ export function NetworkingSearch() {
         navigator.clipboard.writeText(generatedMessage);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
+    };
+
+    const handleDownloadExcel = () => {
+        if (!typedResults || typedResults.length === 0) return;
+
+        const dataToExport = typedResults.map(contact => {
+            // Smart Name Split (Basic heuristic: First word = First Name, Rest = Last Name)
+            const nameParts = contact.name.trim().split(' ');
+            const firstName = nameParts[0] || "";
+            const lastName = nameParts.slice(1).join(' ') || "";
+
+            return {
+                "Prénom": firstName,
+                "Nom": lastName,
+                "Titre (Job)": contact.title,
+                "Entreprise Visée": company || "Non spécifié",
+                "Stratégie": activeStrategy === 'gatekeeper' ? 'RH/Recruteur' : activeStrategy === 'peer' ? 'Pair' : 'Décideur',
+                "Lien LinkedIn": contact.link,
+                "Email": contact.email || "",
+                "Statut Contact": "", // Empty for CRM use
+                "Note": "",           // Empty for CRM use
+            };
+        });
+
+        downloadAsExcel(dataToExport, `Networking_${company || 'Search'}_${new Date().toISOString().split('T')[0]}`);
     };
 
     return (
@@ -311,17 +392,25 @@ export function NetworkingSearch() {
                                     onClick={() => handleStrategyClick('decision_maker')}
                                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${activeStrategy === 'decision_maker' ? 'bg-purple-50 border-purple-200 text-purple-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-purple-200 hover:text-purple-600'}`}
                                 >
-                                    <Sparkles className="w-3 h-3" /> Décideurs (Managers)
+                                    <Sparkles className="w-3 h-3" /> Décideurs & Direction
                                 </button>
 
-                                <div className="h-4 w-px bg-slate-200 mx-1 hidden md:block"></div>
+                                <div className="h-4 w-px bg-slate-200 mx-2 hidden md:block"></div>
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider hidden md:block">Filtres :</span>
 
                                 <button
-                                    onClick={() => setDateFilter(!dateFilter)}
+                                    onClick={handleHiringToggle}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${hiringFilter ? 'bg-orange-50 border-orange-200 text-orange-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-orange-200 hover:text-orange-600'}`}
+                                >
+                                    <Megaphone className="w-3 h-3" /> {t('networking.hiringFilter')}
+                                </button>
+
+                                <button
+                                    onClick={handleDateToggle}
                                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex items-center gap-1.5 ${dateFilter ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}
                                 >
                                     {dateFilter ? <Check className="w-3 h-3" /> : null}
-                                    📅 &lt; 1 an
+                                    {t('networking.dateFilter')}
                                 </button>
                             </div>
                         </div>
@@ -334,81 +423,104 @@ export function NetworkingSearch() {
                                     <p className="text-xs text-slate-400 mt-2">Essayez d'élargir la localisation ou de changer de cible (RH, Pairs...).</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {typedResults.map((contact, idx) => {
-                                        const badge = getBadgeForTitle(contact.title);
-                                        return (
-                                            <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col justify-between h-full relative overflow-hidden">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex gap-3 items-start w-full">
-                                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-lg flex-shrink-0 border border-slate-200">
-                                                            {contact.name.charAt(0)}
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <h4 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors truncate">{contact.name}</h4>
-                                                                {badge && (
-                                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-bold tracking-wider ${badge.color}`}>
-                                                                        {badge.label}
-                                                                    </span>
-                                                                )}
+                                <>
+                                    <div className="flex justify-end mb-4">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleDownloadExcel}
+                                            className="flex items-center gap-2 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                                        >
+                                            <Download className="h-4 w-4" />
+                                            {t('networking.downloadList') || "Télécharger la liste"}
+                                        </Button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {typedResults.map((contact, idx) => {
+                                            const badge = getBadgeForTitle(contact.title);
+                                            return (
+                                                <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col justify-between h-full relative overflow-hidden">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex gap-3 items-start w-full">
+                                                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-lg flex-shrink-0 border border-slate-200">
+                                                                {contact.name.charAt(0)}
                                                             </div>
-                                                            <p className="text-sm text-slate-600 line-clamp-2 mt-0.5">{contact.title}</p>
-                                                            {/* Snippet validation / cleanup if needed */}
-                                                            <p className="text-xs text-slate-400 line-clamp-1 mt-1">{contact.snippet.replace(/\s\.\.\./g, '')}</p>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <h4 className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors truncate">{contact.name}</h4>
+                                                                    {badge && (
+                                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-bold tracking-wider ${badge.color}`}>
+                                                                            {badge.label}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 line-clamp-2 mt-0.5">{contact.title}</p>
+                                                                {/* Snippet validation / cleanup if needed */}
+                                                                <p className="text-xs text-slate-400 line-clamp-1 mt-1">{contact.snippet.replace(/\s\.\.\./g, '')}</p>
 
-                                                            <a href={contact.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-2 font-medium">
-                                                                <Linkedin className="h-3 w-3" /> {t('networking.viewProfile')}
-                                                            </a>
+                                                                <a href={contact.link} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-2 font-medium">
+                                                                    <Linkedin className="h-3 w-3" /> {t('networking.viewProfile')}
+                                                                </a>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
-                                                    <div className="text-sm">
-                                                        {contact.email ? (
-                                                            <div className="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">
-                                                                <Mail className="h-3 w-3" />
-                                                                <span className="font-mono text-xs select-all">{contact.email}</span>
-                                                            </div>
-                                                        ) : contact.emailStatus === 'loading' ? (
-                                                            <span className="flex items-center text-slate-400 text-xs">
-                                                                <Loader2 className="h-3 w-3 animate-spin mr-1" /> {t('networking.findingEmail')}
-                                                            </span>
-                                                        ) : contact.emailStatus === 'error' ? (
-                                                            <div className="flex items-center gap-1 text-red-500 text-xs font-medium" title={t('networking.emailError')}>
-                                                                <AlertCircle className="h-3 w-3" />
-                                                                <span>Error</span>
-                                                            </div>
-                                                        ) : (contact.emailStatus === 'success' && !contact.email) ? (
-                                                            <div className="flex items-center gap-1 text-slate-400 text-xs italic">
-                                                                <Mail className="h-3 w-3 opacity-50" />
-                                                                <span>{t('networking.emailNotFound')}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => handleGuessEmail(idx)}
-                                                                className="text-xs text-slate-500 h-7 px-2 hover:bg-slate-100"
-                                                            >
-                                                                {t('networking.findEmail')}
-                                                            </Button>
-                                                        )}
+                                                    {/* <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                                                        <div className="text-sm">
+                                                            {contact.email ? (
+                                                                <div className="flex items-center gap-2 bg-emerald-50 px-2 py-1 rounded text-emerald-700 border border-emerald-100">
+                                                                    <Mail className="h-3 w-3" />
+                                                                    <span className="font-mono text-xs select-all">{contact.email}</span>
+                                                                </div>
+                                                            ) : contact.emailStatus === 'loading' ? (
+                                                                <span className="flex items-center text-slate-400 text-xs">
+                                                                    <Loader2 className="h-3 w-3 animate-spin mr-1" /> {t('networking.findingEmail')}
+                                                                </span>
+                                                            ) : contact.emailStatus === 'error' ? (
+                                                                <div className="flex items-center gap-1 text-red-500 text-xs font-medium" title={t('networking.emailError')}>
+                                                                    <AlertCircle className="h-3 w-3" />
+                                                                    <span>Error</span>
+                                                                </div>
+                                                            ) : (contact.emailStatus === 'success' && !contact.email) ? (
+                                                                <div className="flex items-center gap-1 text-slate-400 text-xs italic">
+                                                                    <Mail className="h-3 w-3 opacity-50" />
+                                                                    <span>{t('networking.emailNotFound')}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleGuessEmail(idx)}
+                                                                    className="text-xs text-slate-500 h-7 px-2 hover:bg-slate-100"
+                                                                >
+                                                                    {t('networking.findEmail')}
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-8 text-xs border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200"
+                                                            onClick={() => handleGenerateMessage(contact)}
+                                                        >
+                                                            {t('networking.draftMessage')}
+                                                        </Button>
+                                                    </div> */}
+                                                    <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end items-center">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-8 text-xs border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200"
+                                                            onClick={() => handleGenerateMessage(contact)}
+                                                        >
+                                                            {t('networking.draftMessage')}
+                                                        </Button>
                                                     </div>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-8 text-xs border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200"
-                                                        onClick={() => handleGenerateMessage(contact)}
-                                                    >
-                                                        {t('networking.draftMessage')}
-                                                    </Button>
                                                 </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </>
                             )}
                             {isSearching && (
                                 <div className="space-y-3">
@@ -500,7 +612,7 @@ export function NetworkingSearch() {
             )}
 
             {/* Development Modal */}
-            <Modal
+            {/* <Modal
                 isOpen={showDevModal}
                 onClose={() => setShowDevModal(false)}
                 title=""
@@ -527,7 +639,7 @@ export function NetworkingSearch() {
                         {t('networking.comingSoon.button')}
                     </Button>
                 </div>
-            </Modal>
+            </Modal> */}
         </div>
     );
 }
