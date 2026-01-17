@@ -25,6 +25,7 @@ function ScrollToTop() {
 
 import { About } from "./components/pages/About";
 import { Blog } from "./components/pages/Blog";
+import { BlogPost } from "./components/pages/BlogPost";
 
 // ... existing imports
 
@@ -42,6 +43,7 @@ function AppRoutes() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,4 +1,4 @@
-import { useLanguageStore } from '../store/useLanguageStore';
+import { useAppStore } from '../store/useAppStore';
 import { translations } from '../i18n/translations';
 
 // Helper to get nested properties
@@ -7,12 +7,21 @@ const getNestedValue = (obj: any, path: string) => {
 };
 
 export function useTranslation() {
-    const { language, setLanguage } = useLanguageStore();
+    // Usage of useAppStore instead of independent useLanguageStore
+    const { language: appLanguage, setLanguage: setAppLanguage } = useAppStore();
+
+    // Mapping between "English"/"French" and "en"/"fr"
+    const languageCode = appLanguage === "English" ? "en" : "fr";
+
+    const setLanguage = (lang: "en" | "fr") => {
+        const fullLang = lang === "en" ? "English" : "French";
+        setAppLanguage(fullLang);
+    };
 
     const t = (key: string, params?: Record<string, string | number>) => {
-        let translation = getNestedValue(translations[language], key);
+        let translation = getNestedValue(translations[languageCode], key);
         if (!translation) {
-            console.warn(`Translation missing for key: ${key} in language: ${language}`);
+            console.warn(`Translation missing for key: ${key} in language: ${languageCode}`);
             return key;
         }
 
@@ -24,5 +33,6 @@ export function useTranslation() {
         return translation;
     };
 
-    return { t, language, setLanguage };
+    return { t, language: languageCode, setLanguage };
 }
+

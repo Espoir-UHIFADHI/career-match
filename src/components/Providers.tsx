@@ -1,5 +1,5 @@
 import { ClerkProvider } from '@clerk/clerk-react';
-import { useLanguageStore } from '../store/useLanguageStore';
+import { useAppStore } from '../store/useAppStore';
 import { enUS, frFR } from '@clerk/localizations';
 
 // Import your publishable key
@@ -28,11 +28,11 @@ const frLocalization = {
 };
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const { language } = useLanguageStore();
+    const { language } = useAppStore();
 
-    // Default to enUS if language is 'en' or anything else
-    // Use custom frLocalization only for 'fr'
-    const localization = language === 'fr' ? frLocalization : enUS;
+    // Default to enUS if language is 'English' or anything else
+    // Use custom frLocalization only for 'French'
+    const localization = language === 'French' ? frLocalization : enUS;
 
     return (
         <ClerkProvider localization={localization} publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
