@@ -284,8 +284,10 @@ export function MatchingDashboard() {
 
     if (!analysisResults) return null;
 
-    const { score, analysis, recommendations } = analysisResults;
+    const { score } = analysisResults;
     const isLowMatch = score < 45 || !analysisResults.optimizedCV;
+
+    if (!displayContent) return null;
 
 
 
