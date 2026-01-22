@@ -30,6 +30,25 @@ export function MatchingDashboard() {
     const [showPreview, setShowPreview] = useState(false);
     const printRef = useRef<HTMLDivElement>(null);
 
+    // Multilingual Content Selection - MOVED UP TO FIX REACT ERROR #310
+    const displayContent = useMemo(() => {
+        if (!analysisResults) return null;
+        const { analysis, recommendations } = analysisResults;
+        const lang = language === 'fr' ? 'fr' : 'en';
+
+        if (analysisResults.multilingual && analysisResults.multilingual[lang]) {
+            return {
+                analysis: {
+                    ...analysis,
+                    strengths: analysisResults.multilingual[lang].analysis.strengths,
+                    cultureFit: analysisResults.multilingual[lang].analysis.cultureFit,
+                },
+                recommendations: analysisResults.multilingual[lang].recommendations
+            };
+        }
+        return { analysis, recommendations };
+    }, [analysisResults, language]);
+
     // Sharing Logic State
     const [isSharing, setIsSharing] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -268,22 +287,7 @@ export function MatchingDashboard() {
     const { score, analysis, recommendations } = analysisResults;
     const isLowMatch = score < 45 || !analysisResults.optimizedCV;
 
-    // Multilingual Content Selection
-    const displayContent = useMemo(() => {
-        const lang = language === 'fr' ? 'fr' : 'en';
-        if (analysisResults.multilingual && analysisResults.multilingual[lang]) {
-            return {
-                analysis: {
-                    ...analysis,
-                    strengths: analysisResults.multilingual[lang].analysis.strengths,
-                    cultureFit: analysisResults.multilingual[lang].analysis.cultureFit,
-                    // Weaknesses not currently displayed but available
-                },
-                recommendations: analysisResults.multilingual[lang].recommendations
-            };
-        }
-        return { analysis, recommendations };
-    }, [analysisResults, language]);
+
 
     // Helper to determine score color
 
