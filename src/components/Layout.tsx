@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser, useClerk } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser, useClerk, useAuth } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
 import { useTranslation } from "../hooks/useTranslation";
 import { useNavigate, Link } from "react-router-dom";
@@ -18,6 +18,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const [isSignInLoading, setIsSignInLoading] = useState(false);
     const [isSignUpLoading, setIsSignUpLoading] = useState(false);
     const navigate = useNavigate();
+    const { getToken } = useAuth();
 
     const handleSignInClick = () => {
         setIsSignInLoading(true);
@@ -331,6 +332,41 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
             </footer>
+
+            {/* Admin Action for Resend Sync - Global */}
+            <SignedIn>
+                {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' && (
+                    <div className="fixed bottom-4 left-4 z-50">
+                        <button
+                            onClick={async () => {
+                                if (!confirm("Lancer la synchronisation vers Resend ?")) return;
+                                try {
+                                    const token = await getToken({ template: 'supabase' });
+                                    const { createClerkSupabaseClient } = await import('../services/supabase');
+                                    const supabase = createClerkSupabaseClient(token || "");
+
+                                    const { data, error } = await supabase.functions.invoke('sync-resend-contacts');
+
+                                    if (error) throw error;
+
+                                    const errorMsg = data.errors?.length > 0
+                                        ? `\n⚠️ ${data.errors.length} erreurs (voir console)`
+                                        : "";
+
+                                    if (data.errors?.length > 0) console.error("Sync Errors:", data.errors);
+
+                                    alert(`Synchronisation terminée !\n✅ Succès : ${data.synced} contacts${errorMsg}`);
+                                } catch (e: any) {
+                                    alert("Erreur : " + e.message);
+                                }
+                            }}
+                            className="bg-slate-900 text-white border border-slate-700 shadow-xl hover:bg-slate-800 text-xs px-3 py-2 rounded-md font-bold flex items-center gap-2"
+                        >
+                            ⚡ Admin: Sync Resend
+                        </button>
+                    </div>
+                )}
+            </SignedIn>
         </div>
     );
 }
