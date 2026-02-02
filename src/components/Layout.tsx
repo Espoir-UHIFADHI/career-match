@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Toaster, toast } from "sonner";
 import { FileText, User, Mail, Menu, X, Coins } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
@@ -334,39 +335,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </footer>
 
             {/* Admin Action for Resend Sync - Global */}
+            {/* Admin Action for Resend Sync - Global */}
             <SignedIn>
                 {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' && (
                     <div className="fixed bottom-4 left-4 z-50">
                         <button
-                            onClick={async () => {
-                                if (!confirm("Lancer la synchronisation vers Resend ?")) return;
-                                try {
+                            onClick={() => {
+                                toast.promise(async () => {
                                     const token = await getToken({ template: 'supabase' });
                                     const { createClerkSupabaseClient } = await import('../services/supabase');
                                     const supabase = createClerkSupabaseClient(token || "");
 
                                     const { data, error } = await supabase.functions.invoke('sync-resend-contacts');
 
-                                    if (error) throw error;
-
-                                    const errorMsg = data.errors?.length > 0
-                                        ? `\n⚠️ ${data.errors.length} erreurs (voir console)`
-                                        : "";
-
-                                    if (data.errors?.length > 0) console.error("Sync Errors:", data.errors);
-
-                                    alert(`Synchronisation terminée !\n✅ Succès : ${data.synced} contacts${errorMsg}`);
-                                } catch (e: any) {
-                                    alert("Erreur : " + e.message);
-                                }
+                                    if (error) throw new Error(error.message || "Erreur inconnue");
+                                    if (data.errors?.length > 0) {
+                                        console.error("Sync Errors:", data.errors);
+                                        // We resolve but with a warning message in success, or throw? 
+                                        // Let's throw if user wants to know it failed partially, or return data if partial success.
+                                        // Let's treat partial success as success but mention errors in message.
+                                    }
+                                    return data;
+                                }, {
+                                    loading: 'Synchronisation Cloud en cours...',
+                                    success: (data: any) => {
+                                        const errCount = data.errors?.length || 0;
+                                        if (errCount > 0) return `Terminé avec ${errCount} erreurs. Synced: ${data.synced}`;
+                                        return `Succès ! ${data.synced} contacts mis à jour.`;
+                                    },
+                                    error: (err) => `Erreur : ${err.message}`
+                                });
                             }}
-                            className="bg-slate-900 text-white border border-slate-700 shadow-xl hover:bg-slate-800 text-xs px-3 py-2 rounded-md font-bold flex items-center gap-2"
+                            className="bg-slate-900 text-white border border-slate-700 shadow-xl hover:bg-slate-800 text-xs px-3 py-2 rounded-md font-bold flex items-center gap-2 transition-all active:scale-95"
                         >
                             ⚡ Admin: Sync Resend
                         </button>
                     </div>
                 )}
             </SignedIn>
+            <Toaster richColors position="top-center" />
         </div>
     );
 }
