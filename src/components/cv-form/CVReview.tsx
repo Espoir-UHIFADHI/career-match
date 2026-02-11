@@ -109,25 +109,6 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
             });
         }
 
-        const insertBullet = (
-            e: React.MouseEvent<HTMLButtonElement>,
-            section: 'experience' | 'education',
-            index: number,
-            field: 'description'
-        ) => {
-            e.preventDefault();
-            const list = section === 'experience' ? formData.experience : formData.education;
-            if (!list) return; // Should not happen given logic
-
-            const item = list[index];
-            const currentVal = item.description || "";
-            const newVal = currentVal ? `${currentVal}\n• ` : "• ";
-
-            const newList = [...list];
-            newList[index] = { ...item, [field]: newVal };
-            setFormData({ ...formData, [section]: newList });
-        };
-
         // 4. Education
         if (!formData.education || formData.education.length === 0) {
             newErrors.push("At least one education entry is required (Big Four standard).");
@@ -156,6 +137,25 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
 
         setErrors(newErrors);
         return newErrors.length === 0;
+    };
+
+    const insertBullet = (
+        e: React.MouseEvent<HTMLButtonElement>,
+        section: 'experience' | 'education',
+        index: number,
+        field: 'description'
+    ) => {
+        e.preventDefault();
+        const list = section === 'experience' ? formData.experience : formData.education;
+        if (!list) return;
+
+        const item = list[index];
+        const currentVal = item.description || "";
+        const newVal = currentVal ? `${currentVal}\n• ` : "• ";
+
+        const newList = [...list];
+        newList[index] = { ...item, [field]: newVal };
+        setFormData({ ...formData, [section]: newList });
     };
 
     const handleSave = () => {
