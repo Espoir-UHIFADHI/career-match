@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { ParsedCV } from "../../types";
+import { Mail, Phone, MapPin, Linkedin, Globe, Calendar } from "lucide-react";
 
 interface PrintableCVProps {
     data: ParsedCV;
@@ -33,39 +34,88 @@ const SECTION_HEADERS = {
 const cleanMarkdown = (text: any): string => {
     if (!text) return '';
 
-    // Convert to string if it's not already (handles arrays, objects, etc.)
     const textStr = typeof text === 'string' ? text :
         Array.isArray(text) ? text.join('\n') :
             typeof text === 'object' ? JSON.stringify(text) :
                 String(text);
 
     return textStr
-        .replace(/\*\*/g, '') // Supprime les ** pour le gras
-        .replace(/\*/g, '')   // Supprime les * pour l'italique
-        .replace(/#{1,6}\s/g, '') // Supprime les # pour les titres
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/#{1,6}\s/g, '')
         .trim();
 };
 
-// Fonction pour découper proprement les points d'expérience
 const getExperiencePoints = (text: any): string[] => {
     let str = cleanMarkdown(text);
     if (!str) return [];
 
-    // Priorité 1: Utiliser les sauts de ligne s'ils existent
     if (str.includes('\n')) {
         return str.split('\n').filter(line => line.trim());
     }
 
-    // Priorité 2: Fallback - Si pas de sauts de ligne, essayer de séparer par les puces
-    // On cherche les motifs " - " ou " • " ou début de ligne avec tiret/puce
-    // On remplace par \n + puce pour forcer le split
     str = str.replace(/(^|\s)([•-])\s/g, '\n$2 ');
-
     return str.split('\n').filter(line => line.trim());
+};
+
+const calculateDensity = (data: ParsedCV): 'comfortable' | 'compact' | 'ultra' => {
+    let score = 0;
+    if (data.summary) score += data.summary.length;
+    data.experience?.forEach(exp => {
+        score += (exp.description?.length || 0) + 100; // +100 overhead per item
+    });
+    data.education?.forEach(edu => {
+        score += (edu.description?.length || 0) + 50;
+    });
+
+    if (score > 3000) return 'ultra';
+    if (score > 2000) return 'compact';
+    return 'comfortable';
 };
 
 export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({ data, language = "French" }, ref) => {
     const headers = SECTION_HEADERS[language];
+
+    const density = useMemo(() => calculateDensity(data), [data]);
+
+    const config = useMemo(() => {
+        switch (density) {
+            case 'ultra':
+                return {
+                    padding: '6mm 8mm',
+                    titleSize: 'text-xl',
+                    headerGap: 'mb-1',
+                    sectionGap: 'mb-2',
+                    bodyText: 'text-[10px] leading-snug',
+                    smallText: 'text-[9px] leading-snug',
+                    iconSize: 10,
+                    colGap: 'gap-4'
+                };
+            case 'compact':
+                return {
+                    padding: '8mm 10mm',
+                    titleSize: 'text-2xl',
+                    headerGap: 'mb-2',
+                    sectionGap: 'mb-3',
+                    bodyText: 'text-[11px] leading-snug',
+                    smallText: 'text-[10px] leading-snug',
+                    iconSize: 11,
+                    colGap: 'gap-5'
+                };
+            case 'comfortable':
+            default:
+                return {
+                    padding: '14mm 15mm',
+                    titleSize: 'text-3xl',
+                    headerGap: 'mb-3',
+                    sectionGap: 'mb-5',
+                    bodyText: 'text-[12.5px] leading-normal',
+                    smallText: 'text-[11.5px] leading-normal',
+                    iconSize: 12,
+                    colGap: 'gap-6'
+                };
+        }
+    }, [density]);
 
     // Vérification de sécurité pour éviter les erreurs
     if (!data || !data.contact) {
@@ -73,10 +123,7 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
             <div
                 ref={ref}
                 className="relative w-[210mm] h-[297mm] mx-auto bg-white text-black shadow-lg print:shadow-none print:m-0 overflow-hidden flex items-center justify-center"
-                style={{
-                    padding: '8mm 10mm',
-                    boxSizing: 'border-box',
-                }}
+                style={{ padding: '8mm 10mm', boxSizing: 'border-box' }}
             >
                 <div className="text-center text-slate-500">
                     <p className="text-xl font-semibold mb-2">CV en cours de génération...</p>
@@ -89,130 +136,237 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
     return (
         <div
             ref={ref}
-            className="relative w-[210mm] min-h-[297mm] h-auto mx-auto shadow-lg print:shadow-none print:m-0 print:w-full print:h-auto"
+            className="relative w-[210mm] min-h-[297mm] h-auto mx-auto shadow-lg print:shadow-none print:m-0 print:w-full print:h-auto font-sans"
             style={{
-                padding: '12mm 15mm', // Optimised margins for print
+                padding: config.padding,
                 boxSizing: 'border-box',
                 backgroundColor: '#ffffff',
-                color: '#000000'
+                color: '#1e293b'
             }}
         >
-            {/* Header - Balanced Format */}
-            <div style={{ borderBottom: '1px solid #1e293b', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
-                <h1 className="text-[22px] font-bold uppercase tracking-wide mb-1 leading-none" style={{ color: '#0f172a' }}>
+            {/* Header */}
+            <header className={`border-b-2 border-slate-800 pb-2 ${config.sectionGap}`}>
+                <h1 className={`${config.titleSize} font-extrabold uppercase tracking-tight text-slate-900 mb-0.5 leading-none`}>
                     {data.contact?.firstName || ''} {data.contact?.lastName || ''}
                 </h1>
 
                 {/* HEADLINE */}
                 {data.headline && (
-                    <div className="text-[14px] font-bold mb-1.5 uppercase tracking-tight leading-none" style={{ color: '#3730a3' }}>
+                    <div className={`text-sm font-bold uppercase tracking-wide text-indigo-700 ${config.headerGap}`}>
                         {cleanMarkdown(data.headline)}
                     </div>
                 )}
 
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] leading-tight font-medium" style={{ color: '#475569' }}>
-                    {data.contact?.email && <span>{data.contact.email}</span>}
-                    {data.contact?.phone && <span>• {data.contact.phone}</span>}
-                    {data.contact?.location && <span>• {data.contact.location}</span>}
-                    {data.contact?.linkedin && <span>• <a href={data.contact.linkedin} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a></span>}
-                    {data.contact?.website && <span>• <a href={data.contact.website} target="_blank" rel="noreferrer" className="hover:underline">Portfolio</a></span>}
+                {/* Contact Info with Icons */}
+                <div className={`flex flex-wrap gap-x-4 gap-y-1 ${config.smallText} text-slate-600 font-medium items-center`}>
+                    {data.contact?.email && (
+                        <div className="flex items-center gap-1">
+                            <Mail size={config.iconSize} className="text-indigo-600" />
+                            <span>{data.contact.email}</span>
+                        </div>
+                    )}
+                    {data.contact?.phone && (
+                        <div className="flex items-center gap-1">
+                            <Phone size={config.iconSize} className="text-indigo-600" />
+                            <span>{data.contact.phone}</span>
+                        </div>
+                    )}
+                    {data.contact?.location && (
+                        <div className="flex items-center gap-1">
+                            <MapPin size={config.iconSize} className="text-indigo-600" />
+                            <span>{data.contact.location}</span>
+                        </div>
+                    )}
+                    {data.contact?.linkedin && (
+                        <div className="flex items-center gap-1">
+                            <Linkedin size={config.iconSize} className="text-indigo-600" />
+                            <a href={data.contact.linkedin} target="_blank" rel="noreferrer" className="hover:text-indigo-800 hover:underline">LinkedIn</a>
+                        </div>
+                    )}
+                    {data.contact?.website && (
+                        <div className="flex items-center gap-1">
+                            <Globe size={config.iconSize} className="text-indigo-600" />
+                            <a href={data.contact.website} target="_blank" rel="noreferrer" className="hover:text-indigo-800 hover:underline">Portfolio</a>
+                        </div>
+                    )}
                 </div>
-            </div>
+            </header>
 
             {/* Summary */}
             {data.summary && (
-                <div className="mb-4">
-                    <h2 className="text-[13px] font-bold uppercase tracking-wider mb-1.5 pb-0.5" style={{ color: '#3730a3', borderBottom: '1px solid #e0e7ff' }}>{headers.summary}</h2>
-                    <p className="text-[11px] leading-relaxed text-justify" style={{ color: '#1e293b' }}>{cleanMarkdown(data.summary)}</p>
-                </div>
+                <section className={config.sectionGap}>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                        {headers.summary}
+                    </h2>
+                    <p className={`${config.bodyText} text-justify text-slate-700`}>
+                        {cleanMarkdown(data.summary)}
+                    </p>
+                </section>
             )}
 
             {/* Experience */}
             {data.experience && data.experience.length > 0 && (
-                <div className="mb-4">
-                    <h2 className="text-[13px] font-bold uppercase tracking-wider mb-2 pb-0.5" style={{ color: '#3730a3', borderBottom: '1px solid #e0e7ff' }}>{headers.experience}</h2>
-                    <div className="space-y-3">
+                <section className={config.sectionGap}>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                        {headers.experience}
+                    </h2>
+                    <div className="space-y-2.5">
                         {data.experience.map((exp, i) => (
                             <div key={i}>
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className="font-bold text-[13px]" style={{ color: '#0f172a' }}>{cleanMarkdown(exp.role)}</h3>
-                                    <span className="text-[11px] font-medium whitespace-nowrap ml-2" style={{ color: '#475569' }}>{exp.dates}</span>
+                                    <h3 className={`font-bold ${density === 'ultra' ? 'text-xs' : 'text-sm'} text-slate-900`}>{cleanMarkdown(exp.role)}</h3>
+                                    <span className={`${config.smallText} font-medium text-slate-500 whitespace-nowrap ml-4 flex items-center gap-1`}>
+                                        <Calendar size={config.iconSize - 2} className="inline-block mb-0.5" />
+                                        {exp.dates}
+                                    </span>
                                 </div>
-                                <div className="text-[12px] font-semibold mb-0.5" style={{ color: '#4338ca' }}>{cleanMarkdown(exp.company)}</div>
-                                <ul className="list-none space-y-0.5 mt-0.5">
+                                <div className={`${config.smallText} font-bold text-indigo-700 mb-0.5`}>{cleanMarkdown(exp.company)}</div>
+                                <ul className="space-y-0.5">
                                     {getExperiencePoints(exp.description).map((line: string, idx: number) => (
-                                        <li key={idx} className="flex items-start text-[11px] leading-snug" style={{ color: '#334155' }}>
-                                            <span className="mr-1.5 flex-shrink-0 font-bold" style={{ color: '#0f172a' }}>-</span>
-                                            <span>{line.trim().replace(/^[-•*]\s*/, '')}</span>
+                                        <li key={idx} className={`flex items-start ${config.bodyText} text-slate-700`}>
+                                            <span className="mr-1.5 mt-1 w-1 h-1 bg-indigo-500 rounded-full flex-shrink-0"></span>
+                                            <span className="flex-1">{line.trim().replace(/^[-•*]\s*/, '')}</span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
                         ))}
                     </div>
-                </div>
+                </section>
             )}
 
             {/* Education */}
             {data.education && data.education.length > 0 && (
-                <div className="mb-4">
-                    <h2 className="text-[13px] font-bold uppercase tracking-wider mb-2 pb-0.5" style={{ color: '#3730a3', borderBottom: '1px solid #e0e7ff' }}>{headers.education}</h2>
-                    <div className="space-y-2">
+                <section className={config.sectionGap}>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                        {headers.education}
+                    </h2>
+                    <div className="space-y-1.5">
                         {data.education.map((edu, i) => (
                             <div key={i}>
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className="font-bold text-[13px]" style={{ color: '#0f172a' }}>{cleanMarkdown(edu.school)}</h3>
-                                    <span className="text-[11px] font-medium whitespace-nowrap ml-2" style={{ color: '#475569' }}>{edu.dates}</span>
+                                    <h3 className={`font-bold ${density === 'ultra' ? 'text-xs' : 'text-sm'} text-slate-900`}>{cleanMarkdown(edu.school)}</h3>
+                                    <span className={`${config.smallText} font-medium text-slate-500 whitespace-nowrap ml-4`}>{edu.dates}</span>
                                 </div>
-                                <div className="text-[12px]" style={{ color: '#334155' }}>{cleanMarkdown(edu.degree)}</div>
-                                {edu.description && <p className="text-[11px] mt-0.5" style={{ color: '#475569' }}>{cleanMarkdown(edu.description)}</p>}
+                                <div className={`${config.smallText} text-slate-800 font-medium`}>{cleanMarkdown(edu.degree)}</div>
+                                {edu.description && <p className={`${config.smallText} mt-0.5 text-slate-600`}>{cleanMarkdown(edu.description)}</p>}
                             </div>
                         ))}
                     </div>
-                </div>
+                </section>
             )}
 
-            {/* Skills & Others */}
-            <div className="space-y-1">
-                {/* Technical Skills */}
-                {data.skills && data.skills.length > 0 && (
-                    <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.skills} :</span>
-                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.skills.join(" • "))}</span>
-                    </div>
-                )}
+            {/* Skills Grid - Tech & Soft */}
+            <div className={`grid grid-cols-12 ${config.colGap} mt-2`}>
+                {/* Left Column: Tech Skills */}
+                <div className="col-span-7 space-y-2">
+                    {data.skills && data.skills.length > 0 && (
+                        <div>
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                                {headers.skills}
+                            </h2>
+                            <div className="flex flex-wrap gap-1">
+                                {data.skills.map((skill, idx) => (
+                                    <span key={idx} className="px-1.5 py-0.5 bg-slate-50 text-slate-700 text-[9px] font-semibold border border-slate-200 rounded-md">
+                                        {cleanMarkdown(skill)}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
-                {/* Soft Skills */}
-                {data.softSkills && data.softSkills.length > 0 && (
-                    <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.softSkills} :</span>
-                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.softSkills.join(" • "))}</span>
-                    </div>
-                )}
+                {/* Right Column: Soft Skills */}
+                <div className="col-span-5 space-y-2">
+                    {data.softSkills && data.softSkills.length > 0 && (
+                        <div>
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                                {headers.softSkills}
+                            </h2>
+                            <div className="flex flex-wrap gap-1">
+                                {data.softSkills.map((skill, idx) => (
+                                    <span key={idx} className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[9px] font-medium rounded-md">
+                                        {cleanMarkdown(skill)}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
 
+            {/* Bottom Row: Languages, Certifications, Interests */}
+            <div className={`grid grid-cols-3 ${config.colGap} mt-3 pt-2 border-t border-slate-100`}>
                 {/* Languages */}
-                {data.languages && data.languages.length > 0 && (
-                    <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.languages} :</span>
-                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.languages.join(" • "))}</span>
-                    </div>
-                )}
+                <div>
+                    {data.languages && data.languages.length > 0 && (
+                        <div>
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                                {headers.languages}
+                            </h2>
+                            <ul className="space-y-0.5">
+                                {data.languages.map((lang, idx) => (
+                                    <li key={idx} className={`${config.smallText} text-slate-700 flex items-center`}>
+                                        <span className="w-1 h-1 bg-indigo-400 rounded-full mr-1.5"></span>
+                                        {cleanMarkdown(lang)}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
 
                 {/* Certifications */}
-                {data.certifications && data.certifications.length > 0 && (
-                    <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.certifications} :</span>
-                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.certifications.join(" • "))}</span>
-                    </div>
-                )}
+                <div>
+                    {data.certifications && data.certifications.length > 0 && (
+                        <div>
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                                {headers.certifications}
+                            </h2>
+                            <ul className="space-y-0.5">
+                                {data.certifications.map((cert, idx) => {
+                                    const isStr = typeof cert === 'string';
+                                    const name = isStr ? cert : cert.name;
+                                    const url = !isStr ? cert.url : null;
+
+                                    return (
+                                        <li key={idx} className={`${config.smallText} text-slate-700 flex items-start text-justify`}>
+                                            <span className="w-1 h-1 bg-indigo-400 rounded-full mr-1.5 mt-1 flex-shrink-0"></span>
+                                            <span className="leading-snug">
+                                                {url ? (
+                                                    <a
+                                                        href={url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="hover:text-indigo-600 hover:underline decoration-indigo-300 underline-offset-2 transition-colors cursor-pointer"
+                                                    >
+                                                        {cleanMarkdown(name)}
+                                                    </a>
+                                                ) : (
+                                                    cleanMarkdown(name)
+                                                )}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    )}
+                </div>
 
                 {/* Interests */}
-                {data.interests && data.interests.length > 0 && (
-                    <div className="flex items-baseline text-[11px]">
-                        <span className="font-bold w-40 flex-shrink-0" style={{ color: '#0f172a' }}>{headers.interests} :</span>
-                        <span className="flex-1 leading-snug" style={{ color: '#334155' }}>{cleanMarkdown(data.interests.join(" • "))}</span>
-                    </div>
-                )}
+                <div>
+                    {data.interests && data.interests.length > 0 && (
+                        <div>
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
+                                {headers.interests}
+                            </h2>
+                            <div className={`${config.smallText} text-slate-700 leading-snug text-justify`}>
+                                {cleanMarkdown(data.interests.join(", "))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Print-specific styles */}

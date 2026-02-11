@@ -180,7 +180,9 @@ async function handleParseCV(payload: any) {
           "description": "Spécialisation ou mention (optionnel)"
         }
       ],
-      "certifications": ["Certification 1", "Certification 2"]
+      "certifications": [
+        { "name": "Nom Certification", "url": "URL (optionnel)" }
+      ]
     }
     
     Règles importantes :
@@ -363,7 +365,7 @@ async function handleOptimizeCV(payload: any) {
       "experience": [ ... ],
       "education": [ ... ],
       "languages": ["Langue 1 (Niveau)", ...],
-      "certifications": ["Certification 1", ...],
+      "certifications": [ { "name": "Certification 1", "url": "..." } ],
       "interests": ["Intérêt 1", ...]
     },
     "recommendations": ["..."],

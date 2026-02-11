@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
-import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle, Linkedin } from "lucide-react";
+import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertCircle, Linkedin, Award, ChevronDown, ChevronUp, ArrowUp, ArrowDown } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { useTranslation } from "../../hooks/useTranslation";
 import { cn } from "../../lib/utils";
@@ -29,6 +29,61 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
         return initialData;
     });
     const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
+
+    // Collapsible states - default first item expanded
+    const [expandedExperience, setExpandedExperience] = useState<number[]>([0]);
+    const [expandedEducation, setExpandedEducation] = useState<number[]>([0]);
+    const [expandedCertifications, setExpandedCertifications] = useState<number[]>([0]);
+
+    const toggleExpand = (section: 'experience' | 'education' | 'certifications', index: number) => {
+        let setFn;
+        if (section === 'experience') setFn = setExpandedExperience;
+        else if (section === 'education') setFn = setExpandedEducation;
+        else setFn = setExpandedCertifications;
+
+        setFn(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
+    };
+
+    const moveItem = (section: 'experience' | 'education' | 'certifications', index: number, direction: 'up' | 'down') => {
+        let list: any[] = [];
+        if (section === 'experience') list = formData.experience;
+        else if (section === 'education') list = formData.education || [];
+        else list = formData.certifications || [];
+
+        if ((direction === 'up' && index === 0) || (direction === 'down' && index === list.length - 1)) return;
+
+        const newList = [...list];
+        const swapIndex = direction === 'up' ? index - 1 : index + 1;
+        [newList[index], newList[swapIndex]] = [newList[swapIndex], newList[index]];
+
+        setFormData({ ...formData, [section]: newList });
+
+        // Also swap expanded state
+        let expandedList: number[] = [];
+        let setExpanded: React.Dispatch<React.SetStateAction<number[]>> = () => { };
+
+        if (section === 'experience') {
+            expandedList = expandedExperience;
+            setExpanded = setExpandedExperience;
+        } else if (section === 'education') {
+            expandedList = expandedEducation;
+            setExpanded = setExpandedEducation;
+        } else {
+            expandedList = expandedCertifications;
+            setExpanded = setExpandedCertifications;
+        }
+
+        let newExpanded = [...expandedList];
+        const isCurrentExpanded = newExpanded.includes(index);
+        const isSwapExpanded = newExpanded.includes(swapIndex);
+
+        if (isCurrentExpanded && !isSwapExpanded) {
+            newExpanded = newExpanded.filter(i => i !== index).concat(swapIndex);
+        } else if (!isCurrentExpanded && isSwapExpanded) {
+            newExpanded = newExpanded.filter(i => i !== swapIndex).concat(index);
+        }
+        setExpanded(newExpanded);
+    };
 
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -53,6 +108,25 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                 }
             });
         }
+
+        const insertBullet = (
+            e: React.MouseEvent<HTMLButtonElement>,
+            section: 'experience' | 'education',
+            index: number,
+            field: 'description'
+        ) => {
+            e.preventDefault();
+            const list = section === 'experience' ? formData.experience : formData.education;
+            if (!list) return; // Should not happen given logic
+
+            const item = list[index];
+            const currentVal = item.description || "";
+            const newVal = currentVal ? `${currentVal}\n• ` : "• ";
+
+            const newList = [...list];
+            newList[index] = { ...item, [field]: newVal };
+            setFormData({ ...formData, [section]: newList });
+        };
 
         // 4. Education
         if (!formData.education || formData.education.length === 0) {
@@ -364,77 +438,135 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
-                            {formData.experience.map((exp, idx) => (
-                                <div key={idx} className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative group hover:border-indigo-200 transition-colors">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => {
-                                            const newExp = [...formData.experience];
-                                            newExp.splice(idx, 1);
-                                            setFormData({ ...formData, experience: newExp });
-                                        }}
-                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 hover:bg-red-50"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                            {(formData.experience).map((exp, idx) => {
+                                const isExpanded = expandedExperience.includes(idx);
+                                return (
+                                    <div key={idx} className="rounded-xl bg-slate-50 border border-slate-200 transition-all duration-200">
+                                        {/* Header */}
+                                        <div
+                                            className={cn(
+                                                "p-4 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors rounded-xl",
+                                                isExpanded ? "rounded-b-none border-b border-slate-200" : ""
+                                            )}
+                                            onClick={() => toggleExpand('experience', idx)}
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 shrink-0">
+                                                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                </Button>
+                                                <div className="truncate">
+                                                    <span className="font-semibold text-slate-700">{exp.company || t('cvReview.company')}</span>
+                                                    <span className="mx-2 text-slate-300">|</span>
+                                                    <span className="text-slate-500">{exp.role || t('cvReview.role')}</span>
+                                                </div>
+                                            </div>
 
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.company')}</Label>
-                                            <Input
-                                                value={exp.company}
-                                                onChange={(e) => {
-                                                    const newExp = [...formData.experience];
-                                                    newExp[idx].company = e.target.value;
-                                                    setFormData({ ...formData, experience: newExp });
-                                                }}
-                                                placeholder={t('cvReview.company')}
-                                                className={cn("bg-white", isInvalid(exp.company) && "border-red-500 focus-visible:ring-red-500")}
-                                            />
+                                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveItem('experience', idx, 'up')}
+                                                    disabled={idx === 0}
+                                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                                                >
+                                                    <ArrowUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveItem('experience', idx, 'down')}
+                                                    disabled={idx === formData.experience.length - 1}
+                                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                                                >
+                                                    <ArrowDown className="h-4 w-4" />
+                                                </Button>
+                                                <div className="w-px h-4 bg-slate-300 mx-1"></div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        const newExp = [...formData.experience];
+                                                        newExp.splice(idx, 1);
+                                                        setFormData({ ...formData, experience: newExp });
+                                                    }}
+                                                    className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.role')}</Label>
-                                            <Input
-                                                value={exp.role}
-                                                onChange={(e) => {
-                                                    const newExp = [...formData.experience];
-                                                    newExp[idx].role = e.target.value;
-                                                    setFormData({ ...formData, experience: newExp });
-                                                }}
-                                                placeholder={t('cvReview.role')}
-                                                className={cn("bg-white", isInvalid(exp.role) && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.dates')}</Label>
-                                            <Input
-                                                value={exp.dates}
-                                                onChange={(e) => {
-                                                    const newExp = [...formData.experience];
-                                                    newExp[idx].dates = e.target.value;
-                                                    setFormData({ ...formData, experience: newExp });
-                                                }}
-                                                placeholder="e.g. Jan 2020 - Present"
-                                                className="bg-white"
-                                            />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.description')}</Label>
-                                            <Textarea
-                                                value={exp.description}
-                                                onChange={(e) => {
-                                                    const newExp = [...formData.experience];
-                                                    newExp[idx].description = e.target.value;
-                                                    setFormData({ ...formData, experience: newExp });
-                                                }}
-                                                className="min-h-[100px] bg-white resize-y"
-                                                placeholder={t('cvReview.description')}
-                                            />
-                                        </div>
+
+                                        {/* Content */}
+                                        {isExpanded && (
+                                            <div className="p-5 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.company')}</Label>
+                                                        <Input
+                                                            value={exp.company}
+                                                            onChange={(e) => {
+                                                                const newExp = [...formData.experience];
+                                                                newExp[idx].company = e.target.value;
+                                                                setFormData({ ...formData, experience: newExp });
+                                                            }}
+                                                            placeholder={t('cvReview.company')}
+                                                            className={cn("bg-white", isInvalid(exp.company) && "border-red-500 focus-visible:ring-red-500")}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.role')}</Label>
+                                                        <Input
+                                                            value={exp.role}
+                                                            onChange={(e) => {
+                                                                const newExp = [...formData.experience];
+                                                                newExp[idx].role = e.target.value;
+                                                                setFormData({ ...formData, experience: newExp });
+                                                            }}
+                                                            placeholder={t('cvReview.role')}
+                                                            className={cn("bg-white", isInvalid(exp.role) && "border-red-500 focus-visible:ring-red-500")}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.dates')}</Label>
+                                                        <Input
+                                                            value={exp.dates}
+                                                            onChange={(e) => {
+                                                                const newExp = [...formData.experience];
+                                                                newExp[idx].dates = e.target.value;
+                                                                setFormData({ ...formData, experience: newExp });
+                                                            }}
+                                                            placeholder="e.g. Jan 2020 - Present"
+                                                            className="bg-white"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <div className="flex justify-between items-center">
+                                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.description')}</Label>
+                                                            <button
+                                                                onClick={(e) => insertBullet(e, 'experience', idx, 'description')}
+                                                                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+                                                            >
+                                                                + Bullet Point
+                                                            </button>
+                                                        </div>
+                                                        <Textarea
+                                                            value={exp.description}
+                                                            onChange={(e) => {
+                                                                const newExp = [...formData.experience];
+                                                                newExp[idx].description = e.target.value;
+                                                                setFormData({ ...formData, experience: newExp });
+                                                            }}
+                                                            className="min-h-[100px] bg-white resize-y font-mono text-sm leading-relaxed"
+                                                            placeholder={t('cvReview.description')}
+                                                        />
+                                                        <p className="text-xs text-slate-400 text-right">Markdown supported (• for bullets)</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -455,77 +587,135 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
-                            {(formData.education || []).map((edu, idx) => (
-                                <div key={idx} className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative group hover:border-indigo-200 transition-colors">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => {
-                                            const newEdu = [...(formData.education || [])];
-                                            newEdu.splice(idx, 1);
-                                            setFormData({ ...formData, education: newEdu });
-                                        }}
-                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 hover:bg-red-50"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                            {(formData.education || []).map((edu, idx) => {
+                                const isExpanded = expandedEducation.includes(idx);
+                                return (
+                                    <div key={idx} className="rounded-xl bg-slate-50 border border-slate-200 transition-all duration-200">
+                                        {/* Header */}
+                                        <div
+                                            className={cn(
+                                                "p-4 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors rounded-xl",
+                                                isExpanded ? "rounded-b-none border-b border-slate-200" : ""
+                                            )}
+                                            onClick={() => toggleExpand('education', idx)}
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 shrink-0">
+                                                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                </Button>
+                                                <div className="truncate">
+                                                    <span className="font-semibold text-slate-700">{edu.school || t('cvReview.school')}</span>
+                                                    <span className="mx-2 text-slate-300">|</span>
+                                                    <span className="text-slate-500">{edu.degree || t('cvReview.degree')}</span>
+                                                </div>
+                                            </div>
 
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.school')}</Label>
-                                            <Input
-                                                value={edu.school}
-                                                onChange={(e) => {
-                                                    const newEdu = [...(formData.education || [])];
-                                                    newEdu[idx].school = e.target.value;
-                                                    setFormData({ ...formData, education: newEdu });
-                                                }}
-                                                placeholder={t('cvReview.school')}
-                                                className={cn("bg-white", isInvalid(edu.school) && "border-red-500 focus-visible:ring-red-500")}
-                                            />
+                                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveItem('education', idx, 'up')}
+                                                    disabled={idx === 0}
+                                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                                                >
+                                                    <ArrowUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveItem('education', idx, 'down')}
+                                                    disabled={idx === (formData.education?.length || 0) - 1}
+                                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                                                >
+                                                    <ArrowDown className="h-4 w-4" />
+                                                </Button>
+                                                <div className="w-px h-4 bg-slate-300 mx-1"></div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        const newEdu = [...(formData.education || [])];
+                                                        newEdu.splice(idx, 1);
+                                                        setFormData({ ...formData, education: newEdu });
+                                                    }}
+                                                    className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.degree')}</Label>
-                                            <Input
-                                                value={edu.degree}
-                                                onChange={(e) => {
-                                                    const newEdu = [...(formData.education || [])];
-                                                    newEdu[idx].degree = e.target.value;
-                                                    setFormData({ ...formData, education: newEdu });
-                                                }}
-                                                placeholder={t('cvReview.degree')}
-                                                className={cn("bg-white", isInvalid(edu.degree) && "border-red-500 focus-visible:ring-red-500")}
-                                            />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.dates')}</Label>
-                                            <Input
-                                                value={edu.dates}
-                                                onChange={(e) => {
-                                                    const newEdu = [...(formData.education || [])];
-                                                    newEdu[idx].dates = e.target.value;
-                                                    setFormData({ ...formData, education: newEdu });
-                                                }}
-                                                placeholder="e.g. 2016 - 2020"
-                                                className="bg-white"
-                                            />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.description')}</Label>
-                                            <Textarea
-                                                value={edu.description}
-                                                onChange={(e) => {
-                                                    const newEdu = [...(formData.education || [])];
-                                                    newEdu[idx].description = e.target.value;
-                                                    setFormData({ ...formData, education: newEdu });
-                                                }}
-                                                className="min-h-[100px] bg-white resize-y"
-                                                placeholder={t('cvReview.description')}
-                                            />
-                                        </div>
+
+                                        {/* Content */}
+                                        {isExpanded && (
+                                            <div className="p-5 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.school')}</Label>
+                                                        <Input
+                                                            value={edu.school}
+                                                            onChange={(e) => {
+                                                                const newEdu = [...(formData.education || [])];
+                                                                newEdu[idx].school = e.target.value;
+                                                                setFormData({ ...formData, education: newEdu });
+                                                            }}
+                                                            placeholder={t('cvReview.school')}
+                                                            className={cn("bg-white", isInvalid(edu.school) && "border-red-500 focus-visible:ring-red-500")}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.degree')}</Label>
+                                                        <Input
+                                                            value={edu.degree}
+                                                            onChange={(e) => {
+                                                                const newEdu = [...(formData.education || [])];
+                                                                newEdu[idx].degree = e.target.value;
+                                                                setFormData({ ...formData, education: newEdu });
+                                                            }}
+                                                            placeholder={t('cvReview.degree')}
+                                                            className={cn("bg-white", isInvalid(edu.degree) && "border-red-500 focus-visible:ring-red-500")}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.dates')}</Label>
+                                                        <Input
+                                                            value={edu.dates}
+                                                            onChange={(e) => {
+                                                                const newEdu = [...(formData.education || [])];
+                                                                newEdu[idx].dates = e.target.value;
+                                                                setFormData({ ...formData, education: newEdu });
+                                                            }}
+                                                            placeholder="e.g. 2016 - 2020"
+                                                            className="bg-white"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <div className="flex justify-between items-center">
+                                                            <Label className="text-xs uppercase text-slate-500">{t('cvReview.description')}</Label>
+                                                            <button
+                                                                onClick={(e) => insertBullet(e, 'education', idx, 'description')}
+                                                                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+                                                            >
+                                                                + Bullet Point
+                                                            </button>
+                                                        </div>
+                                                        <Textarea
+                                                            value={edu.description}
+                                                            onChange={(e) => {
+                                                                const newEdu = [...(formData.education || [])];
+                                                                newEdu[idx].description = e.target.value;
+                                                                setFormData({ ...formData, education: newEdu });
+                                                            }}
+                                                            className="min-h-[100px] bg-white resize-y font-mono text-sm leading-relaxed"
+                                                            placeholder={t('cvReview.description')}
+                                                        />
+                                                        <p className="text-xs text-slate-400 text-right">Markdown supported (• for bullets)</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -533,6 +723,127 @@ export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
                                 className="w-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200 py-6"
                             >
                                 <Plus className="h-4 w-4 mr-2" /> {t('cvReview.addEducation')}
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    {/* Certifications */}
+                    <Card className="bg-white border-slate-200 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                            <CardTitle className="text-slate-900 flex items-center gap-2 text-base">
+                                <Award className="h-4 w-4 text-indigo-600" />
+                                {t('cvReview.certifications')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 pt-6">
+                            {(formData.certifications || []).map((cert, idx) => {
+                                const isExpanded = expandedCertifications.includes(idx);
+                                const isStr = typeof cert === 'string';
+                                const name = isStr ? cert : cert.name;
+                                const url = !isStr ? cert.url : "";
+
+                                return (
+                                    <div key={idx} className="rounded-xl bg-slate-50 border border-slate-200 transition-all duration-200">
+                                        {/* Header */}
+                                        <div
+                                            className={cn(
+                                                "p-4 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition-colors rounded-xl",
+                                                isExpanded ? "rounded-b-none border-b border-slate-200" : ""
+                                            )}
+                                            onClick={() => toggleExpand('certifications', idx)}
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 shrink-0">
+                                                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                </Button>
+                                                <div className="truncate flex items-center gap-2">
+                                                    <span className="font-semibold text-slate-700">{name || t('cvReview.certificationName')}</span>
+                                                    {url && <span className="text-xs text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Link</span>}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveItem('certifications', idx, 'up')}
+                                                    disabled={idx === 0}
+                                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                                                >
+                                                    <ArrowUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveItem('certifications', idx, 'down')}
+                                                    disabled={idx === (formData.certifications?.length || 0) - 1}
+                                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 disabled:opacity-30"
+                                                >
+                                                    <ArrowDown className="h-4 w-4" />
+                                                </Button>
+                                                <div className="w-px h-4 bg-slate-300 mx-1"></div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        const newCerts = [...(formData.certifications || [])];
+                                                        newCerts.splice(idx, 1);
+                                                        setFormData({ ...formData, certifications: newCerts });
+                                                    }}
+                                                    className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Content */}
+                                        {isExpanded && (
+                                            <div className="p-5 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                                <div className="grid md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2 md:col-span-1">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.certificationName')}</Label>
+                                                        <Input
+                                                            value={name}
+                                                            onChange={(e) => {
+                                                                const newCerts = [...(formData.certifications || [])];
+                                                                const certItem = newCerts[idx];
+                                                                const currentUrl = typeof certItem === 'string' ? "" : certItem.url;
+                                                                newCerts[idx] = { name: e.target.value, url: currentUrl };
+                                                                setFormData({ ...formData, certifications: newCerts });
+                                                            }}
+                                                            placeholder={t('cvReview.skillPlaceholder')}
+                                                            className="bg-white"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-1">
+                                                        <Label className="text-xs uppercase text-slate-500">{t('cvReview.certificationUrl')}</Label>
+                                                        <Input
+                                                            value={url || ""}
+                                                            onChange={(e) => {
+                                                                const newCerts = [...(formData.certifications || [])];
+                                                                const certItem = newCerts[idx];
+                                                                const currentName = typeof certItem === 'string' ? certItem : certItem.name;
+                                                                newCerts[idx] = { name: currentName, url: e.target.value };
+                                                                setFormData({ ...formData, certifications: newCerts });
+                                                            }}
+                                                            placeholder="https://..."
+                                                            className="bg-white"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setFormData(prev => ({ ...prev, certifications: [...(prev.certifications || []), { name: "", url: "" }] }))}
+                                className="w-full border-dashed text-slate-500 hover:text-indigo-600 hover:border-indigo-200 py-6"
+                            >
+                                <Plus className="h-4 w-4 mr-2" /> {t('cvReview.addCertification')}
                             </Button>
                         </CardContent>
                     </Card>

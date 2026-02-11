@@ -14,9 +14,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 import { useAuth, useUser } from "@clerk/clerk-react";
 
-// @ts-ignore
-import { pdf } from "@react-pdf/renderer";
-import { CVDocument } from "./CVDocument";
+import { useReactToPrint } from "react-to-print";
 
 export function MatchingDashboard() {
     const { t, language } = useTranslation();
@@ -158,35 +156,11 @@ export function MatchingDashboard() {
         }
     };
 
-    // ... existing imports ...
-
-    const handleDownload = async () => {
-        if (!analysisResults?.optimizedCV) return;
-
-        try {
-            const blob = await pdf(
-                <CVDocument
-                    data={analysisResults.optimizedCV}
-                    language={cvLanguage}
-                />
-            ).toBlob();
-
-            // Generate filename based on language
-            const filename = `Optimized_CV_${cvLanguage}.pdf`;
-
-            // Trigger download
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        } catch (e) {
-            console.error("PDF Generation error:", e);
-        }
-    };
+    const handleDownload = useReactToPrint({
+        contentRef: printRef,
+        documentTitle: `CV_${cvData?.contact?.lastName || 'Optimized'}_${cvData?.contact?.firstName || 'Candidate'}`,
+        onAfterPrint: () => console.log("Print successful"),
+    });
 
     const prevCvLanguageRef = useRef(cvLanguage);
 

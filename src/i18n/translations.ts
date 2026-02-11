@@ -245,7 +245,11 @@ export const translations = {
             dates: "Dates",
             description: "Description",
             school: "School",
-            degree: "Degree"
+            degree: "Degree",
+            certifications: "Certifications",
+            addCertification: "Add Certification",
+            certificationName: "Certification Name",
+            certificationUrl: "Credential URL"
         },
         jobInput: {
             title: "Target Job",
@@ -873,7 +877,11 @@ export const translations = {
             dates: "Dates",
             description: "Description",
             school: "École",
-            degree: "Diplôme"
+            degree: "Diplôme",
+            certifications: "Certifications",
+            addCertification: "Ajouter Certification",
+            certificationName: "Nom de la Certification",
+            certificationUrl: "Lien de Validation"
         },
         jobInput: {
             title: "Poste Visé",

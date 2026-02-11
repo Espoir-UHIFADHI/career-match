@@ -32,7 +32,7 @@ export const CVSchema = z.object({
         })
     ).optional(),
     languages: z.array(z.string()).optional(),
-    certifications: z.array(z.string()).optional(),
+    certifications: z.array(z.union([z.string(), z.object({ name: z.string(), url: z.string().optional() })])).optional(),
     interests: z.array(z.string()).optional(),
 });
 
