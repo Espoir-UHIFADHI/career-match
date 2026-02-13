@@ -116,7 +116,7 @@ export function PricingPage() {
         {
             id: "booster",
             name: t('pricingPage.plans.booster.name'),
-            price: "6.99 €",
+            price: "4.99 €",
             credits: "+20 Crédits",
             description: t('pricingPage.plans.booster.description'),
             features: [
@@ -126,8 +126,8 @@ export function PricingPage() {
                 { name: t('pricingPage.plans.booster.features.feat4'), included: true },
             ],
             buttonText: t('pricingPage.plans.booster.button'),
-            buttonVariant: "primary" as const,
-            popular: true,
+            buttonVariant: "secondary" as const,
+            popular: false,
             disabled: false,
             icon: Zap,
             slug: "pack-booster"
@@ -135,7 +135,7 @@ export function PricingPage() {
         {
             id: "pro",
             name: t('pricingPage.plans.pro.name'),
-            price: "29.99 €",
+            price: "14.99 €",
             credits: "+100 Crédits",
             description: t('pricingPage.plans.pro.description'),
             features: [
@@ -145,8 +145,8 @@ export function PricingPage() {
                 { name: t('pricingPage.plans.pro.features.feat4'), included: true },
             ],
             buttonText: t('pricingPage.plans.pro.button'),
-            buttonVariant: "secondary" as const,
-            popular: false,
+            buttonVariant: "primary" as const,
+            popular: true,
             disabled: false,
             icon: Rocket,
             slug: "career-coach"
