@@ -1,18 +1,20 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
 import { Layout } from "./components/Layout";
 import { LandingPage } from "./components/LandingPage";
 import Wizard from "./components/Wizard";
 import { PricingPage } from "./components/PricingPage";
+import { About } from "./components/pages/About";
+import { Blog } from "./components/pages/Blog";
+import { BlogPost } from "./components/pages/BlogPost";
 import { CareerTemplate } from "./components/pages/CareerTemplate";
 import { PrivacyPolicy } from "./components/pages/PrivacyPolicy";
 import { TermsOfService } from "./components/pages/TermsOfService";
 import { Contact } from "./components/pages/Contact";
 import { PublicAnalysis } from "./components/share/PublicAnalysis";
-import { ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
-import { useEffect } from "react";
 
-// ScrollToTop component to ensure navigation resets scroll
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -22,12 +24,6 @@ function ScrollToTop() {
 
   return null;
 }
-
-import { About } from "./components/pages/About";
-import { Blog } from "./components/pages/Blog";
-import { BlogPost } from "./components/pages/BlogPost";
-
-// ... existing imports
 
 function AppRoutes() {
 

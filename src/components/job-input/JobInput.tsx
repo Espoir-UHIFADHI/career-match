@@ -22,7 +22,7 @@ export function JobInput() {
 
     const { user, isSignedIn } = useUser();
     const { getToken } = useAuth();
-    const { useCredit, credits } = useUserStore(); // Added credits here for consistency with other components
+    const { useCredit, credits } = useUserStore();
 
     const analyzeJob = async () => {
         if (!description.trim()) return;
@@ -38,7 +38,6 @@ export function JobInput() {
             return;
         }
 
-        setIsProcessing(true);
         setIsProcessing(true);
         setError(null);
 

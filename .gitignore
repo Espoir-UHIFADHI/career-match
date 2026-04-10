@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 .env
+
+# Sorties locales dans scripts/dev/_output (sauf fichiers versionnés explicitement)
+scripts/dev/_output/*
+!scripts/dev/_output/.gitkeep
+!scripts/dev/_output/models_output.txt

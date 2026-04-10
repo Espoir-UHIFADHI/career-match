@@ -1,13 +1,11 @@
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
-// CONFIGURATION
-const PROJECT_REF = "hzzeoxkenxyjtpazshgp"; // From your deployment output
+// Renseigner avec vos valeurs locales — ne pas commiter d’identifiants réels.
+const PROJECT_REF = "<SUPABASE_PROJECT_REF>";
 const FUNCTION_URL = `https://${PROJECT_REF}.supabase.co/functions/v1/gumroad-webhook`;
 
-// TEST DATA
-// ID from your screenshot (Gumroad URL)
-const TEST_USER_ID = "user_36TYc1GRrtYx6Tsn3lx8swHbb2N";
-const TEST_EMAIL = "espoir.adouwekonou@uhifadhi.com";
+const TEST_USER_ID = "<CLERK_USER_ID>";
+const TEST_EMAIL = "<TEST_EMAIL>";
 
 async function testWebhook() {
     console.log(`🚀 Sending Fake Gumroad Webhook to Production...`);

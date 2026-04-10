@@ -1,35 +1,26 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
-
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { ArrowLeft, Download } from "lucide-react";
+// @ts-ignore — @react-pdf/renderer entry types
+import { pdf } from "@react-pdf/renderer";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
-import { useUser, useAuth } from "@clerk/clerk-react";
-import { Button } from "./ui/Button";
-import { ArrowLeft, Download } from "lucide-react";
-// @ts-ignore
-import { pdf } from "@react-pdf/renderer";
-import { CVDocument } from "./results/CVDocument";
-import { Steps } from "./ui/Steps";
 import { useTranslation } from "../hooks/useTranslation";
-
-
 import { CVUpload } from "./cv-form/CVUpload";
 import { CVReview } from "./cv-form/CVReview";
 import { JobInput } from "./job-input/JobInput";
+import { PurchaseSuccessModal } from "./modals/PurchaseSuccessModal";
+import { PricingPage } from "./PricingPage";
+import { CVDocument } from "./results/CVDocument";
 import { MatchingDashboard } from "./results/MatchingDashboard";
 import { PrintableCV } from "./results/PrintableCV";
-import { NetworkingSearch } from "./networking/NetworkingSearch";
 import { EmailPredictorTool } from "./networking/EmailPredictorTool";
-import { PricingPage } from "./PricingPage";
-
-import { PurchaseSuccessModal } from "./modals/PurchaseSuccessModal";
-
-// ... existing imports
-
-
+import { NetworkingSearch } from "./networking/NetworkingSearch";
+import { Button } from "./ui/Button";
+import { Steps } from "./ui/Steps";
 
 function Wizard() {
-  console.log("Wizard.tsx rendering");
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset } = useAppStore();
   const { fetchCredits, credits } = useUserStore();
   const { user, isSignedIn, isLoaded } = useUser();

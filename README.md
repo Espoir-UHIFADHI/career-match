@@ -81,6 +81,16 @@ Suivez ces étapes pour lancer le projet localement :
     ```
     L'application sera accessible à l'adresse `http://localhost:5173`.
 
+## Structure du dépôt
+
+| Dossier / fichier | Contenu |
+|-------------------|---------|
+| `src/` | Application React (Vite) |
+| `public/` | Assets statiques, `robots.txt`, `sitemap.xml` |
+| `supabase/` | Migrations SQL, Edge Functions |
+| `docs/` | [PRD](docs/PRD.md), [guide de cession](docs/GUIDE_CESSION.md) |
+| `scripts/` | Scripts maintenance et [outils dev](scripts/README.md) |
+
 ## 🤝 Contribution
 
 Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou une Pull Request pour proposer des améliorations.
