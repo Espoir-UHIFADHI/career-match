@@ -10,6 +10,7 @@ import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { trackEvent } from "../../utils/analytics";
+import { isAdminEmail } from "../../lib/adminUsers";
 
 export function JobInput() {
     const { t, language } = useTranslation();
@@ -33,7 +34,7 @@ export function JobInput() {
         }
 
         // Check local credits BEFORE starting
-        if (credits < 1 && user?.primaryEmailAddress?.emailAddress !== 'espoiradouwekonou20@gmail.com') {
+        if (credits < 1 && !isAdminEmail(user?.primaryEmailAddress?.emailAddress)) {
             setShowCreditModal(true);
             return;
         }

@@ -5,6 +5,7 @@ import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser, useClerk, useAuth } from "@clerk/clerk-react";
 import { cn } from "../lib/utils";
+import { isAdminEmail } from "../lib/adminUsers";
 import { useTranslation } from "../hooks/useTranslation";
 import { useNavigate, Link } from "react-router-dom";
 import { LanguageSelector } from "./LanguageSelector";
@@ -128,7 +129,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             >
                                 <Coins className="h-4 w-4 text-amber-500" />
                                 <span className="text-sm font-bold text-slate-900">
-                                    {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' ? '∞' : credits}
+                                    {isAdminEmail(user?.primaryEmailAddress?.emailAddress) ? '∞' : credits}
                                 </span>
                             </div>
                         </SignedIn>
@@ -179,7 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                             >
                                 <Coins className="h-3 w-3 text-amber-500" />
                                 <span className="text-xs font-bold text-slate-900">
-                                    {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' ? '∞' : credits}
+                                    {isAdminEmail(user?.primaryEmailAddress?.emailAddress) ? '∞' : credits}
                                 </span>
                             </div>
                         </SignedIn>
@@ -334,10 +335,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </div>
             </footer>
 
-            {/* Admin Action for Resend Sync - Global */}
-            {/* Admin Action for Resend Sync - Global */}
             <SignedIn>
-                {user?.primaryEmailAddress?.emailAddress === 'espoiradouwekonou20@gmail.com' && (
+                {isAdminEmail(user?.primaryEmailAddress?.emailAddress) && (
                     <div className="fixed bottom-4 left-4 z-50">
                         <button
                             onClick={() => {

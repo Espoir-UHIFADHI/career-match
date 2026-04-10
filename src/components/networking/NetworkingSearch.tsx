@@ -15,6 +15,7 @@ import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { downloadAsExcel } from "../../utils/excelExport";
+import { isAdminEmail } from "../../lib/adminUsers";
 
 interface Contact {
     name: string;
@@ -98,7 +99,7 @@ export function NetworkingSearch() {
         setError(null);
 
         // Check local credits BEFORE starting
-        if (credits < 1 && user?.primaryEmailAddress?.emailAddress !== 'espoiradouwekonou20@gmail.com') {
+        if (credits < 1 && !isAdminEmail(user?.primaryEmailAddress?.emailAddress)) {
             setShowCreditModal(true);
             return;
         }

@@ -11,6 +11,7 @@ import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useTranslation } from "../../hooks/useTranslation";
+import { isAdminEmail } from "../../lib/adminUsers";
 
 export function EmailPredictorTool() {
     const { t } = useTranslation();
@@ -65,7 +66,7 @@ export function EmailPredictorTool() {
         }
 
         // Check local credits BEFORE starting
-        if (credits < 1 && user?.primaryEmailAddress?.emailAddress !== 'espoiradouwekonou20@gmail.com') {
+        if (credits < 1 && !isAdminEmail(user?.primaryEmailAddress?.emailAddress)) {
             setShowCreditModal(true);
             return;
         }

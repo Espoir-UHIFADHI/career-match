@@ -204,7 +204,7 @@ Navigateur (React + Zustand persist)
 
 - Table **`referrals`** absente des migrations du dépôt — risque sur nouvel environnement.  
 - `console.log` résiduels ; quelques types `any`.  
-- `TODO.md` obsolète sur le proxy API (déjà réalisé via edge function).
+- `TODO.md` à la racine : pistes et dette résiduelle ; la section « Déjà en place » confirme que les flux sensibles passent par l’edge function.
 
 ### Synthèse
 

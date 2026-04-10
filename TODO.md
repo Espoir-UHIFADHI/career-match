@@ -9,4 +9,4 @@
 - Durcir la **validation du webhook Gumroad** (signature).
 - Restreindre les politiques **RLS** sur `public_analyses` si besoin RGPD.
 - Table **`referrals`** : versionner le SQL si le parrainage est utilisé (voir `docs/GUIDE_CESSION.md`).
-- Retirer le **bypass crédits** lié à un e-mail en dur au profit d’un rôle admin (Clerk / base).
+- Bypass crédits : configurable via **`VITE_ADMIN_EMAILS`** (liste séparée par des virgules) ; défaut historique si la variable est absente. Pour la prod stricte : définir explicitement les e-mails autorisés (ou `VITE_ADMIN_EMAILS=` vide pour désactiver le bypass). Rôle Clerk / flag base : optionnel plus tard.
