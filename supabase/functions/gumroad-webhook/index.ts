@@ -51,7 +51,8 @@ serve(async (req) => {
 
     } catch (error) {
         console.error("Webhook Error:", error)
-        return new Response(error.message, { status: 500 })
+        const message = error instanceof Error ? error.message : String(error)
+        return new Response(message, { status: 500 })
     }
 })
 

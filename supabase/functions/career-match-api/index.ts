@@ -8,6 +8,15 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 }
 
+/** JWT payload uses base64url; `atob` expects standard base64. */
+function decodeJwtPayload(token: string): { sub?: string } {
+    const segment = token.split('.')[1]
+    if (!segment) throw new Error('Invalid JWT format')
+    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+    return JSON.parse(atob(padded))
+}
+
 serve(async (req) => {
     // Handle CORS Preflight completely
     if (req.method === 'OPTIONS') {
@@ -24,8 +33,9 @@ serve(async (req) => {
 
         const authHeader = req.headers.get('Authorization')!;
         const token = authHeader.replace('Bearer ', '');
-        const authPayload = JSON.parse(atob(token.split('.')[1]));
+        const authPayload = decodeJwtPayload(token);
         const userId = authPayload.sub;
+        if (!userId) throw new Error('JWT missing sub claim');
 
         // Verify validity by trying to fetch the user's profile
         const { data: profile, error: authError } = await supabaseClient
@@ -74,7 +84,8 @@ serve(async (req) => {
 
     } catch (error) {
         console.error("🔥 API Error:", error)
-        return new Response(JSON.stringify({ error: error.message }), {
+        const msg = error instanceof Error ? error.message : String(error)
+        return new Response(JSON.stringify({ error: msg }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
         })

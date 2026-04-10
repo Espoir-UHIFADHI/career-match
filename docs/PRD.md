@@ -194,7 +194,7 @@ Navigateur (React + Zustand persist)
 
 ### Risques sécurité / conformité
 
-- **Bypass crédits** lié à un e-mail admin en dur dans le store et plusieurs composants — remplacer par rôle Clerk ou flag base.  
+- **Bypass crédits** : configurable via **`VITE_ADMIN_EMAILS`** et `src/lib/adminUsers.ts` (liste d’e-mails ; défaut historique si la variable est absente) — pour une cession stricte : vider la variable ou remplacer par un **rôle** Clerk / flag base.  
 - **`public_analyses`** : politique d’insert permissive — restreindre / quota / modération si besoin.  
 - **Webhook Gumroad** : vérifier **signature** côté prod.  
 - **CORS `*`** sur edge functions : resserrer avec l’origine prod.  
@@ -208,7 +208,7 @@ Navigateur (React + Zustand persist)
 
 ### Synthèse
 
-Career Match est une SPA structurée autour d’un wizard métier, avec monétisation Gumroad/Supabase et IA centralisée. Priorités recommandées : **harmoniser la politique de crédits** (y compris appels Serper « gratuits »), **retirer les bypass hardcodés**, **durcir RLS et webhook**, et **versionner le schéma `referrals`** si le parrainage est maintenu.
+Career Match est une SPA structurée autour d’un wizard métier, avec monétisation Gumroad/Supabase et IA centralisée. Priorités recommandées : **harmoniser la politique de crédits** (y compris appels Serper « gratuits »), **durcir RLS et webhook Gumroad**, **versionner le schéma `referrals`** si le parrainage est maintenu, et **finaliser le bypass admin** (env prod + option rôle Clerk) si besoin conformité cession.
 
 ---
 

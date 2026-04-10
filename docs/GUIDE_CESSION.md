@@ -71,6 +71,7 @@ Ces variables sont lues via `import.meta.env` (préfixe **`VITE_`**).
 | `VITE_CLERK_PUBLISHABLE_KEY` | `src/components/Providers.tsx` | Oui |
 | `VITE_SUPABASE_URL` | `src/services/supabase.ts`, `PublicAnalysis.tsx`, scripts | Oui |
 | `VITE_SUPABASE_ANON_KEY` | Idem | Oui |
+| `VITE_ADMIN_EMAILS` | `src/lib/adminUsers.ts` — e-mails avec bypass crédits (UI) ; optionnel | Non |
 
 **Note README** : `README.md` mentionne encore `VITE_GEMINI_API_KEY`. En production actuelle, **Gemini est appelé depuis l’Edge Function** `career-match-api` avec `GEMINI_API_KEY` côté Supabase. `vite.config.ts` peut encore injecter `VITE_GEMINI_API_KEY` pour des scripts locaux — **ne pas exposer une vraie clé Gemini dans le build client** ; la config canonique pour la prod est le **secret Supabase**.
 
@@ -332,15 +333,9 @@ Effectuer un remplacement systématique (ou un ticket par fichier) pour le **nou
 
 ### 13.5 Compte administrateur « crédits illimités » (à supprimer ou généraliser)
 
-Fichiers contenant **`espoiradouwekonou20@gmail.com`** :
+Le bypass est centralisé dans **`src/lib/adminUsers.ts`** (`isAdminEmail`) et piloté par **`VITE_ADMIN_EMAILS`** (liste d’e-mails séparés par des virgules sur Vercel / `.env`). Les composants et le store appellent cette fonction au lieu d’un e-mail en dur.
 
-- `src/store/useUserStore.ts` — bypass `useCredit`
-- `src/components/Layout.tsx` — affichage `∞` + bloc debug conditionnel
-- `src/components/job-input/JobInput.tsx`
-- `src/components/networking/NetworkingSearch.tsx`
-- `src/components/networking/EmailPredictorTool.tsx`
-
-**Impératif cession** : retirer ces bypass ou les remplacer par un **rôle** géré proprement (Clerk `publicMetadata`, ou table admin), sinon l’acquéreur hérite d’un **backdoor**.
+**Impératif cession** : définir explicitement les e-mails autorisés (ou `VITE_ADMIN_EMAILS=` vide pour désactiver le bypass côté UI), ou remplacer par un **rôle** Clerk / table admin. Un **défaut** peut subsister dans `adminUsers.ts` si la variable n’est pas définie — à retirer pour un dépôt « neutre ». Les valeurs `VITE_*` étant dans le bundle client, ce n’est pas un secret fort ; prévoir **rôle serveur** si l’acquéreur exige une garantie forte.
 
 ### 13.6 Lien de parrainage affiché aux utilisateurs
 

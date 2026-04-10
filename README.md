@@ -56,6 +56,9 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_...
 VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
 
+# Optionnel — comptes admin (bypass garde-fous crédits côté UI), liste séparée par des virgules
+# VITE_ADMIN_EMAILS=admin@exemple.com
+
 # Optionnel — scripts locaux de diagnostic (voir scripts/README.md)
 # Les appels IA / Serper / Hunter en prod passent par les secrets Supabase des Edge Functions.
 # VITE_GEMINI_API_KEY=
@@ -72,6 +75,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 |----------|------|
 | `npm run dev` | Serveur de dev Vite → http://localhost:5173 |
 | `npm run build` | `tsc -b` + build production dans `dist/` |
+| `npm run typecheck` | Vérification TypeScript (`tsc -b` sans Vite) |
 | `npm run preview` | Prévisualiser le build localement |
 | `npm run lint` | ESLint sur le dépôt |
 
@@ -84,7 +88,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | `src/` | Application React |
 | `public/` | Assets statiques, `robots.txt`, `sitemap.xml` |
 | `supabase/migrations/` | Schéma SQL et RPC (crédits, profils, etc.) |
-| `supabase/functions/` | Edge Functions (API métier, webhooks, e-mail) |
+| `supabase/functions/` | Edge Functions (API métier, webhooks, e-mail) ; certaines fonctions ont un `tsconfig.json` + `deno-shims.d.ts` local pour l’IDE TypeScript |
 | [`docs/`](docs/) | [PRD](docs/PRD.md), [guide de cession / déploiement](docs/GUIDE_CESSION.md) |
 | [`scripts/`](scripts/) | Maintenance et [outils dev](scripts/README.md) |
 
