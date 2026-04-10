@@ -46,8 +46,13 @@ async function callBackend(action: string, payload: any, token?: string): Promis
       return data;
     }
 
-    lastMessage = error.message || lastMessage;
-    console.error(`🔥 Secure Backend Error (${action}):`, error);
+    // Edge Function often returns JSON { error: "..." } on 500; surface it for debugging
+    const serverDetail =
+      data && typeof data === "object" && data !== null && "error" in data
+        ? String((data as { error: unknown }).error)
+        : "";
+    lastMessage = [error.message, serverDetail].filter(Boolean).join(" — ") || lastMessage;
+    console.error(`🔥 Secure Backend Error (${action}):`, error, serverDetail ? { serverDetail } : "");
 
     if (isNonRetryableInvokeError(error)) {
       throw new Error(lastMessage);
