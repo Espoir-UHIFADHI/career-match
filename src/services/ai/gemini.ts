@@ -1,24 +1,66 @@
 import { supabase } from "../supabase";
 import type { ParsedCV, JobAnalysis, MatchResult } from "../../types";
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Do not retry auth failures — repeating the call will not help. */
+function isNonRetryableInvokeError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  if (/401|403|Unauthorized|Forbidden/i.test(msg)) return true;
+  const ctx = error && typeof error === "object" && "context" in error
+    ? (error as { context?: { status?: number } }).context
+    : undefined;
+  const status = ctx?.status;
+  if (status === 401 || status === 403) return true;
+  return false;
+}
+
+/** More attempts for Gemini-backed actions (intermittent 500 / cold starts / quota bursts). */
+const ACTION_MAX_ATTEMPTS: Record<string, number> = {
+  "parse-cv": 3,
+  "optimize-cv": 3,
+  "analyze-job": 3,
+  "generate-networking-queries": 2,
+  "generate-networking-message": 2,
+};
+
 // Helper to call the Secure Edge Function
 async function callBackend(action: string, payload: any, token?: string): Promise<any> {
+  const maxAttempts = ACTION_MAX_ATTEMPTS[action] ?? 1;
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
-  const { data, error } = await supabase.functions.invoke('career-match-api', {
-    body: {
-      action,
-      payload
-    },
-    headers: headers
-  });
+  let lastMessage = "Erreur de communication avec le serveur sécurisé.";
 
-  if (error) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const { data, error } = await supabase.functions.invoke("career-match-api", {
+      body: {
+        action,
+        payload,
+      },
+      headers,
+    });
+
+    if (!error) {
+      return data;
+    }
+
+    lastMessage = error.message || lastMessage;
     console.error(`🔥 Secure Backend Error (${action}):`, error);
-    throw new Error(error.message || "Erreur de communication avec le serveur sécurisé.");
+
+    if (isNonRetryableInvokeError(error)) {
+      throw new Error(lastMessage);
+    }
+
+    if (attempt < maxAttempts - 1) {
+      const waitMs = 1200 * 2 ** attempt;
+      console.warn(`↻ ${action} nouvel essai ${attempt + 2}/${maxAttempts} dans ${waitMs}ms`);
+      await delay(waitMs);
+    }
   }
 
-  return data;
+  throw new Error(lastMessage);
 }
 
 /**
@@ -57,7 +99,12 @@ export async function parseCV(file: File, token?: string): Promise<ParsedCV> {
       mimeType: filePart.mimeType
     }, token);
 
-    return JSON.parse(responseData.text) as ParsedCV;
+    const raw =
+      typeof responseData?.text === "string" ? responseData.text.trim() : "";
+    if (!raw) {
+      throw new Error("Réponse d'analyse vide.");
+    }
+    return JSON.parse(raw) as ParsedCV;
 
   } catch (error) {
     console.error("❌ Erreur Parsing (Secure):", error);
@@ -76,7 +123,12 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
       language: _language
     }, token);
 
-    const result = JSON.parse(responseData.text) as MatchResult;
+    const raw =
+      typeof responseData?.text === "string" ? responseData.text.trim() : "";
+    if (!raw) {
+      throw new Error("Réponse de matching vide.");
+    }
+    const result = JSON.parse(raw) as MatchResult;
     return { ...result, analysisLanguage: _language as "English" | "French" };
   } catch (error) {
     console.error("❌ Erreur Matching (Secure):", error);
@@ -94,7 +146,12 @@ export async function analyzeJobPosting(description: string, language: string, t
       language
     }, token);
 
-    return JSON.parse(responseData.text) as JobAnalysis;
+    const raw =
+      typeof responseData?.text === "string" ? responseData.text.trim() : "";
+    if (!raw) {
+      throw new Error("Réponse d'analyse d'offre vide.");
+    }
+    return JSON.parse(raw) as JobAnalysis;
   } catch (error) {
     console.error("❌ Erreur Job Analysis (Secure):", error);
     throw error;
@@ -128,7 +185,12 @@ export async function generateNetworkingQueries(
       language
     }, token);
 
-    return JSON.parse(responseData.text) as NetworkingQueriesResponse;
+    const raw =
+      typeof responseData?.text === "string" ? responseData.text.trim() : "";
+    if (!raw) {
+      throw new Error("Réponse requêtes réseau vide.");
+    }
+    return JSON.parse(raw) as NetworkingQueriesResponse;
   } catch (error) {
     console.error("❌ Erreur Requêtes (Secure):", error);
     throw error;
