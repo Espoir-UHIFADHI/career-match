@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import type { ParsedCV } from "../../types";
 import { Mail, Phone, MapPin, Linkedin, Globe, Calendar } from "lucide-react";
+import { normalizeParsedCV } from "../../utils/normalizeCV";
 
 interface PrintableCVProps {
     data: ParsedCV;
@@ -73,7 +74,8 @@ const calculateDensity = (data: ParsedCV): 'comfortable' | 'compact' | 'ultra' =
     return 'comfortable';
 };
 
-export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({ data, language = "French" }, ref) => {
+export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({ data: rawData, language = "French" }, ref) => {
+    const data = useMemo(() => normalizeParsedCV(rawData) ?? rawData, [rawData]);
     const headers = SECTION_HEADERS[language];
 
     const density = useMemo(() => calculateDensity(data), [data]);

@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { type ParsedCV, type JobAnalysis, type MatchResult } from "../types";
 import type { SearchResult } from "../services/search/serper";
 import type { NetworkingQualityProfile } from "../services/networking/quality";
+import { normalizeMatchResult, normalizeParsedCV } from "../utils/normalizeCV";
 
 interface EmailPredictorState {
     company: string;
@@ -80,9 +81,9 @@ export const useAppStore = create<AppState>()(
             networkingSectionCache: {},
 
             setStep: (step) => set({ step }),
-            setCvData: (cvData) => set({ cvData }),
+            setCvData: (cvData) => set({ cvData: normalizeParsedCV(cvData) }),
             setJobData: (jobData) => set({ jobData, analysisResults: null }),
-            setAnalysisResults: (analysisResults) => set({ analysisResults }),
+            setAnalysisResults: (analysisResults) => set({ analysisResults: normalizeMatchResult(analysisResults) }),
             setLanguage: (language) => set({ language }),
             setUserId: (userId) => set({ userId }),
 
@@ -121,6 +122,15 @@ export const useAppStore = create<AppState>()(
                 networking: state.networking,
                 networkingSectionCache: state.networkingSectionCache
             }),
+            merge: (persistedState, currentState) => {
+                const persisted = persistedState as Partial<AppState> | undefined;
+                return {
+                    ...currentState,
+                    ...persisted,
+                    cvData: normalizeParsedCV(persisted?.cvData),
+                    analysisResults: normalizeMatchResult(persisted?.analysisResults),
+                };
+            },
         }
     )
 );

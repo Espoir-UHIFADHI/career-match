@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Page, Text, View, Document, StyleSheet, Link } from "@react-pdf/renderer";
 import type { ParsedCV } from "../../types";
+import { normalizeParsedCV } from "../../utils/normalizeCV";
 
 const createStyles = (density: 'comfortable' | 'standard' | 'compact') => {
     // Slightly relaxed Compact mode values ("Air out" request)
@@ -275,7 +276,8 @@ const calculateDensity = (data: ParsedCV) => {
     return 'compact';
 };
 
-export const CVDocument: React.FC<CVDocumentProps> = ({ data, language = "French" }) => {
+export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language = "French" }) => {
+    const data = useMemo(() => normalizeParsedCV(rawData) ?? rawData, [rawData]);
     const headers = SECTION_HEADERS[language];
 
     // Determine styles based on content density

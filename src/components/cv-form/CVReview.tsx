@@ -10,6 +10,7 @@ import { Plus, Trash2, User, FileText, Code, Briefcase, GraduationCap, X, AlertC
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
 import { useTranslation } from "../../hooks/useTranslation";
 import { cn } from "../../lib/utils";
+import { normalizeParsedCV } from "../../utils/normalizeCV";
 
 interface CVReviewProps {
     initialData: ParsedCV;
@@ -20,13 +21,14 @@ interface CVReviewProps {
 export function CVReview({ initialData, onSave, onCancel }: CVReviewProps) {
     const { t } = useTranslation();
     const [formData, setFormData] = useState<ParsedCV>(() => {
-        if (!initialData.interests || initialData.interests.length === 0) {
+        const normalizedData = normalizeParsedCV(initialData) ?? initialData;
+        if (!normalizedData.interests || normalizedData.interests.length === 0) {
             return {
-                ...initialData,
+                ...normalizedData,
                 interests: ["Musique"]
             };
         }
-        return initialData;
+        return normalizedData;
     });
     const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
 
