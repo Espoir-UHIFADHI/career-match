@@ -39,7 +39,7 @@ export function NetworkingSection() {
         if (!jobData) return;
         setLoading(true);
         try {
-            const token = await getToken({ template: 'supabase' });
+            const token = await getToken();
             // Search for people in the company with similar roles or hiring roles
             // We can search for "Recruiter" or the specific role
             const results = await searchLinkedIn(jobData.company, jobData.title, 10, 0, token || undefined);

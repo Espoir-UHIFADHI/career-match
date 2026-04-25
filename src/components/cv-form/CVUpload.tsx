@@ -39,19 +39,21 @@ export function CVUpload() {
         setError(null);
 
         try {
-            // Get fresh token for the request
-            const token = await getToken({ template: 'supabase' });
+            // career-match-api verifies the standard Clerk JWT itself.
+            // The Supabase JWT template is only for PostgREST/RPC calls.
+            const apiToken = await getToken();
+            const supabaseToken = await getToken({ template: 'supabase' });
 
             // Pass token to parseCV for authenticated request
-            const parsedData = await parseCV(file, token || undefined);
+            const parsedData = await parseCV(file, apiToken || undefined);
             if (!(parsedData as ParsedCV & { __serverBilled?: boolean }).__serverBilled && user?.id) {
-                const creditResult = await spendCredit(user.id, 1, token || undefined);
+                const creditResult = await spendCredit(user.id, 1, supabaseToken || undefined);
                 if (!creditResult.success) {
                     setShowCreditModal(true);
                     return;
                 }
             }
-            if (user?.id) await fetchCredits(user.id, token || undefined);
+            if (user?.id) await fetchCredits(user.id, supabaseToken || undefined);
 
             console.log("Parsed Data:", parsedData);
 

@@ -1,5 +1,3 @@
-import { supabase, createClerkSupabaseClient } from "../supabase";
-
 export interface SearchResult {
     title: string;
     link: string;
@@ -25,24 +23,47 @@ interface BatchSearchInput {
     dateFilter?: boolean;
 }
 
+async function callSearchBackend<T>(action: string, payload: Record<string, unknown>, token?: string): Promise<T> {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+    if (!supabaseUrl) throw new Error("VITE_SUPABASE_URL manquant.");
+    if (!token) throw new Error("Session invalide. Veuillez vous reconnecter.");
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/career-match-api`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action, payload }),
+    });
+
+    const responseText = await response.text();
+    let body: unknown = null;
+    try {
+        body = responseText ? JSON.parse(responseText) : null;
+    } catch {
+        body = responseText;
+    }
+
+    if (!response.ok) {
+        const message =
+            typeof body === "object" && body && "error" in body
+                ? String((body as { error: unknown }).error)
+                : String(body || response.statusText);
+        throw new Error(message || `Erreur serveur (${response.status})`);
+    }
+
+    return body as T;
+}
+
 export async function searchGoogle(query: string, num: number = 10, start: number = 0, token?: string, dateFilter: boolean = false, language: string = 'fr'): Promise<SearchResult[]> {
     console.log("🚀 Serper Search (Secure Backend)...", { query, hasToken: !!token, language });
 
-    // Use authenticated client if token is available, otherwise fall back to anonymous (which will likely fail per RLS/Function policies, but valid fallback)
-    const client = token ? createClerkSupabaseClient(token) : supabase;
-
-    const { data: result, error } = await client.functions.invoke('career-match-api', {
-        body: {
-            action: 'serper-search',
-            payload: { q: query, num, start, tbs: dateFilter ? 'qdr:y' : undefined, language }
-        }
-    });
-
-    if (error) {
-        // Log detailed error from Supabase RPC
-        console.error("🔥 Secure Search Error:", error);
-        throw new Error(error.message || "Erreur de recherche sécurisée.");
-    }
+    const result = await callSearchBackend<{ organic?: SerperOrganicResult[] }>(
+        "serper-search",
+        { q: query, num, start, tbs: dateFilter ? 'qdr:y' : undefined, language },
+        token
+    );
 
     if (!result.organic || result.organic.length === 0) {
         console.warn("Serper returned no organic results");
@@ -61,28 +82,21 @@ export async function searchGoogle(query: string, num: number = 10, start: numbe
 export async function searchGoogleBatch(searches: BatchSearchInput[], token?: string, language: string = 'fr'): Promise<Array<SearchResult & { queryLabel: string }>> {
     if (searches.length === 0) return [];
 
-    const client = token ? createClerkSupabaseClient(token) : supabase;
-    const { data: result, error } = await client.functions.invoke('career-match-api', {
-        body: {
-            action: 'serper-batch-search',
-            payload: {
+    const result = await callSearchBackend<{ results?: Array<{ label?: string; data?: { organic?: SerperOrganicResult[] } }> }>(
+        "serper-batch-search",
+        {
+            language,
+            searches: searches.map((item) => ({
+                q: item.query,
+                label: item.label,
+                num: item.num ?? 10,
+                start: item.start ?? 0,
+                tbs: item.dateFilter ? 'qdr:y' : undefined,
                 language,
-                searches: searches.map((item) => ({
-                    q: item.query,
-                    label: item.label,
-                    num: item.num ?? 10,
-                    start: item.start ?? 0,
-                    tbs: item.dateFilter ? 'qdr:y' : undefined,
-                    language,
-                })),
-            },
+            })),
         },
-    });
-
-    if (error) {
-        console.error("🔥 Secure Batch Search Error:", error);
-        throw new Error(error.message || "Erreur de recherche sécurisée.");
-    }
+        token
+    );
 
     const batches = Array.isArray(result?.results) ? result.results : [];
     return batches.flatMap((batch: { label?: string; data?: { organic?: SerperOrganicResult[] } }) => {

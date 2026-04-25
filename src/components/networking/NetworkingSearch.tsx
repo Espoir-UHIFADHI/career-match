@@ -281,7 +281,8 @@ export function NetworkingSearch() {
         }
 
         try {
-            const token = await getToken({ template: 'supabase' });
+            const apiToken = await getToken();
+            const supabaseToken = await getToken({ template: 'supabase' });
 
             // 1. Generate Query Parts if needed (only on first search or if fresh search)
             let currentAiData = aiSearchData;
@@ -289,7 +290,7 @@ export function NetworkingSearch() {
             if (!isLoadMore && !currentAiData) {
                 try {
                     // Pass language to generate queries in the correct language
-                    const response = await generateNetworkingQueries(company, role, location, token || undefined, language);
+                    const response = await generateNetworkingQueries(company, role, location, apiToken || undefined, language);
 
                     if (response && response.keywords) {
                         // New Backend Format
@@ -348,7 +349,7 @@ export function NetworkingSearch() {
                     num: perQueryLimit,
                     start: startOffset,
                 })),
-                token || undefined,
+                apiToken || undefined,
                 language
             );
             if (searchResults.length === 0) {
@@ -378,14 +379,15 @@ export function NetworkingSearch() {
             }
             setNetworkingState({ hasSearched: true });
 
-            if (addedCount > 0) await fetchCredits(user.id, token || undefined);
+            if (addedCount > 0) await fetchCredits(user.id, supabaseToken || undefined);
 
         } catch (error) {
             console.error("Search failed:", error);
             if (error instanceof Error && /insufficient credits/i.test(error.message)) {
                 setShowCreditModal(true);
             } else {
-                setError(t('networking.searchError') || "Une erreur s'est produite lors de la recherche.");
+                const detail = error instanceof Error ? error.message : "";
+                setError(detail || t('networking.searchError') || "Une erreur s'est produite lors de la recherche.");
             }
         } finally {
             setIsSearching(false);
@@ -428,7 +430,7 @@ export function NetworkingSearch() {
         setOneLineAboutMe(oneLineAboutMe || buildCandidateOneLiner(cvData, role));
         setObjective(objective || "Obtenir 10 minutes d'échange pour un retour / conseil.");
 
-        const token = await getToken({ template: "supabase" });
+        const token = await getToken();
         if (!token || !user) return;
 
         const jobKey = makeJobKey({ company, title: role });
@@ -453,7 +455,7 @@ export function NetworkingSearch() {
     };
 
     const saveCrmEdits = async () => {
-        const token = await getToken({ template: "supabase" });
+        const token = await getToken();
         if (!token || !user || !selectedContact) return;
 
         setIsSavingCrm(true);
@@ -509,7 +511,7 @@ export function NetworkingSearch() {
 
     const handleGenerateSequence = async () => {
         if (!selectedContact || !user) return;
-        const token = await getToken({ template: "supabase" });
+        const token = await getToken();
         if (!token) return;
 
         setIsGeneratingSequence(true);
@@ -619,7 +621,7 @@ export function NetworkingSearch() {
         setCopySuccessId(msg.id);
         setTimeout(() => setCopySuccessId(null), 1500);
         try {
-            const token = await getToken({ template: "supabase" });
+            const token = await getToken();
             if (!token) return;
             const updated = await markNetworkingMessageCopied({ token, messageId: msg.id });
             setHistory((h) => h.map((x) => (x.id === updated.id ? updated : x)));
@@ -655,7 +657,7 @@ export function NetworkingSearch() {
     });
 
     const refreshSavedContacts = async () => {
-        const token = await getToken({ template: "supabase" });
+        const token = await getToken();
         if (!token) return;
         setIsLoadingSavedContacts(true);
         try {

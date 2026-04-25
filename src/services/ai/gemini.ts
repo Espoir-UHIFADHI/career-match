@@ -36,6 +36,9 @@ const ACTION_MAX_ATTEMPTS: Record<string, number> = {
 // Helper to call the Secure Edge Function
 async function callBackend(action: string, payload: BackendPayload, token?: string): Promise<BackendTextResponse> {
   const maxAttempts = ACTION_MAX_ATTEMPTS[action] ?? 1;
+  if (!token || token.split(".").length !== 3) {
+    throw new Error("Session invalide : le token Clerk/Supabase est absent ou mal formé. Reconnectez-vous ou vérifiez le JWT template Clerk nommé supabase.");
+  }
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
   let lastMessage = "Erreur de communication avec le serveur sécurisé.";

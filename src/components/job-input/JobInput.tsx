@@ -43,18 +43,20 @@ export function JobInput() {
 
         trackEvent("start_analysis", { length: description.length });
 
-        let token: string | null = null;
+        let apiToken: string | null = null;
+        let supabaseToken: string | null = null;
         try {
-            token = await getToken({ template: 'supabase' });
+            apiToken = await getToken();
+            supabaseToken = await getToken({ template: 'supabase' });
         } catch (error) {
-            console.error("Error getting Supabase token:", error);
+            console.error("Error getting auth tokens:", error);
         }
 
         try {
             const targetLanguage = language === 'fr' ? 'French' : 'English';
-            const analysis = await analyzeJobPosting(description, targetLanguage, token || undefined);
+            const analysis = await analyzeJobPosting(description, targetLanguage, apiToken || undefined);
             if (!(analysis as JobAnalysis & { __serverBilled?: boolean }).__serverBilled) {
-                const creditResult = await spendCredit(user.id, 1, token || undefined);
+                const creditResult = await spendCredit(user.id, 1, supabaseToken || undefined);
                 if (!creditResult.success) {
                     setShowCreditModal(true);
                     return;
@@ -62,7 +64,7 @@ export function JobInput() {
             }
             console.log("Job Analysis Result:", analysis);
             setPreviewData({ ...analysis });
-            await fetchCredits(user.id, token || undefined);
+            await fetchCredits(user.id, supabaseToken || undefined);
 
         } catch (err) {
             console.error(err);

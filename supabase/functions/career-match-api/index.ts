@@ -13,6 +13,18 @@ type LlmTextResponse = { text: string; provider: "gemini" | "openrouter" };
 
 type LlmProvider = "gemini" | "openrouter";
 
+type JwtHeader = {
+    alg?: string;
+    kid?: string;
+};
+
+type JwtClaims = {
+    sub?: string;
+    iss?: string;
+    exp?: number;
+    nbf?: number;
+};
+
 class HttpError extends Error {
     status: number;
 
@@ -167,24 +179,82 @@ serve(async (req) => {
 async function getAuthenticatedUserId(req: Request): Promise<string> {
     const authHeader = req.headers.get('Authorization') || '';
     const token = authHeader.replace('Bearer ', '').trim();
-    if (!token) throw new Error('Missing bearer token');
-
-    const url = Deno.env.get('SUPABASE_URL') ?? '';
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    if (!url || !anonKey) {
-        throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
+    if (!token) throw new HttpError(401, 'Missing bearer token');
+    if (token.split('.').length !== 3) {
+        throw new HttpError(401, 'Invalid bearer token format');
     }
 
-    const client = createClient(url, anonKey, {
-        global: { headers: { Authorization: `Bearer ${token}` } },
-    });
-    const { data, error } = await client.auth.getClaims(token);
-    const userId = data?.claims?.sub;
-    if (error || !userId) {
-        throw new Error('Invalid or expired bearer token');
+    const claims = await verifyClerkJwt(token);
+    if (!claims.sub) {
+        throw new HttpError(401, 'Invalid or expired bearer token');
     }
 
-    return userId;
+    return claims.sub;
+}
+
+function decodeBase64Url(input: string): Uint8Array {
+    const base64 = input.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(input.length / 4) * 4, '=');
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+}
+
+function decodeJwtJson<T>(part: string): T {
+    const text = new TextDecoder().decode(decodeBase64Url(part));
+    return JSON.parse(text) as T;
+}
+
+async function verifyClerkJwt(token: string): Promise<JwtClaims> {
+    const [encodedHeader, encodedPayload, encodedSignature] = token.split('.');
+    const header = decodeJwtJson<JwtHeader>(encodedHeader);
+    const claims = decodeJwtJson<JwtClaims>(encodedPayload);
+
+    if (header.alg !== 'RS256' || !header.kid || !claims.iss) {
+        throw new HttpError(401, 'Invalid bearer token');
+    }
+
+    const expectedIssuer = Deno.env.get('CLERK_JWT_ISSUER') || Deno.env.get('CLERK_ISSUER');
+    if (expectedIssuer && claims.iss !== expectedIssuer) {
+        throw new HttpError(401, 'Invalid token issuer');
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (!claims.sub || !claims.exp || claims.exp <= now || (claims.nbf && claims.nbf > now)) {
+        throw new HttpError(401, 'Invalid or expired bearer token');
+    }
+
+    const issuerUrl = new URL(claims.iss);
+    if (issuerUrl.protocol !== 'https:') {
+        throw new HttpError(401, 'Invalid token issuer');
+    }
+
+    const jwksResponse = await fetch(new URL('/.well-known/jwks.json', issuerUrl).toString());
+    if (!jwksResponse.ok) {
+        throw new HttpError(401, 'Unable to verify bearer token');
+    }
+
+    const jwks = await jwksResponse.json() as { keys?: Array<Record<string, unknown>> };
+    const jwk = jwks.keys?.find((key) => key.kid === header.kid);
+    if (!jwk) {
+        throw new HttpError(401, 'Unknown token signing key');
+    }
+
+    const cryptoKey = await crypto.subtle.importKey(
+        'jwk',
+        jwk,
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        false,
+        ['verify'],
+    );
+    const signature = decodeBase64Url(encodedSignature);
+    const signedData = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`);
+    const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, signedData);
+    if (!valid) {
+        throw new HttpError(401, 'Invalid bearer token signature');
+    }
+
+    return claims;
 }
 
 // --- HANDLERS ---
@@ -359,7 +429,8 @@ async function handleSerperSearch(payload: any) {
     })
 
     if (!response.ok) {
-        throw new Error(`Serper API Invalid Response: ${response.statusText}`)
+        const errText = await response.text()
+        throw new Error(`Serper API Error: ${response.status} ${errText || response.statusText}`)
     }
 
     const data = await response.json()
@@ -375,20 +446,39 @@ async function handleSerperBatchSearch(payload: any) {
         throw new HttpError(400, "Invalid serper batch size");
     }
 
-    const results = await Promise.all(searches.map(async (item: any) => {
-        const response = await handleSerperSearch({
-            q: item.q,
-            num: item.num,
-            start: item.start,
-            tbs: item.tbs,
-            language: item.language ?? payload.language,
-        });
-        const data = await response.json();
-        return {
-            label: item.label ?? "",
-            data,
-        };
+    const settled = await Promise.allSettled(searches.map(async (item: any) => {
+        try {
+            const response = await handleSerperSearch({
+                q: item.q,
+                num: item.num,
+                start: item.start,
+                tbs: item.tbs,
+                language: item.language ?? payload.language,
+            });
+            const data = await response.json();
+            return {
+                label: item.label ?? "",
+                data,
+            };
+        } catch (error) {
+            console.warn("Serper batch item failed:", {
+                label: item.label ?? "",
+                q: item.q,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            throw error;
+        }
     }));
+
+    const results = settled
+        .filter((item): item is PromiseFulfilledResult<{ label: string; data: any }> => item.status === "fulfilled")
+        .map((item) => item.value);
+
+    if (results.length === 0) {
+        const firstError = settled.find((item): item is PromiseRejectedResult => item.status === "rejected");
+        const message = firstError?.reason instanceof Error ? firstError.reason.message : String(firstError?.reason || "No Serper results");
+        throw new Error(message);
+    }
 
     return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

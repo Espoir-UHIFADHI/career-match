@@ -254,16 +254,17 @@ export function MatchingDashboard() {
 
         setError(null);
         try {
-            const token = await getToken({ template: 'supabase' });
-            const results = await matchAndOptimize(cvData, jobData, cvLanguage, token || undefined);
+            const apiToken = await getToken();
+            const supabaseToken = await getToken({ template: 'supabase' });
+            const results = await matchAndOptimize(cvData, jobData, cvLanguage, apiToken || undefined);
             if (!(results as MatchResult & { __serverBilled?: boolean }).__serverBilled && user?.id) {
-                const creditResult = await spendCredit(user.id, 1, token || undefined);
+                const creditResult = await spendCredit(user.id, 1, supabaseToken || undefined);
                 if (!creditResult.success) {
                     setShowCreditModal(true);
                     return;
                 }
             }
-            if (user?.id) await fetchCredits(user.id, token || undefined);
+            if (user?.id) await fetchCredits(user.id, supabaseToken || undefined);
 
             // If updating, preserve the original score and analysis to avoid flickering/confusion,
             // unless we want to allow them to change. The user asked for "only the CV refreshes".
@@ -289,7 +290,7 @@ export function MatchingDashboard() {
                         score: (results as any).score,
                         jobTitle: jobData.title || jobData.company || 'Job'
                     },
-                    token || ""
+                    supabaseToken || ""
                 );
             }
         } catch (err) {

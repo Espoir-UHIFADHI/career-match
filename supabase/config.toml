@@ -1,0 +1,2 @@
+[functions.career-match-api]
+verify_jwt = false
