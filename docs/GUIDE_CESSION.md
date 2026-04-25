@@ -105,6 +105,7 @@ Configurer dans le tableau de bord Supabase : **Project Settings → Edge Functi
 |--------|--------|
 | `SUPABASE_URL` | |
 | `SUPABASE_SERVICE_ROLE_KEY` | Upsert `profiles` (crédits) — **très sensible** |
+| `GUMROAD_WEBHOOK_SECRET` | Secret partagé attendu par le webhook |
 
 ### 5.3 Fonction `redeem-license`
 
@@ -180,23 +181,30 @@ Appliquer sur une base **vide** en respectant l’ordre des fichiers (timestamps
 | `20241205_create_decrease_credits_rpc.sql` | RPC débit atomique |
 | `20241207_create_used_licenses.sql` | Licences Gumroad |
 | `20251211_create_public_analyses.sql` | Partage public |
+| `20260424_create_networking_crm.sql` | Mini-CRM networking |
+| `20260425_harden_credits_and_usage.sql` | Audit crédits, RPC durcies |
+| `20260425_create_credit_grants_rpc.sql` | Ajout de crédits idempotent |
+| `20260425_harden_public_analyses.sql` | Expiration, révocation, politiques de partage |
+| `20260425_create_referrals_table.sql` | Table de parrainage |
+| `20260425_harden_email_cache_rls.sql` | Cache Hunter lisible seulement par authentifiés |
 
 **Fichiers SQL à la racine `supabase/` (hors `migrations/`)** : `fix_rls_clerk_final.sql`, `fix_cache_rls.sql` — traiter comme **correctifs manuels** à appliquer si la doc interne ou l’historique de déploiement l’exige ; les inclure dans le paquet de cession avec explication.
 
-### 7.2 Table `referrals` (critique)
+### 7.2 Tables récentes à vérifier pendant la reprise
 
-La fonction Edge **`process-referral`** exécute `insert` et `select` sur la table **`referrals`**.  
-**Aucun fichier dans `supabase/migrations/` ne crée cette table** dans le dépôt.  
+Les migrations récentes ajoutent des éléments importants pour la production :
 
-**Action pour l’acquéreur** : soit récupérer le SQL de création depuis l’instance Supabase actuelle (dump / migration manuelle), soit créer une migration nouvelle avec colonnes cohérentes avec le code :
+- `credit_usage_events` : audit des débits et remboursements de crédits.
+- `credit_grants` : idempotence des achats, licences et parrainages.
+- `networking_contacts` et `networking_message_history` : mini-CRM networking.
+- `referrals` : parrainage.
+- `public_analyses.expires_at`, `revoked_at`, `share_type` : durcissement des liens publics.
 
-- Colonnes utilisées dans le code : `referrer_id`, `referred_user_id`, `status`, `completed_at` (et contrainte d’unicité sur le filleul pour idempotence).
-
-Sans cette table, le parrainage **plantera** à l’insertion.
+**Action pour l’acquéreur** : après migration, vérifier que ces tables existent bien sur l’instance cible, surtout si la base est restaurée depuis un dump ancien.
 
 ### 7.3 RLS et sécurité (à communiquer)
 
-- `public_analyses` : lecture publique ; politique d’insert large — l’acquéreur doit en connaitre les implications **RGPD** (contenu CV potentiel).
+- `public_analyses` : lecture publique limitée aux liens non expirés et non révoqués — l’acquéreur doit en connaitre les implications **RGPD** (contenu CV potentiel).
 - Ne **jamais** exposer `SUPABASE_SERVICE_ROLE_KEY` au frontend.
 
 ---
@@ -262,7 +270,7 @@ Logique des crédits dans `gumroad-webhook/index.ts` :
 - Permalink contenant `pack-booster` ou égal à `ezocca` → **+20**
 - Permalink contenant `career-coach` ou égal à `kyhjbx` → **+100**
 
-**Sécurité** : le code ne montre pas de vérification de signature Gumroad — **recommandation forte** pour l’acquéreur : ajouter la validation officielle des webhooks Gumroad avant exploitation à grande échelle.
+**Sécurité** : le webhook exige `GUMROAD_WEBHOOK_SECRET` via header ou champ form. Pour une exploitation à grande échelle, vérifier aussi les mécanismes officiels disponibles côté Gumroad et documenter la configuration exacte.
 
 ### 9.3 Licences (`redeem-license`)
 
@@ -433,10 +441,10 @@ L’acquéreur valide dans l’ordre :
 
 - Ce dépôt **sans** e-mails perso / bypass admin / `PROJECT_REF` dans les scripts de test.
 - Liste des **secrets** (noms uniquement, pas les valeurs) et où les coller.
-- Export SQL ou note d’ordre d’application des migrations + **script SQL `referrals`** manquant.
+- Export SQL ou note d’ordre d’application des migrations, avec vérification des tables récentes (`credit_grants`, `credit_usage_events`, `networking_*`, `referrals`).
 - Captures ou courte vidéo : déploiement Vercel + variables.
 - Accès **transféré** ou procédure de **re-création** pour chaque service listé § 3.
-- Documentation produit dans **`docs/`** (`PRD.md`, `GUIDE_CESSION.md`, `README.md` d’index).
+- Documentation produit dans **`docs/`** (`CAREER_MATCH.md`, `PRD.md`, `GUIDE_CESSION.md`, `README.md` d’index).
 
 ---
 
@@ -444,11 +452,11 @@ L’acquéreur valide dans l’ordre :
 
 | Risque | Détail |
 |--------|--------|
-| Table `referrals` absente des migrations versionnées | Parrainage cassé sans SQL manuel |
+| Migrations récentes non appliquées | Crédits, partage public, CRM networking ou parrainage partiellement cassés |
 | `process-referral` + `auth.admin.getUserById` | Peut ne pas résoudre l’e-mail du parrain si pas de user Supabase Auth |
 | Bypass crédits par e-mail | Backdoor si non retiré |
-| Webhook Gumroad sans signature | Fraude possible |
-| RLS `public_analyses` | Fuite de données si URLs devinées ; contenu sensible |
+| Secret Gumroad mal configuré | Webhook inutilisable ou fraude possible |
+| RLS `public_analyses` | Contenu sensible si les liens publics sont partagés trop largement |
 | `20241205_reset_schema.sql` | Destructif — ne pas rejouer à l’aveugle |
 | README / TODO obsolètes sur clés `VITE_GEMINI` | Confusion pour l’acquéreur |
 

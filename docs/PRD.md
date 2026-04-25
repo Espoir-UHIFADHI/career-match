@@ -9,7 +9,7 @@
 
 ## 1. Résumé exécutif
 
-Career Match est une application web **B2C** qui aide les candidats à **adapter leur CV à une offre**, à **obtenir un score de correspondance** et des **recommandations**, et à **outiller le networking** (recherche de contacts, formats d’e-mail, messages). Le produit repose sur **l’IA (Google Gemini)** et des APIs tierces (**Serper**, **Hunter**), avec **authentification Clerk**, persistance **Supabase**, et **monétisation par crédits** via **Gumroad** (achat + codes licence).
+Career Match est une application web **B2C** qui aide les candidats à **adapter leur CV à une offre**, à **obtenir un score de correspondance** et des **recommandations**, et à **outiller le networking** (recherche de contacts, mini-CRM, formats d’e-mail, séquences de messages). Le produit repose sur **l’IA (Google Gemini + fallback OpenRouter)** et des APIs tierces (**Serper**, **Hunter**), avec **authentification Clerk**, persistance **Supabase**, et **monétisation par crédits** via **Gumroad** (achat + codes licence).
 
 ---
 
@@ -40,23 +40,22 @@ Career Match est une application web **B2C** qui aide les candidats à **adapter
 - **Landing** : hero, redirection des utilisateurs connectés vers `/app`, section QuickScan.  
 - **Application principale** (`/app`, Wizard) :  
   - **Étape 1** — Upload CV (PDF/TXT), parsing IA, relecture / édition.  
-  - **Étape 2** — Saisie description de poste, analyse structurée de l’offre (débit crédit côté UI).  
+  - **Étape 2** — Saisie description de poste, analyse structurée de l’offre.  
   - **Étape 3** — Tableau de bord d’analyse / matching.  
   - **Étape 4** — Résultats : score, forces/faiblesses, mots-clés manquants, recommandations, CV optimisé, aperçu imprimable, téléchargement PDF, partage public, invitation mentor par e-mail.  
-- **Networking avancé** : recherche type « contacts clés » (Serper), Email Predictor (Hunter + patterns + cache).  
+- **Networking avancé** : recherche type « contacts clés » (Serper), scoring/déduplication, mini-CRM, historique de messages, export Excel, Email Predictor (Hunter + patterns + cache).  
 - **Pages** : tarifs, confidentialité, CGU, contact, à propos.  
 - **Blog** : `/blog`, `/blog/:slug` (données statiques).  
 - **SEO métiers** : `/career/:slug` (données JSON).  
 - **Partage** : `/share/:id` ; `?mode=cv` pour le CV optimisé.  
 - **Auth** : Clerk (localisation selon langue app).  
-- **Crédits** : `profiles.credits`, RPC `get_user_credits` / `decrease_user_credits`, webhook Gumroad, `redeem-license`.  
+- **Crédits** : `profiles.credits`, RPC `get_user_credits` / `decrease_user_credits` / `grant_user_credits_once`, audit `credit_usage_events`, webhook Gumroad, `redeem-license`.  
 - **Parrainage** : `?ref=`, edge function `process-referral`.  
 - **Analytics** : Microsoft Clarity (`trackEvent`).  
 - **E-mails transactionnels** : `send-email` + service front.
 
 ### 4.2 Partiel / roadmap implicite
 
-- Vérification d’e-mail Hunter : backend expose `hunter-email-verifier` ; couverture UI à confirmer.  
 - Mode démo : `DemoModal` présent ; intégration à valider.
 
 ### 4.3 Hors périmètre explicite
@@ -87,18 +86,19 @@ Career Match est une application web **B2C** qui aide les candidats à **adapter
 
 ### 6.2 Wizard CV / offre / analyse
 
-- **FR-CV-1** : PDF et TXT → backend `parse-cv` (Gemini).  
+- **FR-CV-1** : PDF et TXT → backend `parse-cv` (Gemini + fallback OpenRouter) ; action facturée 1 crédit côté serveur.  
 - **FR-CV-2** : Conserver LinkedIn existant si l’extraction ne le retourne pas.  
-- **FR-JOB-1** : `analyze-job` après débit de **1 crédit** (hors exceptions admin — voir risques).  
-- **FR-MATCH-1** : `optimize-cv` avec CV + job structuré ; score, analyse multilingue optionnelle, CV optimisé.  
+- **FR-JOB-1** : `analyze-job` avec débit de **1 crédit** côté serveur.  
+- **FR-MATCH-1** : `optimize-cv` avec CV + job structuré ; score, analyse multilingue optionnelle, CV optimisé ; action facturée 1 crédit.  
 - **FR-MATCH-2** : E-mail « match prêt » au premier run réussi (si e-mail utilisateur connu).  
 - **FR-EXPORT-1** : PDF (`@react-pdf/renderer`) et impression navigateur.
 
 ### 6.3 Networking et e-mail
 
-- **FR-NET-1** : `generate-networking-queries` (IA).  
-- **FR-NET-2** : Recherche via Serper ; débit crédit sur le flux `NetworkingSearch` (à distinguer de la section LinkedIn légère sur le dashboard).  
-- **FR-MAIL-1** : Email predictor : Hunter, patterns, cache (`domain_patterns`, `found_emails`).  
+- **FR-NET-1** : `generate-networking-queries` (IA), recherche Serper, scoring/déduplication et filtres par persona.  
+- **FR-NET-2** : Mini-CRM networking : contacts sauvegardés, statuts, notes, tags, relances, historique de messages.  
+- **FR-NET-3** : Recherche Serper batch et séquences de messages facturées selon `BILLABLE_ACTION_COSTS`.  
+- **FR-MAIL-1** : Email predictor : Hunter, patterns, cache (`domain_patterns`, `found_emails`) avec lecture cache réservée aux utilisateurs authentifiés.  
 - **FR-MAIL-2** : Actions Hunter domain / finder / verifier exposées côté API.
 
 ### 6.4 Monétisation
@@ -106,12 +106,13 @@ Career Match est une application web **B2C** qui aide les candidats à **adapter
 - **FR-PAY-1** : Nouveau profil : **7 crédits** via `get_user_credits` (création `profiles`).  
 - **FR-PAY-2** : Packs Gumroad **+20** (booster) et **+100** (coach) mappés par permalink (webhook).  
 - **FR-PAY-3** : Rachat licence Gumroad via `redeem-license` + `used_licenses`.  
-- **FR-PAY-4** : Modal crédits insuffisants + tracking analytics.
+- **FR-PAY-4** : Ajouts de crédits idempotents via `credit_grants` et `grant_user_credits_once`.  
+- **FR-PAY-5** : Modal crédits insuffisants + tracking analytics.
 
 ### 6.5 Partage public
 
 - **FR-SHARE-1** : Lecture publique `public_analyses` par UUID.  
-- **FR-SHARE-2** : Insertion par utilisateur authentifié (données sensibles — voir sécurité).
+- **FR-SHARE-2** : Insertion par utilisateur authentifié, expiration, révocation et minimisation des coordonnées du CV optimisé.
 
 ### 6.6 Contenu éditorial
 
@@ -136,10 +137,13 @@ Career Match est une application web **B2C** qui aide les candidats à **adapter
 
 - **`profiles`** : `id` (text, Clerk), `credits`, `created_at`.  
 - **`resumes`** : `user_id` PK → `profiles`, `content` JSONB, timestamps.  
-- **`public_analyses`** : UUID, `user_id` optionnel, `content` JSONB, `career_slug`.  
+- **`public_analyses`** : UUID, `user_id`, `content` JSONB, `career_slug`, `share_type`, `expires_at`, `revoked_at`.  
 - **`domain_patterns`**, **`found_emails`** : cache.  
 - **`used_licenses`** : licences consommées.  
-- **`referrals`** : utilisé par `process-referral` — **vérifier présence en base** (non garanti par les migrations listées dans le dépôt).
+- **`credit_usage_events`** : audit des débits et crédits.  
+- **`credit_grants`** : idempotence des crédits ajoutés (achats, licences, parrainage).  
+- **`networking_contacts`**, **`networking_message_history`** : mini-CRM networking.  
+- **`referrals`** : parrainage.
 
 ---
 
@@ -188,27 +192,28 @@ Navigateur (React + Zustand persist)
 
 ### Écarts doc / code
 
-- L’**optimisation CV + score** (`matchAndOptimize`) **ne consomme pas de crédit** dans le code actuel, alors que l’**analyse d’offre** en consomme 1 — à aligner produit, UI tarifaire et README.  
-- **NetworkingSection** (aperçu LinkedIn sur les résultats) peut appeler Serper **sans** débit crédit visible — risque coût API si non voulu.  
-- **Parsing CV** : pas de débit crédit.
+- Le modèle de crédits est désormais centralisé côté `career-match-api` pour les actions coûteuses ; maintenir la cohérence avec les textes de pricing.  
+- `generate-networking-queries` et les opérations CRM ne sont pas directement facturées ; c’est voulu si elles restent peu coûteuses, à réévaluer selon l’usage.  
+- Le bypass admin reste côté UI via `VITE_ADMIN_EMAILS` et ne doit pas être traité comme une sécurité serveur.
 
 ### Risques sécurité / conformité
 
 - **Bypass crédits** : configurable via **`VITE_ADMIN_EMAILS`** et `src/lib/adminUsers.ts` (liste d’e-mails ; défaut historique si la variable est absente) — pour une cession stricte : vider la variable ou remplacer par un **rôle** Clerk / flag base.  
 - **`public_analyses`** : politique d’insert permissive — restreindre / quota / modération si besoin.  
-- **Webhook Gumroad** : vérifier **signature** côté prod.  
+- **Webhook Gumroad** : secret applicatif requis (`GUMROAD_WEBHOOK_SECRET`) ; pour une conformité stricte, vérifier aussi les mécanismes officiels disponibles côté Gumroad.  
 - **CORS `*`** sur edge functions : resserrer avec l’origine prod.  
 - **RGPD** : contenu CV dans analyses publiques — rétention, effacement, mentions légales.
 
 ### Dette technique
 
-- Table **`referrals`** absente des migrations du dépôt — risque sur nouvel environnement.  
 - `console.log` résiduels ; quelques types `any`.  
 - `TODO.md` à la racine : pistes et dette résiduelle ; la section « Déjà en place » confirme que les flux sensibles passent par l’edge function.
 
 ### Synthèse
 
-Career Match est une SPA structurée autour d’un wizard métier, avec monétisation Gumroad/Supabase et IA centralisée. Priorités recommandées : **harmoniser la politique de crédits** (y compris appels Serper « gratuits »), **durcir RLS et webhook Gumroad**, **versionner le schéma `referrals`** si le parrainage est maintenu, et **finaliser le bypass admin** (env prod + option rôle Clerk) si besoin conformité cession.
+Career Match est une SPA structurée autour d’un wizard métier, avec monétisation Gumroad/Supabase et IA centralisée. Priorités recommandées : **maintenir la politique de crédits**, **resserrer les CORS en production**, **surveiller les données publiques partagées**, et **remplacer le bypass admin UI par un rôle serveur** si besoin conformité cession.
+
+Pour une compréhension complète de l’application, consulter aussi [`CAREER_MATCH.md`](./CAREER_MATCH.md).
 
 ---
 
