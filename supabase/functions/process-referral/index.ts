@@ -85,28 +85,16 @@ serve(async (req) => {
             throw new Error("Failed to insert referral: " + insertError.message);
         }
 
-        // 5. Reward Referrer (+3 Credits)
-        // Assuming 'profiles' table has 'credits' column.
-        // We use 'rpc' call if 'increment' is needed to be atomic, OR simply fetch-and-update.
-        // Best practice is RPC 'increment_credits'. But if not exists, we can do manual update for MVP 
-        // since concurrency on single user profile is low risk here.
-        // Actually, SQL `process_referral` used `update profiles set credits = credits + 3`.
-        // We can run that query via an RPC helper OR just direct update if we first read.
-        // Let's use the RPC logic if we can, or pure SQL via admin client if we installed pg_net? No.
+        // 5. Reward Referrer (+3 Credits) idempotently.
+        const { error: grantError } = await supabase.rpc('grant_user_credits_once', {
+            p_user_id: referrer_id,
+            p_amount: 3,
+            p_source: 'referral',
+            p_reference: `${referrer_id}:${new_user_id}`,
+            p_meta: { referred_user_id: new_user_id },
+        });
 
-        // Simplest approach: Read, Add, Update.
-        const { data: profile } = await supabase.from('profiles').select('credits').eq('id', referrer_id).single();
-        const newCredits = (profile?.credits || 0) + 3;
-
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ credits: newCredits })
-            .eq('id', referrer_id);
-
-        if (updateError) {
-            console.error("Failed to update credits:", updateError);
-            // Continue to send email anyway
-        }
+        if (grantError) throw grantError;
 
         // 6. Get Referrer's Email
         // We can't always get email from 'profiles' if it's not stored there.

@@ -10,7 +10,6 @@ import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { trackEvent } from "../../utils/analytics";
-import { isAdminEmail } from "../../lib/adminUsers";
 
 export function JobInput() {
     const { t, language } = useTranslation();
@@ -23,7 +22,7 @@ export function JobInput() {
 
     const { user, isSignedIn } = useUser();
     const { getToken } = useAuth();
-    const { useCredit, credits } = useUserStore();
+    const { fetchCredits, useCredit: spendCredit, credits } = useUserStore();
 
     const analyzeJob = async () => {
         if (!description.trim()) return;
@@ -33,8 +32,8 @@ export function JobInput() {
             return;
         }
 
-        // Check local credits BEFORE starting
-        if (credits < 1 && !isAdminEmail(user?.primaryEmailAddress?.emailAddress)) {
+        // The server performs the authoritative debit; this local check is only UX.
+        if (credits < 1) {
             setShowCreditModal(true);
             return;
         }
@@ -44,7 +43,6 @@ export function JobInput() {
 
         trackEvent("start_analysis", { length: description.length });
 
-        // Deduct Credit
         let token: string | null = null;
         try {
             token = await getToken({ template: 'supabase' });
@@ -52,27 +50,27 @@ export function JobInput() {
             console.error("Error getting Supabase token:", error);
         }
 
-        const result = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
-
-        if (!result.success) {
-            setIsProcessing(false);
-            if (result.error === 'insufficient_funds_local' || result.error === 'insufficient_funds_server') {
-                setShowCreditModal(true);
-            } else {
-                setError(`Erreur lors de l'utilisation des crédits: ${result.error}`);
-            }
-            return;
-        }
-
         try {
             const targetLanguage = language === 'fr' ? 'French' : 'English';
             const analysis = await analyzeJobPosting(description, targetLanguage, token || undefined);
+            if (!(analysis as JobAnalysis & { __serverBilled?: boolean }).__serverBilled) {
+                const creditResult = await spendCredit(user.id, 1, token || undefined);
+                if (!creditResult.success) {
+                    setShowCreditModal(true);
+                    return;
+                }
+            }
             console.log("Job Analysis Result:", analysis);
             setPreviewData({ ...analysis });
+            await fetchCredits(user.id, token || undefined);
 
         } catch (err) {
             console.error(err);
-            setError("Failed to analyze job. Please try again or paste text manually.");
+            if (err instanceof Error && /insufficient credits/i.test(err.message)) {
+                setShowCreditModal(true);
+            } else {
+                setError("Failed to analyze job. Please try again or paste text manually.");
+            }
         } finally {
             setIsProcessing(false);
         }

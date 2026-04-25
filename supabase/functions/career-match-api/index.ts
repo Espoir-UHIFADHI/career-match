@@ -1,3 +1,4 @@
+/// <reference path="./deno-shims.d.ts" />
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
@@ -8,13 +9,76 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 }
 
-/** JWT payload uses base64url; `atob` expects standard base64. */
-function decodeJwtPayload(token: string): { sub?: string } {
-    const segment = token.split('.')[1]
-    if (!segment) throw new Error('Invalid JWT format')
-    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
-    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
-    return JSON.parse(atob(padded))
+type LlmTextResponse = { text: string; provider: "gemini" | "openrouter" };
+
+type LlmProvider = "gemini" | "openrouter";
+
+class HttpError extends Error {
+    status: number;
+
+    constructor(status: number, message: string) {
+        super(message);
+        this.status = status;
+    }
+}
+
+const BILLABLE_ACTION_COSTS: Record<string, number> = {
+    'parse-cv': 1,
+    'analyze-job': 1,
+    'optimize-cv': 1,
+    'serper-batch-search': 1,
+    'generate-networking-message': 1,
+    'generate-networking-message-variants': 1,
+    'generate-networking-sequence': 1,
+    'hunter-domain-search': 1,
+    'hunter-email-finder': 1,
+    'hunter-email-verifier': 1,
+};
+
+function readEnvInt(name: string, fallback: number): number {
+    const raw = Deno.env.get(name);
+    if (!raw) return fallback;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
+}
+
+function normalizeJsonText(raw: string): string {
+    const s = (raw || "").trim();
+    if (!s) return s;
+    try {
+        JSON.parse(s);
+        return s;
+    } catch {
+        // Try extracting the first JSON object from the response
+        const first = s.indexOf("{");
+        const last = s.lastIndexOf("}");
+        if (first >= 0 && last > first) {
+            const candidate = s.slice(first, last + 1);
+            JSON.parse(candidate);
+            return candidate;
+        }
+        throw new Error("Model returned invalid JSON.");
+    }
+}
+
+function getForcedProvider(): LlmProvider | null {
+    const forced = (Deno.env.get("AI_FORCE_PROVIDER") || "").toLowerCase();
+    if (forced === "gemini" || forced === "openrouter") return forced;
+    return null;
+}
+
+function isRetryableUpstreamError(error: unknown): boolean {
+    const msg = error instanceof Error ? error.message : String(error);
+    // Timeouts/network failures
+    if (/AbortError|timed out|timeout|ECONNRESET|ENOTFOUND|fetch failed/i.test(msg)) return true;
+    // Known upstream status codes surfaced in messages below
+    if (/\b429\b/.test(msg)) return true;
+    if (/\b5\d\d\b/.test(msg)) return true;
+    return false;
+}
+
+function withTimeoutSignal(timeoutMs: number): AbortSignal {
+    return AbortSignal.timeout(timeoutMs);
 }
 
 serve(async (req) => {
@@ -25,72 +89,102 @@ serve(async (req) => {
 
     try {
         // 1. Verify User Authentication (JWT)
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-        )
-
-        const authHeader = req.headers.get('Authorization')!;
-        const token = authHeader.replace('Bearer ', '');
-        const authPayload = decodeJwtPayload(token);
-        const userId = authPayload.sub;
-        if (!userId) throw new Error('JWT missing sub claim');
-
-        // Verify validity by trying to fetch the user's profile
-        const { data: profile, error: authError } = await supabaseClient
-            .from('profiles')
-            .select('id')
-            .eq('id', userId)
-            .single();
-
-        if (authError || !profile) {
-            console.error("Auth Failed:", authError);
-            return new Response(JSON.stringify({ error: 'Unauthorized', details: authError }), {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 401,
-            })
-        }
+        const userId = await getAuthenticatedUserId(req);
 
         const user = { id: userId };
         console.log(`🚀 API Request by ${user.id}`);
 
         // 2. Parse Request
-        const { action, payload } = await req.json()
+        const { action, payload } = (await req.json()) as { action: string; payload: any }
+        const creditCost = BILLABLE_ACTION_COSTS[action] ?? 0;
+
+        if (creditCost > 0) {
+            await debitUserCredits(user.id, creditCost, action);
+        }
 
         // 3. Handle Actions
-        switch (action) {
-            case 'serper-search':
-                return await handleSerperSearch(payload)
-            case 'parse-cv':
-                return await handleParseCV(payload)
-            case 'analyze-job':
-                return await handleAnalyzeJob(payload)
-            case 'optimize-cv':
-                return await handleOptimizeCV(payload)
-            case 'generate-networking-queries':
-                return await handleGenerateNetworkingQueries(payload)
-            case 'generate-networking-message':
-                return await handleGenerateNetworkingMessage(payload)
-            case 'hunter-domain-search':
-                return await handleHunterDomainSearch(payload)
-            case 'hunter-email-finder':
-                return await handleHunterEmailFinder(payload)
-            case 'hunter-email-verifier':
-                return await handleHunterEmailVerifier(payload)
-            default:
-                throw new Error(`Unknown or deprecated action: ${action}`)
+        try {
+            switch (action) {
+                case 'serper-search':
+                    return await handleSerperSearch(payload)
+                case 'serper-batch-search':
+                    return await handleSerperBatchSearch(payload)
+                case 'parse-cv':
+                    return await handleParseCV(payload)
+                case 'analyze-job':
+                    return await handleAnalyzeJob(payload)
+                case 'optimize-cv':
+                    return await handleOptimizeCV(payload)
+                case 'generate-networking-queries':
+                    return await handleGenerateNetworkingQueries(payload)
+                case 'generate-networking-message':
+                    return await handleGenerateNetworkingMessage(payload)
+                case 'generate-networking-message-variants':
+                    return await handleGenerateNetworkingMessageVariants(payload)
+                case 'generate-networking-sequence':
+                    return await handleGenerateNetworkingSequence(payload)
+                case 'networking-upsert-contact':
+                    return await handleNetworkingUpsertContact(payload, user.id)
+                case 'networking-update-contact':
+                    return await handleNetworkingUpdateContact(payload, user.id)
+                case 'networking-list-contacts':
+                    return await handleNetworkingListContacts(payload, user.id)
+                case 'networking-list-messages':
+                    return await handleNetworkingListMessages(payload, user.id)
+                case 'networking-insert-message':
+                    return await handleNetworkingInsertMessage(payload, user.id)
+                case 'networking-mark-message-copied':
+                    return await handleNetworkingMarkMessageCopied(payload, user.id)
+                case 'hunter-domain-search':
+                    return await handleHunterDomainSearch(payload)
+                case 'hunter-email-finder':
+                    return await handleHunterEmailFinder(payload)
+                case 'hunter-email-verifier':
+                    return await handleHunterEmailVerifier(payload)
+                default:
+                    throw new HttpError(400, `Unknown or deprecated action: ${action}`)
+            }
+        } catch (handlerError) {
+            if (creditCost > 0) {
+                await refundUserCredits(user.id, creditCost, action).catch((refundError) => {
+                    console.error("Credit refund failed:", refundError);
+                });
+            }
+            throw handlerError;
         }
 
     } catch (error) {
         console.error("🔥 API Error:", error)
         const msg = error instanceof Error ? error.message : String(error)
+        const status = error instanceof HttpError ? error.status : 500;
         return new Response(JSON.stringify({ error: msg }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
+            status,
         })
     }
 })
+
+async function getAuthenticatedUserId(req: Request): Promise<string> {
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer ', '').trim();
+    if (!token) throw new Error('Missing bearer token');
+
+    const url = Deno.env.get('SUPABASE_URL') ?? '';
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    if (!url || !anonKey) {
+        throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
+    }
+
+    const client = createClient(url, anonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data, error } = await client.auth.getUser(token);
+    if (error || !data.user?.id) {
+        throw new Error('Invalid or expired bearer token');
+    }
+
+    return data.user.id;
+}
 
 // --- HANDLERS ---
 
@@ -100,11 +194,13 @@ async function callGeminiRaw(body: any): Promise<any> {
 
     const model = "gemini-2.5-flash"
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+    const timeoutMs = readEnvInt("GEMINI_TIMEOUT_MS", 45_000);
 
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: withTimeoutSignal(timeoutMs),
     })
 
     if (!response.ok) {
@@ -114,6 +210,124 @@ async function callGeminiRaw(body: any): Promise<any> {
 
     const data = await response.json()
     return data;
+}
+
+async function callOpenRouterRaw(payload: {
+    messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+    temperature?: number;
+    responseFormat?: "json_object" | "text";
+}): Promise<{ content: string }> {
+    const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+    if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY");
+
+    const model = Deno.env.get("OPENROUTER_MODEL") || "openrouter/auto";
+    const referer = Deno.env.get("OPENROUTER_HTTP_REFERER") || "https://career-match.local";
+    const title = Deno.env.get("OPENROUTER_APP_TITLE") || "Career Match";
+    const timeoutMs = readEnvInt("OPENROUTER_TIMEOUT_MS", 45_000);
+
+    const body: any = {
+        model,
+        messages: payload.messages,
+        temperature: payload.temperature ?? 0,
+    };
+    if (payload.responseFormat === "json_object") {
+        body.response_format = { type: "json_object" };
+    }
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+            "HTTP-Referer": referer,
+            "X-Title": title,
+        },
+        body: JSON.stringify(body),
+        signal: withTimeoutSignal(timeoutMs),
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`OpenRouter API Error: ${response.status} ${errText}`);
+    }
+
+    const data = (await response.json()) as any;
+    const content = data?.choices?.[0]?.message?.content;
+    if (typeof content !== "string") {
+        throw new Error("OpenRouter API Error: missing response content");
+    }
+    return { content };
+}
+
+async function generateTextWithFallback(args: {
+    prompt: string;
+    responseMimeType: "application/json" | "text/plain";
+    temperature: number;
+    // Used only to make parse-cv fallback reliable when Gemini vision is down
+    extractedText?: string;
+    allowOpenRouter?: boolean;
+}): Promise<LlmTextResponse> {
+    const allowOpenRouter = args.allowOpenRouter ?? true;
+    const forced = getForcedProvider();
+
+    if (forced === "openrouter") {
+        const responseFormat = args.responseMimeType === "application/json" ? "json_object" : "text";
+        const { content } = await callOpenRouterRaw({
+            messages: [
+                {
+                    role: "system",
+                    content:
+                        "You are a reliable assistant. Follow the user's instructions exactly. " +
+                        "If asked for JSON, return STRICT JSON only (no markdown, no extra keys).",
+                },
+                { role: "user", content: args.prompt },
+            ],
+            temperature: args.temperature,
+            responseFormat,
+        });
+        return { text: content, provider: "openrouter" };
+    }
+
+    // --- 1) Try Gemini first
+    try {
+        if (forced === "gemini") {
+            // proceed normally, just avoid falling back below
+        }
+        const geminiBody = {
+            contents: [{ parts: [{ text: args.prompt }] }],
+            generationConfig: { response_mime_type: args.responseMimeType, temperature: args.temperature },
+        };
+        const data = await callGeminiRaw(geminiBody);
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        return { text, provider: "gemini" };
+    } catch (error) {
+        if (forced === "gemini") throw error;
+        if (!allowOpenRouter || !isRetryableUpstreamError(error)) throw error;
+        console.warn("↪ Gemini failed; falling back to OpenRouter.", error);
+    }
+
+    // --- 2) Fallback: OpenRouter
+    const userContentParts = [
+        args.prompt,
+        args.extractedText ? `\n\n---\nCV_TEXT_EXTRACTED:\n${args.extractedText}\n` : "",
+    ].filter(Boolean).join("");
+
+    const responseFormat = args.responseMimeType === "application/json" ? "json_object" : "text";
+    const { content } = await callOpenRouterRaw({
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are a reliable assistant. Follow the user's instructions exactly. " +
+                    "If asked for JSON, return STRICT JSON only (no markdown, no extra keys).",
+            },
+            { role: "user", content: userContentParts },
+        ],
+        temperature: args.temperature,
+        responseFormat,
+    });
+
+    return { text: content, provider: "openrouter" };
 }
 
 async function handleSerperSearch(payload: any) {
@@ -154,8 +368,35 @@ async function handleSerperSearch(payload: any) {
     })
 }
 
+async function handleSerperBatchSearch(payload: any) {
+    const searches = Array.isArray(payload?.searches) ? payload.searches : [];
+    if (searches.length === 0 || searches.length > 8) {
+        throw new HttpError(400, "Invalid serper batch size");
+    }
+
+    const results = await Promise.all(searches.map(async (item: any) => {
+        const response = await handleSerperSearch({
+            q: item.q,
+            num: item.num,
+            start: item.start,
+            tbs: item.tbs,
+            language: item.language ?? payload.language,
+        });
+        const data = await response.json();
+        return {
+            label: item.label ?? "",
+            data,
+        };
+    }));
+
+    return new Response(JSON.stringify({ results }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
+}
+
 async function handleParseCV(payload: any) {
-    const { fileData, mimeType } = payload;
+    const { fileData, mimeType, extractedText } = payload;
 
     const prompt = `
     Rôle : Expert en extraction de données (OCR).
@@ -205,25 +446,68 @@ async function handleParseCV(payload: any) {
     - IMPORTANT : Cherche bien l'URL LinkedIn (linkedin.com/in/...) même en bas de page ou en petit. C'est très important.
     `;
 
-    const body = {
-        contents: [{
-            parts: [
-                { text: prompt },
-                {
-                    inline_data: {
-                        mime_type: mimeType,
-                        data: fileData
+    // Try Gemini (vision) first; if Gemini is down, fallback to OpenRouter using extracted text.
+    let text = "";
+    let provider: "gemini" | "openrouter" = "gemini";
+    const forced = getForcedProvider();
+
+    if (forced === "openrouter") {
+        if (!extractedText || typeof extractedText !== "string") {
+            throw new Error("AI_FORCE_PROVIDER=openrouter requires extractedText for parse-cv.");
+        }
+        const fallback = await generateTextWithFallback({
+            prompt,
+            extractedText,
+            responseMimeType: "application/json",
+            temperature: 0,
+            allowOpenRouter: true,
+        });
+        text = fallback.text;
+        provider = fallback.provider;
+
+        console.log(`🤖 LLM provider (parse-cv): ${provider}`);
+        return new Response(JSON.stringify({ text, provider, serverBilled: true }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    }
+
+    try {
+        const body = {
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    {
+                        inline_data: {
+                            mime_type: mimeType,
+                            data: fileData
+                        }
                     }
-                }
-            ]
-        }],
-        generationConfig: { response_mime_type: "application/json", temperature: 0 }
-    };
+                ]
+            }],
+            generationConfig: { response_mime_type: "application/json", temperature: 0 }
+        };
+        const data = await callGeminiRaw(body);
+        text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    } catch (error) {
+        if (forced === "gemini") throw error;
+        if (!isRetryableUpstreamError(error)) throw error;
+        if (!extractedText || typeof extractedText !== "string") {
+            throw new Error("Gemini unavailable and no extractedText provided for fallback.");
+        }
+        const fallback = await generateTextWithFallback({
+            prompt,
+            extractedText,
+            responseMimeType: "application/json",
+            temperature: 0,
+            allowOpenRouter: true,
+        });
+        text = fallback.text;
+        provider = fallback.provider;
+    }
 
-    const data = await callGeminiRaw(body);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    return new Response(JSON.stringify({ text }), {
+    console.log(`🤖 LLM provider (parse-cv): ${provider}`);
+    return new Response(JSON.stringify({ text, provider, serverBilled: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
@@ -267,15 +551,14 @@ async function handleAnalyzeJob(payload: any) {
         - The root "description" and "requirements" should match the language: ${language === 'fr' ? 'French' : 'English'}.
     `;
 
-    const body = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { response_mime_type: "application/json", temperature: 0 }
-    };
+    const { text, provider } = await generateTextWithFallback({
+        prompt,
+        responseMimeType: "application/json",
+        temperature: 0,
+    });
 
-    const data = await callGeminiRaw(body);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    return new Response(JSON.stringify({ text }), {
+    console.log(`🤖 LLM provider (analyze-job): ${provider}`);
+    return new Response(JSON.stringify({ text, provider, serverBilled: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
@@ -409,15 +692,14 @@ async function handleOptimizeCV(payload: any) {
   TRADUIS INTEGRALEMENT LE CONTENU.
   `;
 
-    const body = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { response_mime_type: "application/json", temperature: 0 }
-    };
+    const { text, provider } = await generateTextWithFallback({
+        prompt,
+        responseMimeType: "application/json",
+        temperature: 0,
+    });
 
-    const data = await callGeminiRaw(body);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    return new Response(JSON.stringify({ text }), {
+    console.log(`🤖 LLM provider (optimize-cv): ${provider}`);
+    return new Response(JSON.stringify({ text, provider, serverBilled: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
@@ -463,15 +745,14 @@ export async function handleGenerateNetworkingQueries(payload: any) {
   }
   `;
 
-    const body = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { response_mime_type: "application/json", temperature: 0 }
-    };
+    const { text, provider } = await generateTextWithFallback({
+        prompt,
+        responseMimeType: "application/json",
+        temperature: 0,
+    });
 
-    const data = await callGeminiRaw(body);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    return new Response(JSON.stringify({ text }), {
+    console.log(`🤖 LLM provider (generate-networking-queries): ${provider}`);
+    return new Response(JSON.stringify({ text, provider }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
@@ -488,18 +769,361 @@ async function handleGenerateNetworkingMessage(payload: any) {
   Règle : Moins de 100 mots. Pas d'objet.
   `;
 
-    const body = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { response_mime_type: "text/plain", temperature: 0.7 }
-    };
+    const { text, provider } = await generateTextWithFallback({
+        prompt,
+        responseMimeType: "text/plain",
+        temperature: 0.7,
+    });
 
-    const data = await callGeminiRaw(body);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    return new Response(JSON.stringify({ text }), {
+    console.log(`🤖 LLM provider (generate-networking-message): ${provider}`);
+    return new Response(JSON.stringify({ text, provider }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
+}
+
+async function handleGenerateNetworkingMessageVariants(payload: any) {
+    const { cvData, jobDescription, contactName, contactRole, contactCompany, personalization } = payload;
+
+    const why = personalization?.whyContact ?? "";
+    const about = personalization?.oneLineAboutMe ?? "";
+    const objective = personalization?.objective ?? "";
+    const tone = (personalization?.tone ?? "warm") === "direct" ? "direct" : "chaleureux";
+    const proofs = Array.isArray(personalization?.proofPoints) ? personalization.proofPoints : [];
+
+    const prompt = `
+Rôle: Expert en cold outreach performant.
+Objectif: Générer 2 variantes de message (LinkedIn + Email) personnalisées et crédibles.
+
+Contexte:
+- Contact: ${contactName ? contactName + " — " : ""}${contactRole} chez ${contactCompany}
+- Opportunité / sujet: ${jobDescription}
+- Pourquoi je contacte: ${why}
+- 1 ligne sur moi: ${about}
+- Objectif: ${objective}
+- Ton: ${tone}
+- Preuves (faits concrets): ${proofs.length ? proofs.map((p: string) => `- ${p}`).join("\n") : "(aucune)"}
+- CV: ${cvData ? "disponible" : "non fourni"}
+
+Contraintes:
+- Messages courts, actionnables, pas génériques.
+- Ajoute 1 preuve max (si fournie), sinon formule une micro-preuve ("j'ai fait X", "j'ai mené Y") sans inventer.
+- LinkedIn: < 700 caractères. Email: < 120 mots, avec 1 CTA clair.
+- Ne mets pas de markdown.
+
+RETOURNE STRICTEMENT du JSON (aucun texte autour), structure:
+{
+  "linkedin": "…",
+  "email": "…"
+}
+`;
+
+    const { text, provider } = await generateTextWithFallback({
+        prompt,
+        responseMimeType: "application/json",
+        temperature: 0.6,
+    });
+
+    const normalized = normalizeJsonText(text);
+    console.log(`🤖 LLM provider (generate-networking-message-variants): ${provider}`);
+    return new Response(JSON.stringify({ text: normalized, provider }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    })
+}
+
+async function handleGenerateNetworkingSequence(payload: any) {
+    const { cvData, jobDescription, contactName, contactRole, contactCompany, personalization } = payload;
+
+    const why = personalization?.whyContact ?? "";
+    const about = personalization?.oneLineAboutMe ?? "";
+    const objective = personalization?.objective ?? "";
+    const tone = (personalization?.tone ?? "warm") === "direct" ? "direct" : "chaleureux";
+    const proofs = Array.isArray(personalization?.proofPoints) ? personalization.proofPoints : [];
+
+    const prompt = `
+Rôle: Expert en séquences de contact (réseau) à fort taux de réponse.
+Objectif: Produire une séquence prête à copier/coller: 1er message + 2 follow-ups.
+
+Contexte:
+- Contact: ${contactName ? contactName + " — " : ""}${contactRole} chez ${contactCompany}
+- Sujet/opportunité: ${jobDescription}
+- Pourquoi je contacte: ${why}
+- 1 ligne sur moi: ${about}
+- Objectif: ${objective}
+- Ton: ${tone}
+- Preuves (faits concrets): ${proofs.length ? proofs.map((p: string) => `- ${p}`).join("\n") : "(aucune)"}
+- CV: ${cvData ? "disponible" : "non fourni"}
+
+Contraintes:
+- LinkedIn: 3 messages (step 1..3), < 700 caractères chacun.
+- Email: 3 emails (step 1..3), < 120 mots chacun. Les follow-ups peuvent réutiliser le même objet implicite; pas besoin de champ subject obligatoire.
+- Chaque follow-up apporte un angle nouveau (preuve, question, valeur).
+- Ne pas inventer de faits non fournis.
+- Ne mets pas de markdown.
+
+RETOURNE STRICTEMENT du JSON (aucun texte autour), structure:
+{
+  "linkedin": [
+    { "step": 1, "label": "1ère approche", "message": "..." },
+    { "step": 2, "label": "Follow-up 1 (J+3)", "message": "..." },
+    { "step": 3, "label": "Follow-up 2 (J+7)", "message": "..." }
+  ],
+  "email": [
+    { "step": 1, "label": "Email 1", "subject": "…", "message": "..." },
+    { "step": 2, "label": "Email 2 (J+3)", "subject": "…", "message": "..." },
+    { "step": 3, "label": "Email 3 (J+7)", "subject": "…", "message": "..." }
+  ]
+}
+`;
+
+    const { text, provider } = await generateTextWithFallback({
+        prompt,
+        responseMimeType: "application/json",
+        temperature: 0.6,
+    });
+
+    const normalized = normalizeJsonText(text);
+    console.log(`🤖 LLM provider (generate-networking-sequence): ${provider}`);
+    return new Response(JSON.stringify({ text: normalized, provider }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    })
+}
+
+function getServiceClient() {
+    const url = Deno.env.get('SUPABASE_URL') ?? '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    if (!url || !serviceRoleKey) {
+        throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+    return createClient(url, serviceRoleKey);
+}
+
+async function debitUserCredits(userId: string, amount: number, action: string) {
+    const client = getServiceClient();
+    const { error } = await client.rpc('decrease_user_credits', {
+        p_user_id: userId,
+        p_amount: amount,
+    });
+
+    if (error) {
+        const message = /insufficient credits/i.test(error.message)
+            ? "Insufficient credits"
+            : error.message || "Unable to reserve credits";
+        throw new HttpError(message === "Insufficient credits" ? 402 : 500, message);
+    }
+
+    const { error: eventError } = await client.from('credit_usage_events').insert({
+        user_id: userId,
+        action,
+        amount: -amount,
+        reason: 'reserved',
+    });
+    if (eventError) console.warn("Credit usage event not recorded:", eventError.message);
+}
+
+async function refundUserCredits(userId: string, amount: number, action: string) {
+    const client = getServiceClient();
+    const { data: profile, error: readError } = await client
+        .from('profiles')
+        .select('credits')
+        .eq('id', userId)
+        .single();
+    if (readError) throw readError;
+
+    const { error: updateError } = await client
+        .from('profiles')
+        .update({ credits: (profile?.credits ?? 0) + amount })
+        .eq('id', userId);
+    if (updateError) throw updateError;
+
+    const { error: eventError } = await client.from('credit_usage_events').insert({
+        user_id: userId,
+        action,
+        amount,
+        reason: 'refunded',
+    });
+    if (eventError) console.warn("Credit refund event not recorded:", eventError.message);
+}
+
+async function handleNetworkingUpsertContact(payload: any, userId: string) {
+    const client = getServiceClient();
+
+    const { data: existing, error: existingError } = await client
+        .from('networking_contacts')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('linkedin_url', payload.linkedinUrl)
+        .maybeSingle();
+
+    if (existingError) throw existingError;
+
+    if (existing) {
+        const { data, error } = await client
+            .from('networking_contacts')
+            .update({
+                job_key: payload.jobKey ?? existing.job_key,
+                full_name: payload.fullName ?? existing.full_name,
+                title: payload.title ?? existing.title,
+                company: payload.company ?? existing.company,
+                snippet: payload.snippet ?? existing.snippet,
+            })
+            .eq('id', existing.id)
+            .eq('user_id', userId)
+            .select('*')
+            .single();
+
+        if (error) throw error;
+        return new Response(JSON.stringify(data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        });
+    }
+
+    const { data, error } = await client
+        .from('networking_contacts')
+        .insert({
+            user_id: userId,
+            linkedin_url: payload.linkedinUrl,
+            job_key: payload.jobKey ?? null,
+            full_name: payload.fullName ?? null,
+            title: payload.title ?? null,
+            company: payload.company ?? null,
+            snippet: payload.snippet ?? null,
+            status: payload.status ?? 'to_contact',
+            tags: payload.tags ?? [],
+            notes: payload.notes ?? null,
+            next_follow_up: payload.nextFollowUp ?? null,
+        })
+        .select('*')
+        .single();
+
+    if (error) throw error;
+    return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
+}
+
+async function handleNetworkingUpdateContact(payload: any, userId: string) {
+    const client = getServiceClient();
+    const allowedPatch: Record<string, unknown> = {};
+    const patch = payload.patch && typeof payload.patch === 'object' ? payload.patch : {};
+    for (const key of ['status', 'tags', 'notes', 'next_follow_up']) {
+        if (key in patch) allowedPatch[key] = patch[key];
+    }
+
+    if (Object.keys(allowedPatch).length === 0) {
+        throw new HttpError(400, 'No allowed contact fields to update');
+    }
+
+    const { data, error } = await client
+        .from('networking_contacts')
+        .update(allowedPatch)
+        .eq('id', payload.contactId)
+        .eq('user_id', userId)
+        .select('*')
+        .single();
+
+    if (error) throw error;
+    return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
+}
+
+async function handleNetworkingListContacts(payload: any, userId: string) {
+    const client = getServiceClient();
+    let query = client
+        .from('networking_contacts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false });
+
+    if (payload.jobKey) {
+        query = query.eq('job_key', payload.jobKey);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return new Response(JSON.stringify(data ?? []), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
+}
+
+async function handleNetworkingListMessages(payload: any, userId: string) {
+    const client = getServiceClient();
+
+    const { data: contact, error: contactError } = await client
+        .from('networking_contacts')
+        .select('id')
+        .eq('id', payload.contactId)
+        .eq('user_id', userId)
+        .single();
+    if (contactError || !contact) throw contactError || new Error('Contact not found');
+
+    const { data, error } = await client
+        .from('networking_message_history')
+        .select('*')
+        .eq('contact_id', payload.contactId)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return new Response(JSON.stringify(data ?? []), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
+}
+
+async function handleNetworkingInsertMessage(payload: any, userId: string) {
+    const client = getServiceClient();
+
+    const { data: contact, error: contactError } = await client
+        .from('networking_contacts')
+        .select('id')
+        .eq('id', payload.contactId)
+        .eq('user_id', userId)
+        .single();
+    if (contactError || !contact) throw contactError || new Error('Contact not found');
+
+    const { data, error } = await client
+        .from('networking_message_history')
+        .insert({
+            user_id: userId,
+            contact_id: payload.contactId,
+            channel: payload.channel,
+            step: payload.step,
+            content: payload.content,
+            meta: payload.meta ?? {},
+        })
+        .select('*')
+        .single();
+
+    if (error) throw error;
+    return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
+}
+
+async function handleNetworkingMarkMessageCopied(payload: any, userId: string) {
+    const client = getServiceClient();
+    const { data, error } = await client
+        .from('networking_message_history')
+        .update({ copied_at: new Date().toISOString() })
+        .eq('id', payload.messageId)
+        .eq('user_id', userId)
+        .select('*')
+        .single();
+
+    if (error) throw error;
+    return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+    });
 }
 
 // --- HUNTER HANDLERS ---
@@ -534,7 +1158,8 @@ async function handleHunterDomainSearch(payload: any) {
             status: 200,
         })
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        const msg = error instanceof Error ? error.message : String(error)
+        return new Response(JSON.stringify({ error: msg }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500, // Or 400 depending on error
         })
@@ -554,7 +1179,8 @@ async function handleHunterEmailFinder(payload: any) {
             status: 200,
         })
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        const msg = error instanceof Error ? error.message : String(error)
+        return new Response(JSON.stringify({ error: msg }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
         })
@@ -570,7 +1196,8 @@ async function handleHunterEmailVerifier(payload: any) {
             status: 200,
         })
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
+        const msg = error instanceof Error ? error.message : String(error)
+        return new Response(JSON.stringify({ error: msg }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
         })

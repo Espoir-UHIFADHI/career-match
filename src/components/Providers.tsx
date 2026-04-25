@@ -14,11 +14,8 @@ if (!PUBLISHABLE_KEY) {
     throw new Error("Missing Publishable Key")
 }
 
-// Validation check associated to console for easier debugging in production
 if (!PUBLISHABLE_KEY.startsWith("pk_")) {
     console.error("Config Error: Clerk Publishable Key does not start with 'pk_'. Check your .env or Vercel Environment Variables.");
-} else {
-    console.log("Clerk Key loaded successfully (" + PUBLISHABLE_KEY.substring(0, 8) + "...)");
 }
 
 const frLocalization = {

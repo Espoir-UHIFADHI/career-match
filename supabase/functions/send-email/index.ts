@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -10,8 +11,29 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: "welcome" | "match_ready";
+  type: "welcome" | "match_ready" | "invite_mentor";
   data?: any;
+}
+
+async function getAuthenticatedUser(req: Request) {
+  const authHeader = req.headers.get("Authorization") || "";
+  const token = authHeader.replace("Bearer ", "").trim();
+  if (!token) throw new Error("Missing bearer token");
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  if (!supabaseUrl || !supabaseAnonKey) throw new Error("Missing Supabase auth config");
+
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data, error } = await client.auth.getUser(token);
+  if (error || !data.user?.id) throw new Error("Invalid or expired bearer token");
+  return data.user;
+}
+
+function getUserPrimaryEmail(user: any): string {
+  return user.email || user.user_metadata?.email || "";
 }
 
 const getEmailLayout = (content: string) => `
@@ -131,6 +153,7 @@ serve(async (req) => {
   }
 
   try {
+    const user = await getAuthenticatedUser(req);
     const { to, type, data } = await req.json();
 
     if (!RESEND_API_KEY) {
@@ -139,6 +162,11 @@ serve(async (req) => {
 
     if (!to || !type) {
       throw new Error("Missing 'to' or 'type' in request body");
+    }
+
+    const userEmail = getUserPrimaryEmail(user);
+    if (type !== "invite_mentor" && userEmail && to.toLowerCase() !== userEmail.toLowerCase()) {
+      throw new Error("Cannot send this email type to another user");
     }
 
     const templateGenerator = EMAIL_TEMPLATES[type];

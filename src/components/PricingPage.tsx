@@ -34,23 +34,20 @@ export function PricingPage() {
             const token = await getToken({ template: 'supabase' });
             if (!token) throw new Error(t('pricingPage.license.authError'));
 
-            // Needed to import supabase client here or use the service
-            // Dynamic import to avoid circular dep issues or just assume standard import
-            const { supabase } = await import("../services/supabase");
-
-            const { data, error } = await supabase.functions.invoke('redeem-license', {
-                body: { license_key: licenseKey.trim(), user_id: user?.id },
-                headers: { Authorization: `Bearer ${token}` }
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/redeem-license`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ license_key: licenseKey.trim() }),
             });
 
-            if (error) {
-                // Supabase function error (network/500)
-                throw new Error(error.message || t('pricingPage.license.verifyError'));
-            }
+            const data = await response.json().catch(() => null);
 
-            if (data?.error) {
-                // Application error returned by function (400)
-                throw new Error(data.error);
+            if (!response.ok || data?.error) {
+                throw new Error(data?.error || t('pricingPage.license.verifyError'));
             }
 
             // Success!

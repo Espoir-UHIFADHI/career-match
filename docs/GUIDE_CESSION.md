@@ -15,6 +15,7 @@ Ce document décrit **tout ce qu’il faut transférer, reconfigurer, tester et 
 - Configurer **Clerk** (auth + JWT pour Supabase).
 - Raccorder **Gumroad** (checkout + webhook + licences).
 - Raccorder **Resend**, **Google Gemini**, **Serper**, **Hunter.io**.
+- (Optionnel mais recommandé) Raccorder **OpenRouter** comme **fallback IA** si Gemini est indisponible.
 - Remplacer **toutes** les références au domaine, e-mails, IDs analytics et comptes personnels présents dans le code ou la config.
 - Assumer la **continuité légale/RGPD** des données utilisateurs si la base est transférée.
 
@@ -49,6 +50,7 @@ Utilisateur → DNS (domaine) → Hébergeur SPA (ex. Vercel) → React
 | **Clerk** | Authentification utilisateur, JWT vers Supabase | Toute l’app `/app` |
 | **Supabase** | Base de données, RPC crédits, Edge Functions | Cœur produit |
 | **Google AI (Gemini)** | Parsing CV, analyse offre, matching, networking IA | `career-match-api` |
+| **OpenRouter** | Fallback IA (si Gemini down/quota/timeout) | `career-match-api` (optionnel) |
 | **Serper** | Recherche Google (networking) | `career-match-api` |
 | **Hunter.io** | Domaine / pattern / finder e-mail | `career-match-api` |
 | **Gumroad** | Vente de crédits + vérification de clés licence | Monétisation |
@@ -90,6 +92,10 @@ Configurer dans le tableau de bord Supabase : **Project Settings → Edge Functi
 | `SUPABASE_URL` | Fourni par Supabase (souvent injecté automatiquement ; vérifier en prod) |
 | `SUPABASE_ANON_KEY` | Vérification JWT utilisateur + lecture `profiles` |
 | `GEMINI_API_KEY` | Appels `generativelanguage.googleapis.com` |
+| `OPENROUTER_API_KEY` | Fallback IA via `openrouter.ai` (OpenAI-compatible) |
+| `OPENROUTER_MODEL` | Modèle OpenRouter (ex: `openrouter/auto`) |
+| `OPENROUTER_HTTP_REFERER` | (Optionnel) Header `HTTP-Referer` recommandé par OpenRouter |
+| `OPENROUTER_APP_TITLE` | (Optionnel) Header `X-Title` recommandé par OpenRouter |
 | `SERPER_API_KEY` | Appels `google.serper.dev` |
 | `HUNTER_API_KEY` | Appels `api.hunter.io` |
 

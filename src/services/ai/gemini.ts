@@ -1,5 +1,10 @@
 import { supabase } from "../supabase";
 import type { ParsedCV, JobAnalysis, MatchResult } from "../../types";
+import { extractTextFromPDF } from "../../lib/pdf-parser";
+
+type BackendPayload = Record<string, unknown>;
+type BackendTextResponse = { text?: string; provider?: string; serverBilled?: boolean };
+export type ServerBilledResult<T> = T & { __serverBilled?: boolean };
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -8,12 +13,12 @@ function delay(ms: number): Promise<void> {
 /** Do not retry auth failures — repeating the call will not help. */
 function isNonRetryableInvokeError(error: unknown): boolean {
   const msg = error instanceof Error ? error.message : String(error);
-  if (/401|403|Unauthorized|Forbidden/i.test(msg)) return true;
+  if (/401|402|403|Unauthorized|Forbidden|Insufficient credits/i.test(msg)) return true;
   const ctx = error && typeof error === "object" && "context" in error
     ? (error as { context?: { status?: number } }).context
     : undefined;
   const status = ctx?.status;
-  if (status === 401 || status === 403) return true;
+  if (status === 401 || status === 402 || status === 403) return true;
   return false;
 }
 
@@ -24,10 +29,12 @@ const ACTION_MAX_ATTEMPTS: Record<string, number> = {
   "analyze-job": 3,
   "generate-networking-queries": 2,
   "generate-networking-message": 2,
+  "generate-networking-message-variants": 2,
+  "generate-networking-sequence": 2,
 };
 
 // Helper to call the Secure Edge Function
-async function callBackend(action: string, payload: any, token?: string): Promise<any> {
+async function callBackend(action: string, payload: BackendPayload, token?: string): Promise<BackendTextResponse> {
   const maxAttempts = ACTION_MAX_ATTEMPTS[action] ?? 1;
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
@@ -54,7 +61,7 @@ async function callBackend(action: string, payload: any, token?: string): Promis
     lastMessage = [error.message, serverDetail].filter(Boolean).join(" — ") || lastMessage;
     console.error(`🔥 Secure Backend Error (${action}):`, error, serverDetail ? { serverDetail } : "");
 
-    if (isNonRetryableInvokeError(error)) {
+    if (isNonRetryableInvokeError(error) || /Insufficient credits/i.test(lastMessage)) {
       throw new Error(lastMessage);
     }
 
@@ -97,19 +104,29 @@ export async function parseCV(file: File, token?: string): Promise<ParsedCV> {
 
   try {
     const filePart = await fileToGenerativePart(file);
+    const extractedText =
+      file.type === "application/pdf" ? await extractTextFromPDF(file) : undefined;
 
     // Server handles the prompt and model
     const responseData = await callBackend('parse-cv', {
       fileData: filePart.data,
-      mimeType: filePart.mimeType
+      mimeType: filePart.mimeType,
+      extractedText,
     }, token);
+
+    if (responseData?.provider) {
+      console.info("🤖 Provider (parse-cv):", responseData.provider);
+    }
 
     const raw =
       typeof responseData?.text === "string" ? responseData.text.trim() : "";
     if (!raw) {
       throw new Error("Réponse d'analyse vide.");
     }
-    return JSON.parse(raw) as ParsedCV;
+    return {
+      ...(JSON.parse(raw) as ParsedCV),
+      __serverBilled: responseData.serverBilled === true,
+    } as ServerBilledResult<ParsedCV>;
 
   } catch (error) {
     console.error("❌ Erreur Parsing (Secure):", error);
@@ -128,13 +145,21 @@ export async function matchAndOptimize(cv: ParsedCV, job: JobAnalysis, _language
       language: _language
     }, token);
 
+    if (responseData?.provider) {
+      console.info("🤖 Provider (optimize-cv):", responseData.provider);
+    }
+
     const raw =
       typeof responseData?.text === "string" ? responseData.text.trim() : "";
     if (!raw) {
       throw new Error("Réponse de matching vide.");
     }
     const result = JSON.parse(raw) as MatchResult;
-    return { ...result, analysisLanguage: _language as "English" | "French" };
+    return {
+      ...result,
+      analysisLanguage: _language as "English" | "French",
+      __serverBilled: responseData.serverBilled === true,
+    } as ServerBilledResult<MatchResult>;
   } catch (error) {
     console.error("❌ Erreur Matching (Secure):", error);
     throw error;
@@ -151,12 +176,19 @@ export async function analyzeJobPosting(description: string, language: string, t
       language
     }, token);
 
+    if (responseData?.provider) {
+      console.info("🤖 Provider (analyze-job):", responseData.provider);
+    }
+
     const raw =
       typeof responseData?.text === "string" ? responseData.text.trim() : "";
     if (!raw) {
       throw new Error("Réponse d'analyse d'offre vide.");
     }
-    return JSON.parse(raw) as JobAnalysis;
+    return {
+      ...(JSON.parse(raw) as JobAnalysis),
+      __serverBilled: responseData.serverBilled === true,
+    } as ServerBilledResult<JobAnalysis>;
   } catch (error) {
     console.error("❌ Erreur Job Analysis (Secure):", error);
     throw error;
@@ -190,6 +222,10 @@ export async function generateNetworkingQueries(
       language
     }, token);
 
+    if (responseData?.provider) {
+      console.info("🤖 Provider (generate-networking-queries):", responseData.provider);
+    }
+
     const raw =
       typeof responseData?.text === "string" ? responseData.text.trim() : "";
     if (!raw) {
@@ -203,7 +239,7 @@ export async function generateNetworkingQueries(
 }
 
 export async function generateNetworkingMessage(
-  cvData: any,
+  cvData: unknown,
   jobDescription: string,
   contactRole: string,
   contactCompany: string,
@@ -221,9 +257,90 @@ export async function generateNetworkingMessage(
       templateType
     }, token);
 
+    if (responseData?.provider) {
+      console.info("🤖 Provider (generate-networking-message):", responseData.provider);
+    }
+
+    if (!responseData.text) {
+      throw new Error("Réponse message réseau vide.");
+    }
     return responseData.text;
   } catch (error) {
     console.error("❌ Erreur Message (Secure):", error);
     throw error;
   }
+}
+
+export type NetworkingTone = "direct" | "warm";
+
+export interface NetworkingPersonalization {
+  whyContact: string;
+  oneLineAboutMe: string;
+  objective: string;
+  tone: NetworkingTone;
+  proofPoints?: string[]; // optional "preuves" (facts/links/projects)
+}
+
+export interface NetworkingMessageVariantsResponse {
+  linkedin: string;
+  email: string;
+}
+
+export async function generateNetworkingMessageVariants(args: {
+  cvData: unknown;
+  jobDescription: string;
+  contactName?: string;
+  contactRole: string;
+  contactCompany: string;
+  personalization: NetworkingPersonalization;
+  token?: string;
+}): Promise<NetworkingMessageVariantsResponse> {
+  const responseData = await callBackend(
+    "generate-networking-message-variants",
+    {
+      cvData: args.cvData,
+      jobDescription: args.jobDescription,
+      contactName: args.contactName || "",
+      contactRole: args.contactRole,
+      contactCompany: args.contactCompany,
+      personalization: args.personalization,
+    },
+    args.token
+  );
+
+  const raw = typeof responseData?.text === "string" ? responseData.text.trim() : "";
+  if (!raw) throw new Error("Réponse variantes réseau vide.");
+  return JSON.parse(raw) as NetworkingMessageVariantsResponse;
+}
+
+export interface NetworkingSequenceResponse {
+  linkedin: Array<{ step: number; label: string; message: string }>;
+  email: Array<{ step: number; label: string; message: string; subject?: string }>;
+}
+
+export async function generateNetworkingSequence(args: {
+  cvData: unknown;
+  jobDescription: string;
+  contactName?: string;
+  contactRole: string;
+  contactCompany: string;
+  personalization: NetworkingPersonalization;
+  token?: string;
+}): Promise<NetworkingSequenceResponse> {
+  const responseData = await callBackend(
+    "generate-networking-sequence",
+    {
+      cvData: args.cvData,
+      jobDescription: args.jobDescription,
+      contactName: args.contactName || "",
+      contactRole: args.contactRole,
+      contactCompany: args.contactCompany,
+      personalization: args.personalization,
+    },
+    args.token
+  );
+
+  const raw = typeof responseData?.text === "string" ? responseData.text.trim() : "";
+  if (!raw) throw new Error("Réponse séquence réseau vide.");
+  return JSON.parse(raw) as NetworkingSequenceResponse;
 }

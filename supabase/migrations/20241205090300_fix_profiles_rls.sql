@@ -17,19 +17,20 @@ drop policy if exists "Users can update own profile" on public.profiles;
 create policy "Users can view own profile"
 on public.profiles for select
 to authenticated
-using ( (select auth.uid())::text = id );
+using ( (auth.jwt() ->> 'sub') = id );
 
 -- Policy: Allow users to insert their own profile
 create policy "Users can insert own profile"
 on public.profiles for insert
 to authenticated
-with check ( (select auth.uid())::text = id );
+with check ( (auth.jwt() ->> 'sub') = id );
 
 -- Policy: Allow users to update their own profile (for credit usage)
 create policy "Users can update own profile"
 on public.profiles for update
 to authenticated
-using ( (select auth.uid())::text = id );
+using ( (auth.jwt() ->> 'sub') = id );
 
 -- Grant access to authenticated users
 grant select, insert, update on table public.profiles to authenticated;
+

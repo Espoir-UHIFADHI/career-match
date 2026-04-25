@@ -11,7 +11,7 @@ DROP POLICY IF EXISTS "Enable read access for users based on user_id" ON public.
 DROP POLICY IF EXISTS "Enable insert for users based on user_id" ON public.profiles;
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 
--- 2. Drop existing policies on resumes (THIS WAS MISSING)
+-- 2. Drop existing policies on resumes
 DROP POLICY IF EXISTS "Users can view their own resume" ON public.resumes;
 DROP POLICY IF EXISTS "Users can insert/update their own resume" ON public.resumes;
 DROP POLICY IF EXISTS "Users can update their own resume" ON public.resumes;
@@ -33,29 +33,30 @@ ON DELETE CASCADE;
 CREATE POLICY "Users can view own profile"
 ON public.profiles FOR SELECT
 TO authenticated
-USING (auth.uid()::text = id);
+USING ((auth.jwt() ->> 'sub') = id);
 
 CREATE POLICY "Users can insert own profile"
 ON public.profiles FOR INSERT
 TO authenticated
-WITH CHECK (auth.uid()::text = id);
+WITH CHECK ((auth.jwt() ->> 'sub') = id);
 
 CREATE POLICY "Users can update own profile"
 ON public.profiles FOR UPDATE
 TO authenticated
-USING (auth.uid()::text = id);
+USING ((auth.jwt() ->> 'sub') = id);
 
 -- 7. Re-create Policies for Resumes (casting auth.uid() to text)
 CREATE POLICY "Users can view their own resume"
 ON public.resumes FOR SELECT
-USING (auth.uid()::text = user_id);
+USING ((auth.jwt() ->> 'sub') = user_id);
 
 CREATE POLICY "Users can insert/update their own resume"
 ON public.resumes FOR INSERT
-WITH CHECK (auth.uid()::text = user_id);
+WITH CHECK ((auth.jwt() ->> 'sub') = user_id);
 
 CREATE POLICY "Users can update their own resume"
 ON public.resumes FOR UPDATE
-USING (auth.uid()::text = user_id);
+USING ((auth.jwt() ->> 'sub') = user_id);
 
 COMMIT;
+

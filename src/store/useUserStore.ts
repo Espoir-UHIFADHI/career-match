@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { isAdminEmail } from '../lib/adminUsers';
 import { supabase, createClerkSupabaseClient } from '../services/supabase';
 
 interface UserState {
@@ -49,12 +48,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
     },
 
-    useCredit: async (userId: string, amount: number, token?: string, email?: string) => {
-        if (isAdminEmail(email)) {
-            console.log("Admin bypass: Unlimited credits for", email);
-            return { success: true };
-        }
-
+    useCredit: async (userId: string, amount: number, token?: string, _email?: string) => {
         const { credits } = get();
 
         if (credits < amount) return { success: false, error: "insufficient_funds_local" };

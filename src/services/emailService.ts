@@ -51,7 +51,7 @@ export async function findCompanyDomain(companyName: string, token?: string): Pr
             try {
                 const url = new URL(link);
                 return url.hostname.replace(/^www\./, "");
-            } catch (e) {
+            } catch {
                 console.error("Error parsing URL:", link);
                 return null;
             }

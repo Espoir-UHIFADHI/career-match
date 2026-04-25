@@ -24,7 +24,7 @@ Application web pour **adapter un CV à une offre d’emploi**, obtenir un **sco
 - **État** : Zustand (persistance locale du parcours wizard)  
 - **Auth** : Clerk (JWT template nommé `supabase` pour les appels PostgREST / RPC)  
 - **Backend** : Supabase (Postgres, RLS, Edge Functions)  
-- **IA** : Google Gemini (via fonction `career-match-api`)  
+- **IA** : Google Gemini (principal) + fallback OpenRouter (via fonction `career-match-api`)  
 - **APIs** : Serper (recherche), Hunter (domaine / e-mail)  
 - **E-mails** : Resend (Edge Functions)  
 - **Paiement** : Gumroad  
@@ -34,7 +34,7 @@ Application web pour **adapter un CV à une offre d’emploi**, obtenir un **sco
 ## Prérequis
 
 - Node.js **20+** (recommandé ; Vite 7 / fetch natif)  
-- Comptes et projets configurés : **Clerk**, **Supabase** (migrations + secrets des fonctions), clés **Gemini**, **Serper**, **Hunter**, **Resend** selon les fonctions déployées  
+- Comptes et projets configurés : **Clerk**, **Supabase** (migrations + secrets des fonctions), clés **Gemini**, **OpenRouter** (fallback), **Serper**, **Hunter**, **Resend** selon les fonctions déployées  
 
 ---
 
@@ -67,7 +67,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 
 **Clerk** : créer un modèle JWT nommé exactement **`supabase`** et brancher l’intégration Clerk ↔ Supabase (voir [doc Clerk + Supabase](https://clerk.com/docs/guides/development/integrations/databases/supabase)).
 
-**Supabase** : déployer les fonctions sous `supabase/functions/` et renseigner les secrets (`GEMINI_API_KEY`, `SERPER_API_KEY`, `HUNTER_API_KEY`, `RESEND_API_KEY`, etc.). Le détail est dans [`docs/GUIDE_CESSION.md`](docs/GUIDE_CESSION.md).
+**Supabase** : déployer les fonctions sous `supabase/functions/` et renseigner les secrets (`GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `SERPER_API_KEY`, `HUNTER_API_KEY`, `RESEND_API_KEY`, etc.). Le détail est dans [`docs/GUIDE_CESSION.md`](docs/GUIDE_CESSION.md).
 
 ### Commandes npm
 

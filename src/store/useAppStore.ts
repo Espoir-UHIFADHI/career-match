@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { type ParsedCV, type JobAnalysis, type MatchResult } from "../types";
+import type { SearchResult } from "../services/search/serper";
+import type { NetworkingQualityProfile } from "../services/networking/quality";
 
 interface EmailPredictorState {
     company: string;
@@ -13,8 +15,15 @@ interface NetworkingState {
     company: string;
     role: string;
     location: string;
-    results: any[]; // Using any[] for now to avoid circular dependency or duplication, can be refined
+    results: Array<SearchResult & Partial<NetworkingQualityProfile>>;
     hasSearched: boolean;
+}
+
+interface NetworkingSectionCacheEntry {
+    company: string;
+    title: string;
+    profiles: Array<SearchResult & Partial<NetworkingQualityProfile>>;
+    cachedAt: number; // ms epoch
 }
 
 export interface AppState {
@@ -28,6 +37,7 @@ export interface AppState {
     // New Slices
     emailPredictor: EmailPredictorState;
     networking: NetworkingState;
+    networkingSectionCache: Record<string, NetworkingSectionCacheEntry>;
 
     setStep: (step: number) => void;
     setCvData: (data: ParsedCV | null) => void;
@@ -39,6 +49,7 @@ export interface AppState {
     // New Setters
     setEmailPredictorState: (state: Partial<EmailPredictorState>) => void;
     setNetworkingState: (state: Partial<NetworkingState>) => void;
+    setNetworkingSectionCache: (key: string, entry: NetworkingSectionCacheEntry) => void;
 
     reset: () => void;
 }
@@ -66,6 +77,7 @@ export const useAppStore = create<AppState>()(
                 results: [],
                 hasSearched: false
             },
+            networkingSectionCache: {},
 
             setStep: (step) => set({ step }),
             setCvData: (cvData) => set({ cvData }),
@@ -80,6 +92,9 @@ export const useAppStore = create<AppState>()(
             setNetworkingState: (newState) => set((state) => ({
                 networking: { ...state.networking, ...newState }
             })),
+            setNetworkingSectionCache: (key, entry) => set((state) => ({
+                networkingSectionCache: { ...state.networkingSectionCache, [key]: entry }
+            })),
 
             reset: () => set({
                 step: 1,
@@ -89,7 +104,8 @@ export const useAppStore = create<AppState>()(
                 language: "French",
                 userId: null,
                 emailPredictor: { company: "", firstName: "", lastName: "", result: null },
-                networking: { company: "", role: "", location: "", results: [], hasSearched: false }
+                networking: { company: "", role: "", location: "", results: [], hasSearched: false },
+                networkingSectionCache: {}
             }),
         }),
         {
@@ -102,7 +118,8 @@ export const useAppStore = create<AppState>()(
                 language: state.language,
                 userId: state.userId,
                 emailPredictor: state.emailPredictor,
-                networking: state.networking
+                networking: state.networking,
+                networkingSectionCache: state.networkingSectionCache
             }),
         }
     )

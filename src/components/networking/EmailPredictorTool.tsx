@@ -11,7 +11,6 @@ import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useTranslation } from "../../hooks/useTranslation";
-import { isAdminEmail } from "../../lib/adminUsers";
 
 export function EmailPredictorTool() {
     const { t } = useTranslation();
@@ -27,7 +26,7 @@ export function EmailPredictorTool() {
     const [showCreditModal, setShowCreditModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
-    const { useCredit, credits } = useUserStore();
+    const { fetchCredits, credits } = useUserStore();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
@@ -65,8 +64,8 @@ export function EmailPredictorTool() {
             return;
         }
 
-        // Check local credits BEFORE starting
-        if (credits < 1 && !isAdminEmail(user?.primaryEmailAddress?.emailAddress)) {
+        // The server performs the authoritative debit; this local check is only UX.
+        if (credits < 1) {
             setShowCreditModal(true);
             return;
         }
@@ -86,7 +85,7 @@ export function EmailPredictorTool() {
             if (!domain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
 
             // 2. Get pattern
-            let pattern = await getEmailPattern(domain, token || undefined);
+            const pattern = await getEmailPattern(domain, token || undefined);
 
             // 3. Find or Generate email
             let email: string | undefined;
@@ -132,26 +131,18 @@ export function EmailPredictorTool() {
             setEmailPredictorState({
                 result: { email, domain, pattern: pattern || "", score, source }
             });
-            // Deduct Credit AFTER success - Only if we found something useful (pattern or email)
-            if (email || pattern) {
-                const creditResult = await useCredit(user.id, 1, token || undefined, user.primaryEmailAddress?.emailAddress);
-                if (!creditResult.success) {
-                    if (creditResult.error === 'insufficient_funds_local' || creditResult.error === 'insufficient_funds_server') {
-                        // This catches the race condition where they spent their last credit in another tab
-                        setShowCreditModal(true);
-                        // Optional: Should we hide the result? 
-                        // For better UX, we might show it anyway since we already did the work, but warn them next time.
-                    } else {
-                        console.error("Credit deduction failed:", creditResult.error);
-                    }
-                }
-            }
+            if (email || pattern) await fetchCredits(user.id, token || undefined);
 
             setStatus('success');
         } catch (err) {
             console.error("Prediction failed:", err);
-            setError(err instanceof Error ? err.message : t('emailPredictor.errors.generic'));
-            setStatus('error');
+            if (err instanceof Error && /insufficient credits/i.test(err.message)) {
+                setShowCreditModal(true);
+                setStatus('idle');
+            } else {
+                setError(err instanceof Error ? err.message : t('emailPredictor.errors.generic'));
+                setStatus('error');
+            }
         }
     };
 
@@ -182,6 +173,7 @@ export function EmailPredictorTool() {
         setVerificationStatus('verifying');
         try {
             const data = await verifyEmail(result.email, token || undefined);
+            if (user?.id) await fetchCredits(user.id, token || undefined);
             if (data) {
                 setVerificationResult(data);
                 setVerificationStatus('verified');
@@ -189,6 +181,9 @@ export function EmailPredictorTool() {
                 setVerificationStatus('error');
             }
         } catch (e) {
+            if (e instanceof Error && /insufficient credits/i.test(e.message)) {
+                setShowCreditModal(true);
+            }
             setVerificationStatus('error');
         }
     };

@@ -22,7 +22,7 @@ export function BlogPost() {
     };
 
     return (
-        <div className="bg-slate-50 min-h-screen font-sans">
+        <div className="-m-6 md:-m-10 bg-slate-50 min-h-screen font-sans">
             <Helmet>
                 <title>{post.title[lang]} | Career Match Blog</title>
                 <meta name="description" content={post.desc[lang]} />
@@ -43,7 +43,7 @@ export function BlogPost() {
                 </div>
 
                 <div className="absolute inset-x-0 bottom-0 pb-12">
-                    <div className="container mx-auto px-6 max-w-4xl">
+                    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10">
                         <Link
                             to="/blog"
                             className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors group text-sm font-medium"
@@ -77,18 +77,18 @@ export function BlogPost() {
             </div>
 
             {/* Content Section */}
-            <article className="container mx-auto px-6 -mt-10 relative z-10 mb-20 max-w-4xl">
-                <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8 border border-slate-100">
+            <article className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 -mt-10 relative z-10 mb-20">
+                <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-12 xl:p-16 mb-8 border border-slate-100">
                     {/* Lead Paragraph */}
-                    <p className="text-xl md:text-2xl text-slate-700 font-medium leading-relaxed mb-12 border-l-4 border-indigo-500 pl-6 italic bg-slate-50/50 py-4 rounded-r-lg">
+                    <p className="text-lg sm:text-xl md:text-2xl text-slate-700 font-medium leading-relaxed mb-12 border-l-4 border-indigo-500 pl-5 sm:pl-6 italic bg-slate-50/50 py-4 rounded-r-lg">
                         {post.desc[lang]}
                     </p>
 
                     {/* Main Content using Typography Plugin */}
-                    <div className="prose prose-lg md:prose-xl prose-slate max-w-none text-slate-600
+                    <div className="prose prose-base sm:prose-lg md:prose-xl prose-slate max-w-none text-slate-600
                         prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-slate-900
-                        prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-6 prose-h2:text-indigo-950
-                        prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4 prose-h3:text-indigo-900
+                        prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-16 prose-h2:mb-6 prose-h2:text-indigo-950
+                        prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4 prose-h3:text-indigo-900
                         prose-p:leading-8 prose-p:mb-6
                         prose-a:text-indigo-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline hover:prose-a:text-indigo-700 transition-colors
                         prose-blockquote:border-l-4 prose-blockquote:border-indigo-500 prose-blockquote:bg-indigo-50/30 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-indigo-900 prose-blockquote:font-medium
@@ -137,7 +137,7 @@ export function BlogPost() {
 
             {/* Read More Section */}
             <section className="bg-slate-100/80 py-20 border-t border-slate-200">
-                <div className="container mx-auto px-6 max-w-6xl">
+                <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10">
                     <div className="flex items-center justify-between mb-10">
                         <h2 className="text-2xl font-bold text-slate-900">{language === "English" ? "Related articles" : "Articles similaires"}</h2>
                         <Link to="/blog" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:underline">

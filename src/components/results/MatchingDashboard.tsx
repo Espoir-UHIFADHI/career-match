@@ -2,12 +2,14 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { CheckCircle, XCircle, AlertTriangle, Loader2, Download, Eye, Sparkles, TrendingUp, Target, Globe, Share2, ArrowRight } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
+import { useUserStore } from "../../store/useUserStore";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { matchAndOptimize } from "../../services/ai/gemini";
 import { NetworkingSection } from "./NetworkingSection";
 import { PrintableCV } from "./PrintableCV";
 import { FeedbackWidget } from "./FeedbackWidget";
+import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import type { MatchResult } from "../../types";
 
 import { useTranslation } from "../../hooks/useTranslation";
@@ -16,15 +18,43 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 
 import { useReactToPrint } from "react-to-print";
 
+const SHARE_EXPIRY_DAYS = 30;
+
+function getShareExpiryIso() {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + SHARE_EXPIRY_DAYS);
+    return expiresAt.toISOString();
+}
+
+function buildPublicAnalysisContent(result: MatchResult): MatchResult {
+    if (!result.optimizedCV) return result;
+
+    return {
+        ...result,
+        optimizedCV: {
+            ...result.optimizedCV,
+            contact: {
+                ...result.optimizedCV.contact,
+                email: "",
+                phone: "",
+                linkedin: "",
+                website: "",
+            },
+        },
+    };
+}
+
 export function MatchingDashboard() {
     const { t, language } = useTranslation();
     const { user } = useUser();
     const { getToken } = useAuth();
     const { cvData, jobData, analysisResults, setAnalysisResults } = useAppStore();
+    const { credits, fetchCredits, useCredit: spendCredit } = useUserStore();
     const [cvLanguage] = useState<"French" | "English">("French");
     const [isProcessing, setIsProcessing] = useState(false);
     const [isUpdatingCV, setIsUpdatingCV] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showCreditModal, setShowCreditModal] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const printRef = useRef<HTMLDivElement>(null);
 
@@ -50,6 +80,7 @@ export function MatchingDashboard() {
     // Sharing Logic State
     const [isSharing, setIsSharing] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [shareId, setShareId] = useState<string | null>(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
 
@@ -60,6 +91,11 @@ export function MatchingDashboard() {
             return;
         }
 
+        const confirmed = window.confirm(
+            "Ce lien public contiendra une version minimisée de votre analyse et expirera dans 30 jours. Les coordonnées sensibles du CV seront retirées. Continuer ?"
+        );
+        if (!confirmed) return;
+
         setIsSharing(true);
         try {
             const token = await getToken({ template: 'supabase' });
@@ -67,15 +103,18 @@ export function MatchingDashboard() {
             const supabase = createClerkSupabaseClient(token || "");
 
             const { data, error } = await supabase.from('public_analyses').insert({
-                content: analysisResults, // Store full result
+                content: buildPublicAnalysisContent(analysisResults),
                 user_id: user?.id,
-                career_slug: 'general' // Could be refined based on Job Title
+                career_slug: 'general',
+                share_type: 'analysis',
+                expires_at: getShareExpiryIso(),
             }).select().single();
 
             if (error) throw error;
 
             const url = `${window.location.origin}/share/${data.id}`;
             setShareUrl(url);
+            setShareId(data.id);
             setIsShareModalOpen(true);
 
 
@@ -87,6 +126,25 @@ export function MatchingDashboard() {
             alert(`Erreur lors du partage : ${err.message || "Impossible de contacter la base de données."}\n\nL'administrateur doit exécuter la migration SQL "create_public_analyses".`);
         } finally {
             setIsSharing(false);
+        }
+    };
+
+    const handleRevokeShare = async () => {
+        if (!shareId) return;
+        try {
+            const token = await getToken({ template: 'supabase' });
+            const { createClerkSupabaseClient } = await import('../../services/supabase');
+            const supabase = createClerkSupabaseClient(token || "");
+            const { error } = await supabase
+                .from('public_analyses')
+                .update({ revoked_at: new Date().toISOString() })
+                .eq('id', shareId);
+            if (error) throw error;
+            setShareUrl(null);
+            setShareId(null);
+            setIsShareModalOpen(false);
+        } catch (err: any) {
+            alert(`Erreur lors de la révocation : ${err.message}`);
         }
     };
 
@@ -115,14 +173,17 @@ export function MatchingDashboard() {
 
             if (!currentShareUrl) {
                 const { data, error } = await supabase.from('public_analyses').insert({
-                    content: analysisResults,
+                    content: buildPublicAnalysisContent(analysisResults as MatchResult),
                     user_id: user?.id,
-                    career_slug: 'mentor-invite'
+                    career_slug: 'mentor-invite',
+                    share_type: 'mentor-cv',
+                    expires_at: getShareExpiryIso(),
                 }).select().single();
 
                 if (error) throw error;
                 currentShareUrl = `${window.location.origin}/share/${data.id}`;
                 setShareUrl(currentShareUrl);
+                setShareId(data.id);
             }
 
             // 2. Send Email
@@ -179,6 +240,10 @@ export function MatchingDashboard() {
 
     const runAnalysis = async () => {
         if (!cvData || !jobData) return;
+        if (credits < 1) {
+            setShowCreditModal(true);
+            return;
+        }
 
         const isUpdate = !!analysisResults;
         if (isUpdate) {
@@ -191,6 +256,14 @@ export function MatchingDashboard() {
         try {
             const token = await getToken({ template: 'supabase' });
             const results = await matchAndOptimize(cvData, jobData, cvLanguage, token || undefined);
+            if (!(results as MatchResult & { __serverBilled?: boolean }).__serverBilled && user?.id) {
+                const creditResult = await spendCredit(user.id, 1, token || undefined);
+                if (!creditResult.success) {
+                    setShowCreditModal(true);
+                    return;
+                }
+            }
+            if (user?.id) await fetchCredits(user.id, token || undefined);
 
             // If updating, preserve the original score and analysis to avoid flickering/confusion,
             // unless we want to allow them to change. The user asked for "only the CV refreshes".
@@ -221,7 +294,11 @@ export function MatchingDashboard() {
             }
         } catch (err) {
             console.error(err);
-            setError("Failed to analyze match. Please try again.");
+            if (err instanceof Error && /insufficient credits/i.test(err.message)) {
+                setShowCreditModal(true);
+            } else {
+                setError("Failed to analyze match. Please try again.");
+            }
         } finally {
             setIsProcessing(false);
             setIsUpdatingCV(false);
@@ -256,7 +333,14 @@ export function MatchingDashboard() {
         );
     }
 
-    if (!analysisResults) return null;
+    if (!analysisResults) {
+        return (
+            <InsufficientCreditsModal
+                isOpen={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
+        );
+    }
 
     const { score } = analysisResults;
     const isLowMatch = score < 45 || !analysisResults.optimizedCV;
@@ -760,10 +844,22 @@ export function MatchingDashboard() {
                             >
                                 Copier le lien
                             </Button>
+                            <Button
+                                variant="outline"
+                                onClick={handleRevokeShare}
+                                className="w-full rounded-xl border-red-200 text-red-700 hover:bg-red-50"
+                            >
+                                Révoquer ce lien
+                            </Button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <InsufficientCreditsModal
+                isOpen={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
 
         </div >
     );

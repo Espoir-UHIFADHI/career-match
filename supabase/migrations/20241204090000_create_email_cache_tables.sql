@@ -21,9 +21,14 @@ create table if not exists public.found_emails (
 alter table public.domain_patterns enable row level security;
 alter table public.found_emails enable row level security;
 
--- Create policies to allow read/write access for authenticated users
+-- Policies (idempotent)
+drop policy if exists "Enable read access for all users" on public.domain_patterns;
+drop policy if exists "Enable insert access for authenticated users" on public.domain_patterns;
 create policy "Enable read access for all users" on public.domain_patterns for select using (true);
-create policy "Enable insert access for authenticated users" on public.domain_patterns for insert with check (auth.role() = 'authenticated');
+-- Inserts are intentionally service-role only; see hardening migration.
 
+drop policy if exists "Enable read access for all users" on public.found_emails;
+drop policy if exists "Enable insert access for authenticated users" on public.found_emails;
 create policy "Enable read access for all users" on public.found_emails for select using (true);
-create policy "Enable insert access for authenticated users" on public.found_emails for insert with check (auth.role() = 'authenticated');
+-- Inserts are intentionally service-role only; see hardening migration.
+

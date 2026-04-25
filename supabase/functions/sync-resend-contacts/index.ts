@@ -17,6 +17,15 @@ serve(async (req) => {
     }
 
     try {
+        const expectedSecret = Deno.env.get("SYNC_RESEND_CONTACTS_SECRET");
+        const providedSecret = req.headers.get("x-cron-secret") || req.headers.get("authorization")?.replace("Bearer ", "");
+        if (!expectedSecret || providedSecret !== expectedSecret) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 401,
+            });
+        }
+
         if (!RESEND_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !CLERK_SECRET_KEY) {
             throw new Error("Missing environment variables (Make sure CLERK_SECRET_KEY is set)");
         }

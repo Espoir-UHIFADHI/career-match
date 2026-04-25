@@ -5,18 +5,23 @@ import { Card, CardContent } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { parseCV } from "../../services/ai/gemini";
 import { useAppStore } from "../../store/useAppStore";
+import { useUserStore } from "../../store/useUserStore";
 import type { ParsedCV } from "../../types";
 import { CVReview } from "./CVReview";
 import { useTranslation } from "../../hooks/useTranslation";
+import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 
-import { useAuth, useClerk } from "@clerk/clerk-react";
+import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 
 export function CVUpload() {
     const { t } = useTranslation();
     const { getToken, isSignedIn } = useAuth();
+    const { user } = useUser();
     const { openSignIn } = useClerk();
+    const { credits, fetchCredits, useCredit: spendCredit } = useUserStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showCreditModal, setShowCreditModal] = useState(false);
     const [isReviewing, setIsReviewing] = useState(false);
     const [tempCvData, setTempCvData] = useState<ParsedCV | null>(null);
     const { setCvData, setStep } = useAppStore();
@@ -24,6 +29,11 @@ export function CVUpload() {
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
         if (!file) return;
+
+        if (credits < 1) {
+            setShowCreditModal(true);
+            return;
+        }
 
         setIsProcessing(true);
         setError(null);
@@ -34,6 +44,14 @@ export function CVUpload() {
 
             // Pass token to parseCV for authenticated request
             const parsedData = await parseCV(file, token || undefined);
+            if (!(parsedData as ParsedCV & { __serverBilled?: boolean }).__serverBilled && user?.id) {
+                const creditResult = await spendCredit(user.id, 1, token || undefined);
+                if (!creditResult.success) {
+                    setShowCreditModal(true);
+                    return;
+                }
+            }
+            if (user?.id) await fetchCredits(user.id, token || undefined);
 
             console.log("Parsed Data:", parsedData);
 
@@ -51,11 +69,15 @@ export function CVUpload() {
 
         } catch (err) {
             console.error(err);
-            setError(t('cvUpload.error'));
+            if (err instanceof Error && /insufficient credits/i.test(err.message)) {
+                setShowCreditModal(true);
+            } else {
+                setError(t('cvUpload.error'));
+            }
         } finally {
             setIsProcessing(false);
         }
-    }, [getToken, t]);
+    }, [credits, fetchCredits, getToken, spendCredit, t, user?.id]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -168,6 +190,11 @@ export function CVUpload() {
                     {error}
                 </div>
             )}
+
+            <InsufficientCreditsModal
+                isOpen={showCreditModal}
+                onClose={() => setShowCreditModal(false)}
+            />
         </div>
     );
 }

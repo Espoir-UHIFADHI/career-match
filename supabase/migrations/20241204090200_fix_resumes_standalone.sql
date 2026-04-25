@@ -16,24 +16,24 @@ create table public.resumes (
 -- 3. Enable Security (RLS)
 alter table public.resumes enable row level security;
 
--- 4. Create Policies (Security Rules)
--- These check if the logged-in user's ID (auth.uid()) matches the table's user_id
+-- 4. Policies (idempotent)
+drop policy if exists "Users can view their own resume" on public.resumes;
+drop policy if exists "Users can insert/update their own resume" on public.resumes;
+drop policy if exists "Users can update their own resume" on public.resumes;
 
--- Allow users to view their own resume
 create policy "Users can view their own resume"
   on public.resumes for select
-  using (auth.uid()::text = user_id);
+  using ((auth.jwt() ->> 'sub') = user_id);
 
--- Allow users to save/update their own resume
 create policy "Users can insert/update their own resume"
   on public.resumes for insert
-  with check (auth.uid()::text = user_id);
+  with check ((auth.jwt() ->> 'sub') = user_id);
 
 create policy "Users can update their own resume"
   on public.resumes for update
-  using (auth.uid()::text = user_id);
+  using ((auth.jwt() ->> 'sub') = user_id);
 
--- 5. Auto-update timestamp trigger
+-- 5. Auto-update timestamp trigger (idempotent)
 create or replace function public.handle_updated_at()
 returns trigger as $$
 begin
@@ -47,3 +47,4 @@ create trigger handle_resumes_updated_at
   before update on public.resumes
   for each row
   execute procedure public.handle_updated_at();
+

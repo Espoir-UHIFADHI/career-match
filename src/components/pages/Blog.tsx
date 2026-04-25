@@ -11,10 +11,10 @@ export function Blog() {
     const lang = language === "English" ? "en" : "fr";
 
     return (
-        <div className="flex flex-col bg-white min-h-screen">
+        <div className="-m-6 md:-m-10 flex min-h-screen flex-col bg-white">
             {/* Header */}
             <section className="pt-32 pb-16 bg-slate-50 border-b border-slate-200">
-                <div className="container mx-auto px-6 text-center">
+                <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mb-6 text-transform uppercase tracking-wider">
                         <BookOpen className="w-3 h-3" />
                         Blog
@@ -30,8 +30,8 @@ export function Blog() {
 
             {/* Articles Grid */}
             <section className="py-16 md:py-24">
-                <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
                         {blogPosts.map((article) => (
                             <Link
                                 to={`/blog/${article.slug}`}

@@ -6,6 +6,84 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+type GumroadVerification = {
+    success?: boolean
+    message?: string
+    purchase?: {
+        id?: string
+        refunded?: boolean
+        chargebacked?: boolean
+        variants?: string
+    }
+}
+
+const gumroadProducts = [
+    {
+        label: 'career-coach',
+        credits: 100,
+        productId: 'X3PD34MHCfnQjE2qgpkycg==',
+        permalinks: ['career-coach', 'kyhjbx'],
+    },
+    {
+        label: 'pack-booster',
+        credits: 20,
+        productId: 'JaME0YDDkp7O5KZd31sBxg==',
+        permalinks: ['pack-booster', 'ezocca'],
+    },
+]
+
+async function getAuthenticatedUserId(req: Request): Promise<string> {
+    const authHeader = req.headers.get('Authorization') || ''
+    const token = authHeader.replace('Bearer ', '').trim()
+    if (!token) throw new Error('Missing bearer token')
+
+    const url = Deno.env.get('SUPABASE_URL') ?? ''
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    if (!url || !anonKey) throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY')
+
+    const payloadPart = token.split('.')[1]
+    if (!payloadPart) throw new Error('Invalid bearer token')
+
+    const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/'))) as {
+        sub?: string
+        exp?: number
+    }
+
+    if (!payload.sub) throw new Error('Invalid bearer token')
+    if (payload.exp && payload.exp * 1000 < Date.now()) throw new Error('Expired bearer token')
+
+    const client = createClient(url, anonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+    })
+    const { error } = await client.rpc('get_user_credits', { p_user_id: payload.sub })
+    if (error) throw new Error('Invalid or expired bearer token')
+
+    return payload.sub
+}
+
+async function verifyGumroadLicense(params: Record<string, string>): Promise<GumroadVerification> {
+    const body = new URLSearchParams({
+        ...params,
+        increment_uses_count: 'false',
+    })
+
+    const response = await fetch('https://api.gumroad.com/v2/licenses/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+    })
+
+    const text = await response.text()
+    try {
+        return JSON.parse(text)
+    } catch {
+        return {
+            success: false,
+            message: `Gumroad returned ${response.status}: ${text.slice(0, 120)}`,
+        }
+    }
+}
+
 serve(async (req) => {
     // Handle CORS
     if (req.method === 'OPTIONS') {
@@ -13,11 +91,12 @@ serve(async (req) => {
     }
 
     try {
-        const { license_key, user_id } = await req.json()
+        const user_id = await getAuthenticatedUserId(req)
+        const { license_key } = await req.json()
 
-        if (!license_key || !user_id) {
+        if (!license_key) {
             return new Response(JSON.stringify({ error: 'Missing license_key or user_id' }), {
-                status: 200,
+                status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
         }
@@ -42,166 +121,68 @@ serve(async (req) => {
         }
 
         // 3. Verify with Gumroad
-        let verificationData = null
-        let validPermalink = ''
-
-        // ID for pack-booster retrieved from error logs: JaME0YDDkp7O5KZd31sBxg==
-        // FIXED: The 4th character is a ZERO ('0'), not the letter 'O'.
-        const productIds: Record<string, string> = {
-            'pack-booster': 'JaME0YDDkp7O5KZd31sBxg==',
-            'career-coach': 'X3PD34MHCfnQjE2qgpkycg==', // Updated ID for 100 credits pack
-            'career-match': 'JaME0YDDkp7O5KZd31sBxg==', // Default parent to pack-booster ID
-            'careermatch': 'JaME0YDDkp7O5KZd31sBxg==',
-            'uhifadhi': 'JaME0YDDkp7O5KZd31sBxg=='
-        }
-
-        // Expanded list of potential permalinks to check
-        const products = [
-            ...Object.keys(productIds),
-            'career-match',
-            'careermatch',
-            'career-match-app',
-            'uhifadhi'
-        ]
+        let verificationData: GumroadVerification | null = null
+        let validProduct = ''
+        let creditsToAdd = 0
         const debugLogs: string[] = []
 
         // Sanitize Key
-        const cleanKey = license_key.trim()
+        const cleanKey = String(license_key).trim().replace(/[‐‑‒–—−]/g, '-').toUpperCase()
         console.log(`Received Key: ${cleanKey.substring(0, 4)}... (Length: ${cleanKey.length})`)
 
-        for (const permalink of products) {
-            const rawId = productIds[permalink]?.trim()
-            let found = false
+        for (const product of gumroadProducts) {
+            const checks = [{ label: `${product.label}:id`, params: { product_id: product.productId, license_key: cleanKey } }]
 
-            // Strategy Group A: ID-based Variations (Only if we have an ID)
-            if (rawId) {
-                const idVariants = [
-                    { name: 'Standard', id: rawId, uses: undefined },
-                    { name: 'NoPadding', id: rawId.replace(/=+$/, ''), uses: undefined },
-                    { name: 'NoIncrement', id: rawId, uses: "false" }
-                ]
+            for (const check of checks) {
+                const data = await verifyGumroadLicense(check.params)
+                debugLogs.push(`${check.label}: ${data.success === true} (${data.message || 'N/A'})`)
 
-                for (const variant of idVariants) {
-                    if (found) break; // Stop if already found in inner loop
-
-                    try {
-                        const payload: any = {
-                            product_id: variant.id,
-                            license_key: cleanKey
-                        }
-                        if (variant.uses) payload.increment_uses_count = variant.uses
-
-                        const response = await fetch('https://api.gumroad.com/v2/licenses/verify', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        })
-                        const data = await response.json()
-
-                        const logKey = `[${permalink}][${variant.name}]`
-                        debugLogs.push(`${logKey}: ${data.success} (${data.message || 'N/A'})`);
-
-                        if (data.success && !data.purchase.refunded && !data.purchase.chargebacked) {
-                            verificationData = data
-                            validPermalink = permalink
-                            found = true
-                            break
-                        }
-                    } catch (err) {
-                        debugLogs.push(`[${permalink}][${variant.name}]: Err (${err.message})`)
-                    }
-                }
-            }
-
-            if (found) break; // Stop outer loop
-
-            // Fallback: Link Strategy (just to log it)
-            try {
-                const response = await fetch('https://api.gumroad.com/v2/licenses/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        product_permalink: permalink,
-                        license_key: cleanKey
-                    })
-                })
-                const data = await response.json()
-                if (!data.success) {
-                    debugLogs.push(`[${permalink}][Link]: ${data.success} (${data.message || 'N/A'})`);
-                }
-                if (data.success && !data.purchase.refunded && !data.purchase.chargebacked) {
+                if (data.success && data.purchase && !data.purchase.refunded && !data.purchase.chargebacked) {
                     verificationData = data
-                    validPermalink = permalink
+                    validProduct = product.label
+                    creditsToAdd = product.credits
                     break
                 }
-            } catch (err) {
-                debugLogs.push(`[${permalink}][Link]: Err (${err.message})`)
             }
+
+            if (verificationData) break
         }
 
         if (!verificationData) {
-            return new Response(JSON.stringify({ error: `Echec validation. Détails: ${debugLogs.join(', ')}` }), {
-                status: 200,
+            return new Response(JSON.stringify({ error: `Code licence non reconnu par Gumroad pour les produits configurés. Détails: ${debugLogs.join(', ')}` }), {
+                status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
         }
 
-        // 4. Determine Credits
-        let creditsToAdd = 0
-        const variantName = verificationData.purchase.variants || ''
-
-        if (validPermalink === 'pack-booster') creditsToAdd = 20
-        if (validPermalink === 'career-coach') creditsToAdd = 100
-
-        // Variant match (if permalink is generic like 'career-match')
-        if (creditsToAdd === 0) {
-            if (variantName.includes('Booster') || variantName.includes('20')) creditsToAdd = 20
-            if (variantName.includes('Coach') || variantName.includes('100')) creditsToAdd = 100
-
-            // Fallback for generic 'career-match' if no variant text matches but it verified
-            if (creditsToAdd === 0 && (validPermalink === 'career-match' || validPermalink === 'uhifadhi')) {
-                creditsToAdd = 20 // Default safe assumption
+        const { data: newBalance, error: grantError } = await supabaseAdmin.rpc('grant_user_credits_once', {
+            p_user_id: user_id,
+            p_amount: creditsToAdd,
+            p_source: 'gumroad-license',
+            p_reference: cleanKey,
+            p_meta: {
+                product: validProduct,
+                variant: verificationData.purchase.variants || '',
+                gumroad_purchase_id: verificationData.purchase.id || null,
             }
-        }
+        })
 
-        if (creditsToAdd === 0) {
-            return new Response(JSON.stringify({ error: `Produit vérifié (${validPermalink}) mais crédits indéterminés. Variant: ${variantName}` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
+        if (grantError) throw grantError
 
-        // 5. Atomic Transaction: Record usage + Add Credits
-        // We do them sequentially, if one fails we monitor. Ideally use RPC for atomicity, but JS logic is fine for now if we insert first.
-
-        // A. Insert usage
-        const { error: insertError } = await supabaseAdmin.from('used_licenses').insert({
-            license_key: license_key,
-            user_id: user_id,
-            product_permalink: validPermalink,
+        await supabaseAdmin.from('used_licenses').upsert({
+            license_key: cleanKey,
+            user_id,
+            product_permalink: validProduct,
             variant: verificationData.purchase.variants || ''
-        })
+        }, { onConflict: 'license_key' })
 
-        if (insertError) {
-            throw insertError
-        }
-
-        // B. Add Credits (using profile RPC or Upsert)
-        // We reuse the logic from webhook: fetch -> add -> upsert
-        const { data: profile } = await supabaseAdmin.from('profiles').select('credits').eq('id', user_id).single()
-        const newBalance = (profile?.credits || 0) + creditsToAdd
-
-        const { error: updateError } = await supabaseAdmin.from('profiles').upsert({
-            id: user_id,
-            credits: newBalance
-        })
-
-        if (updateError) throw updateError
-
-        console.log(`✅ License redeemed: ${license_key} for ${user_id} (+${creditsToAdd})`)
+        console.log(`✅ License redeemed: ${cleanKey.substring(0, 4)}... for ${user_id} (+${creditsToAdd})`)
 
         return new Response(JSON.stringify({
             success: true,
             creditsAdded: creditsToAdd,
             newBalance: newBalance,
-            product: validPermalink
+            product: validProduct
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
@@ -210,10 +191,9 @@ serve(async (req) => {
 
     } catch (error) {
         console.error("Redeem Error:", error)
-        // RETURN 200 to ensure the client receives the error message body
         return new Response(JSON.stringify({ error: `Server Error: ${error.message}` }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
+            status: 500,
         })
     }
 })

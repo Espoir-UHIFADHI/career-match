@@ -2,6 +2,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
+function assertWebhookSecret(req: Request, data: Record<string, FormDataEntryValue>) {
+    const expected = Deno.env.get('GUMROAD_WEBHOOK_SECRET')
+    if (!expected) throw new Error('Missing GUMROAD_WEBHOOK_SECRET')
+
+    const provided =
+        req.headers.get('x-career-match-webhook-secret') ||
+        req.headers.get('x-webhook-secret') ||
+        String(data['webhook_secret'] || '')
+
+    if (provided !== expected) {
+        throw new Error('Invalid webhook secret')
+    }
+}
+
 serve(async (req) => {
     // 1. Only allow POST
     if (req.method !== 'POST') {
@@ -11,14 +25,19 @@ serve(async (req) => {
     try {
         const formData = await req.formData()
         const data = Object.fromEntries(formData.entries())
-        console.log("🔔 Gumroad Webhook received:", JSON.stringify(data))
+        assertWebhookSecret(req, data)
 
         const userId = data['custom_user_id'] as string
         const permalink = data['permalink'] as string
+        const reference = String(data['sale_id'] || data['order_number'] || data['license_key'] || '')
 
         if (!userId) {
             console.log("⚠️ No User ID found (Test?)")
             return new Response('Missing User ID', { status: 200 })
+        }
+
+        if (!reference) {
+            return new Response('Missing purchase reference', { status: 400 })
         }
 
         let creditsToAdd = 0
@@ -32,21 +51,21 @@ serve(async (req) => {
         const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
-        const { data: profile } = await supabaseAdmin.from('profiles').select('credits').eq('id', userId).single()
-
-        // If profile exists, use its credits. If not, start with 0.
-        const currentCredits = profile?.credits || 0
-        const newBalance = currentCredits + creditsToAdd
-
-        // Use upsert to handle both update and insert (creates profile if missing)
-        const { error: upsertError } = await supabaseAdmin.from('profiles').upsert({
-            id: userId,
-            credits: newBalance
+        const { data: newBalance, error: grantError } = await supabaseAdmin.rpc('grant_user_credits_once', {
+            p_user_id: userId,
+            p_amount: creditsToAdd,
+            p_source: 'gumroad-webhook',
+            p_reference: reference,
+            p_meta: {
+                permalink,
+                email: data['email'] || null,
+                product_name: data['product_name'] || null,
+            }
         })
 
-        if (upsertError) throw upsertError
+        if (grantError) throw grantError
 
-        console.log(`✅ Success: +${creditsToAdd} for ${userId} -> ${newBalance} (Profile ${profile ? 'updated' : 'created'})`)
+        console.log(`✅ Gumroad credits processed: +${creditsToAdd} for ${userId} -> ${newBalance}`)
         return new Response(`Credits added: ${newBalance}`, { status: 200 })
 
     } catch (error) {

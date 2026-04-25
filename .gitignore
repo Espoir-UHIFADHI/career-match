@@ -24,6 +24,11 @@ dist-ssr
 *.sw?
 
 .env
+.env.*
+!.env.example
+
+# Supabase local cache / linked project metadata
+supabase/.temp/
 
 # Sorties locales dans scripts/dev/_output (sauf fichiers versionnés explicitement)
 scripts/dev/_output/*

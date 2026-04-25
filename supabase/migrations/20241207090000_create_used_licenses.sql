@@ -14,15 +14,10 @@ create table if not exists public.used_licenses (
 -- Enable RLS
 alter table public.used_licenses enable row level security;
 
--- Policies
--- Only the Service Role (Edge Function) needs full access, but we can allow users to view their own redemptions if needed.
--- For now, we'll keep it strict: users can view rows where they are the owner.
-
+-- Policies (idempotent)
+drop policy if exists "Users can view own used licenses" on public.used_licenses;
 create policy "Users can view own used licenses"
 on public.used_licenses for select
 to authenticated
-using ( (select auth.uid())::text = user_id );
+using ( current_setting('request.jwt.claim.sub', true) = user_id );
 
--- No insert/update policy for users needed as the Edge Function (service role) will handle insertions.
--- But just in case we need client-side insert (not recommended):
--- create policy "Users can insert own license usage" ... (skipped for security)
