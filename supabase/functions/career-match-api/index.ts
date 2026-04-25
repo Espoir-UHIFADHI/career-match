@@ -178,12 +178,13 @@ async function getAuthenticatedUserId(req: Request): Promise<string> {
     const client = createClient(url, anonKey, {
         global: { headers: { Authorization: `Bearer ${token}` } },
     });
-    const { data, error } = await client.auth.getUser(token);
-    if (error || !data.user?.id) {
+    const { data, error } = await client.auth.getClaims(token);
+    const userId = data?.claims?.sub;
+    if (error || !userId) {
         throw new Error('Invalid or expired bearer token');
     }
 
-    return data.user.id;
+    return userId;
 }
 
 // --- HANDLERS ---
