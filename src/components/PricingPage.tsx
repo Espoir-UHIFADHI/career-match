@@ -254,7 +254,12 @@ export function PricingPage() {
 
             {/* FAQ / Reassurance Section could go here */}
             <div className="mt-12 text-center text-sm text-slate-500 space-y-8">
-                <p>{t('pricingPage.securePayment')}</p>
+                <div className="space-y-2">
+                    <p>{t('pricingPage.securePayment')}</p>
+                    <p className="max-w-2xl mx-auto text-xs leading-relaxed text-slate-400">
+                        Les prix affichés sont TTC estimés pour la France. Sur Gumroad, le prix peut apparaître hors taxes avant le calcul automatique de la TVA selon votre pays.
+                    </p>
+                </div>
 
                 {/* License Key Redemption Section */}
                 <div className="max-w-md mx-auto mt-8 pt-8 border-t border-slate-100">
