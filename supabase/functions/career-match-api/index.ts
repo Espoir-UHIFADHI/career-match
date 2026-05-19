@@ -149,6 +149,8 @@ serve(async (req) => {
                     return await handleNetworkingMarkMessageCopied(payload, user.id)
                 case 'hunter-domain-search':
                     return await handleHunterDomainSearch(payload)
+                case 'hunter-company-domain':
+                    return await handleHunterCompanyDomain(payload)
                 case 'hunter-email-finder':
                     return await handleHunterEmailFinder(payload)
                 case 'hunter-email-verifier':
@@ -1238,6 +1240,23 @@ async function callHunterRaw(endpoint: string, params: Record<string, string>) {
     }
 
     return await response.json()
+}
+
+async function handleHunterCompanyDomain(payload: any) {
+    const { company } = payload
+    try {
+        const data = await callHunterRaw('domain-search', { company })
+        return new Response(JSON.stringify(data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        return new Response(JSON.stringify({ error: msg }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+        })
+    }
 }
 
 async function handleHunterDomainSearch(payload: any) {

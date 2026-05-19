@@ -44,12 +44,24 @@ const SKIP_DOMAINS = [
 
 export async function findCompanyDomain(companyName: string, token?: string): Promise<string | null> {
     try {
-        // 1. Check if input is already a domain (e.g. "google.com")
+        // 1. Already a domain
         if (companyName.includes(".") && !companyName.includes(" ")) {
             return companyName.toLowerCase();
         }
 
-        // 2. Try multiple queries, broadening on each attempt
+        // 2. Hunter.io by company name (most reliable, no Google needed)
+        try {
+            const hunterData = await callBackend('hunter-company-domain', { company: companyName }, token);
+            const domain = hunterData?.data?.domain;
+            if (domain) {
+                console.log(`[Hunter] Domain found for "${companyName}": ${domain}`);
+                return domain;
+            }
+        } catch (e) {
+            console.warn(`[Hunter] Company domain lookup failed for "${companyName}":`, e);
+        }
+
+        // 3. Fallback: Google search via Serper
         const queries = [
             `"${companyName}" official website`,
             `${companyName} official website`,
