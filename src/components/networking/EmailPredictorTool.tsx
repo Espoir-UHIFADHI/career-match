@@ -80,56 +80,55 @@ export function EmailPredictorTool() {
 
 
         try {
-            // 1. Find domain
-            const domain = await findCompanyDomain(company, token || undefined);
-            if (!domain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
-
-            // 2. Get pattern
-            const pattern = await getEmailPattern(domain, token || undefined);
-
-            // 3. Find or Generate email
             let email: string | undefined;
             let score: number | undefined;
+            let domain: string = "";
+            let pattern: string = "";
             let source: 'finder' | 'pattern' | 'cache' = 'pattern';
 
-            // FALLBACK STRATEGY: If pattern not found, try deep search if names are present
-            if (!pattern) {
-                if (firstName && lastName) {
-                    console.log("Pattern not found, trying deep search...");
-                    const deepResult = await findEmail(firstName, lastName, domain, token || undefined);
-                    if (deepResult && deepResult.email) {
-                        email = deepResult.email;
-                        score = deepResult.score;
-                        source = 'finder'; // It was found by Hunter directly
-                        // We can't infer pattern reliably from one email, so leave it null
-                    } else {
-                        // Truly failed
-                        throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
-                    }
+            if (firstName && lastName) {
+                // Strategy 1: Hunter Email Finder with company name directly (most reliable)
+                const directResult = await findEmail(firstName, lastName, "", token || undefined, company);
+                if (directResult?.email) {
+                    email = directResult.email;
+                    score = directResult.score;
+                    source = 'finder';
+                    domain = directResult.domain || "";
                 } else {
-                    throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
+                    // Strategy 2: Find domain first, then generate from pattern
+                    const foundDomain = await findCompanyDomain(company, token || undefined);
+                    if (foundDomain) {
+                        domain = foundDomain;
+                        const foundPattern = await getEmailPattern(domain, token || undefined);
+                        pattern = foundPattern || "";
+
+                        const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
+                        if (cached) {
+                            email = cached.email;
+                            score = cached.score;
+                            source = 'cache';
+                        } else if (pattern) {
+                            email = generateEmail(firstName, lastName, pattern, domain) || undefined;
+                            source = 'pattern';
+                        }
+                    }
+
+                    if (!email && !pattern) {
+                        throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
+                    }
                 }
             } else {
-                // Standard flow: We have a pattern
-                if (firstName && lastName) {
-                    // 1. Check Cache first (Free for us)
-                    const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
-
-                    if (cached) {
-                        email = cached.email;
-                        score = cached.score;
-                        source = 'cache';
-                    } else {
-                        // 2. Generate Pattern Suggestion (No API call yet)
-                        const generated = generateEmail(firstName, lastName, pattern!, domain);
-                        email = generated || undefined;
-                        source = 'pattern';
-                    }
-                }
+                // No names: only find domain + pattern
+                const foundDomain = await findCompanyDomain(company, token || undefined);
+                if (!foundDomain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
+                domain = foundDomain;
+                const foundPattern = await getEmailPattern(domain, token || undefined);
+                pattern = foundPattern || "";
+                if (!pattern) throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
             }
 
             setEmailPredictorState({
-                result: { email, domain, pattern: pattern || "", score, source }
+                result: { email, domain, pattern, score, source }
             });
             if (email || pattern) await fetchCredits(user.id, token || undefined);
 

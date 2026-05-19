@@ -1251,10 +1251,11 @@ async function handleHunterCompanyDomain(payload: any) {
             status: 200,
         })
     } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error)
-        return new Response(JSON.stringify({ error: msg }), {
+        // Return null domain gracefully so the client can fall back to Serper
+        console.warn(`[Hunter] company-domain lookup failed for "${company}":`, error instanceof Error ? error.message : error)
+        return new Response(JSON.stringify({ data: { domain: null, pattern: null, webmail: false, organization: company } }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
+            status: 200,
         })
     }
 }
@@ -1277,13 +1278,12 @@ async function handleHunterDomainSearch(payload: any) {
 }
 
 async function handleHunterEmailFinder(payload: any) {
-    const { domain, first_name, last_name } = payload
+    const { domain, company, first_name, last_name } = payload
     try {
-        const data = await callHunterRaw('email-finder', {
-            domain,
-            first_name,
-            last_name
-        })
+        const params: Record<string, string> = { first_name, last_name };
+        if (domain) params.domain = domain;
+        else if (company) params.company = company;
+        const data = await callHunterRaw('email-finder', params)
         return new Response(JSON.stringify(data), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
