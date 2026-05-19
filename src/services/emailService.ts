@@ -35,6 +35,13 @@ interface HunterResponse {
  * @param token Optional auth token for Supabase Edge Function calls (if needed)
  * @returns The domain name (e.g. "cimpa.com") or null if not found
  */
+const SKIP_DOMAINS = [
+    'linkedin.com', 'facebook.com', 'twitter.com', 'x.com', 'instagram.com',
+    'wikipedia.org', 'glassdoor.com', 'indeed.com', 'welcometothejungle.com',
+    'youtube.com', 'bloomberg.com', 'reuters.com', 'lefigaro.fr', 'lemonde.fr',
+    'lesechos.fr', 'bfmtv.com', 'crunchbase.com', 'societe.com', 'manageo.fr',
+];
+
 export async function findCompanyDomain(companyName: string, token?: string): Promise<string | null> {
     try {
         // 1. Check if input is already a domain (e.g. "google.com")
@@ -42,20 +49,36 @@ export async function findCompanyDomain(companyName: string, token?: string): Pr
             return companyName.toLowerCase();
         }
 
-        // 2. Search for the domain
-        const query = `"${companyName}" official website`;
-        const results = await searchGoogle(query, 1, 0, token);
+        // 2. Try multiple queries, broadening on each attempt
+        const queries = [
+            `"${companyName}" official website`,
+            `${companyName} official website`,
+            `${companyName} site officiel`,
+        ];
 
-        if (results && results.length > 0) {
-            const link = results[0].link;
+        for (const query of queries) {
+            let results;
             try {
-                const url = new URL(link);
-                return url.hostname.replace(/^www\./, "");
-            } catch {
-                console.error("Error parsing URL:", link);
-                return null;
+                results = await searchGoogle(query, 5, 0, token, false, 'en');
+            } catch (e) {
+                console.warn(`Serper query failed for "${query}":`, e);
+                continue;
+            }
+
+            if (!results || results.length === 0) continue;
+
+            for (const result of results) {
+                try {
+                    const hostname = new URL(result.link).hostname.replace(/^www\./, "");
+                    if (!SKIP_DOMAINS.some(d => hostname.includes(d))) {
+                        return hostname;
+                    }
+                } catch {
+                    continue;
+                }
             }
         }
+
         return null;
     } catch (error) {
         console.error("Error finding company domain:", error);
