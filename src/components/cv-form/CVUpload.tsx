@@ -13,7 +13,11 @@ import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 
-export function CVUpload() {
+interface CVUploadProps {
+    onSave?: (data: ParsedCV) => void | Promise<void>;
+}
+
+export function CVUpload({ onSave }: CVUploadProps = {}) {
     const { t } = useTranslation();
     const { getToken, isSignedIn } = useAuth();
     const { user } = useUser();
@@ -104,8 +108,12 @@ export function CVUpload() {
     };
 
     const handleSaveReview = (data: ParsedCV) => {
-        setCvData(data);
-        setStep(2);
+        if (onSave) {
+            onSave(data);
+        } else {
+            setCvData(data);
+            setStep(2);
+        }
     };
 
     const handleCancelReview = () => {

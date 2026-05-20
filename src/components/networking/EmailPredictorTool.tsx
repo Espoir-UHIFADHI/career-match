@@ -224,7 +224,13 @@ export function EmailPredictorTool() {
     return (
         <div className="w-full max-w-none mx-auto space-y-8 animate-fade-in">
             <div className="text-center space-y-3">
-                <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
+                <div className="flex items-center justify-center gap-3">
+                    <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-600 border border-amber-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                        {t('emailPredictor.comingSoon')}
+                    </span>
+                </div>
                 <p className="text-slate-600 text-lg">{t('emailPredictor.subtitle')}</p>
             </div>
 
@@ -284,25 +290,11 @@ export function EmailPredictorTool() {
 
                             {isSignedIn ? (
                                 <Button
-                                    onClick={handlePredict}
-                                    disabled={status === 'loading'}
-                                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all text-base"
+                                    disabled={true}
+                                    className="w-full h-12 bg-slate-400 cursor-not-allowed text-white font-medium shadow-sm transition-all text-base opacity-70"
                                 >
-                                    {status === 'loading' ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            {t('emailPredictor.analyzePatterns')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {firstName && lastName ? (
-                                                <Mail className="mr-2 h-5 w-5" />
-                                            ) : (
-                                                <Lock className="mr-2 h-5 w-5" />
-                                            )}
-                                            {firstName && lastName ? t('emailPredictor.findEmail') : t('emailPredictor.findPattern')}
-                                        </>
-                                    )}
+                                    <Lock className="mr-2 h-5 w-5" />
+                                    {t('emailPredictor.findEmail')}
                                 </Button>
                             ) : (
                                 <SignInButton mode="modal">

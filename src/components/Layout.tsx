@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Toaster, toast } from "sonner";
-import { FileText, User, Mail, Menu, X, Coins } from "lucide-react";
+import { FileText, User, Mail, Menu, X, Coins, History } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser, useClerk, useAuth } from "@clerk/clerk-react";
@@ -45,6 +45,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         { id: 1, name: t('nav.uploadCV'), icon: FileText, activeSteps: [1, 2, 3, 4] },
         { id: 5, name: t('nav.networking'), icon: User, activeSteps: [5] },
         { id: 6, name: t('nav.emailPredictor'), icon: Mail, activeSteps: [6] },
+        { id: 8, name: t('nav.history'), icon: History, activeSteps: [8] },
         { id: 7, name: t('nav.pricing'), icon: Coins, activeSteps: [7] },
     ];
 
