@@ -39,7 +39,7 @@ export function EmailPredictorTool() {
         }
     }, [result, status]);
 
-    const handlePredict = async () => {
+    const _handlePredict = async () => {
         if (!company) return;
 
         if (!isSignedIn || !user) {
