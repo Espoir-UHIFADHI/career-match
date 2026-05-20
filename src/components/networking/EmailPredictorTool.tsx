@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, findEmail, type VerificationResponse } from "../../services/emailService";
+import { formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
@@ -21,12 +21,12 @@ export function EmailPredictorTool() {
 
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     // Error and Copied are transient UI states, keep local
-    const [error, setError] = useState<string | null>(null);
+    const [error] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [showCreditModal, setShowCreditModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
-    const { fetchCredits, credits } = useUserStore();
+    const { fetchCredits } = useUserStore();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
@@ -38,112 +38,6 @@ export function EmailPredictorTool() {
             setStatus('success');
         }
     }, [result, status]);
-
-    const _handlePredict = async () => {
-        if (!company) return;
-
-        if (!isSignedIn || !user) {
-            return;
-        }
-
-        let token: string | null = null;
-        try {
-            token = await getToken({ template: 'supabase', skipCache: true });
-        } catch (error) {
-            console.error("Error getting Supabase token:", error);
-            if (error instanceof Error && error.message.includes("No JWT template exists")) {
-                alert(t('emailPredictor.errors.configMissing'));
-                return;
-            }
-        }
-
-        if (!token) {
-            console.error("❌ Auth Error: No token generated");
-            setError(t('emailPredictor.errors.authFailed'));
-            setStatus('error');
-            return;
-        }
-
-        // The server performs the authoritative debit; this local check is only UX.
-        if (credits < 1) {
-            setShowCreditModal(true);
-            return;
-        }
-
-        setStatus('loading');
-        setError(null);
-        setEmailPredictorState({ result: null });
-        setVerificationStatus('idle');
-        setVerificationResult(null);
-
-        // Token is already fetched above
-
-
-        try {
-            let email: string | undefined;
-            let score: number | undefined;
-            let domain: string = "";
-            let pattern: string = "";
-            let source: 'finder' | 'pattern' | 'cache' = 'pattern';
-
-            if (firstName && lastName) {
-                // Strategy 1: Hunter Email Finder with company name directly (most reliable)
-                const directResult = await findEmail(firstName, lastName, "", token || undefined, company);
-                if (directResult?.email) {
-                    email = directResult.email;
-                    score = directResult.score;
-                    source = 'finder';
-                    domain = directResult.domain || "";
-                } else {
-                    // Strategy 2: Find domain first, then generate from pattern
-                    const foundDomain = await findCompanyDomain(company, token || undefined);
-                    if (foundDomain) {
-                        domain = foundDomain;
-                        const foundPattern = await getEmailPattern(domain, token || undefined);
-                        pattern = foundPattern || "";
-
-                        const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
-                        if (cached) {
-                            email = cached.email;
-                            score = cached.score;
-                            source = 'cache';
-                        } else if (pattern) {
-                            email = generateEmail(firstName, lastName, pattern, domain) || undefined;
-                            source = 'pattern';
-                        }
-                    }
-
-                    if (!email && !pattern) {
-                        throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
-                    }
-                }
-            } else {
-                // No names: only find domain + pattern
-                const foundDomain = await findCompanyDomain(company, token || undefined);
-                if (!foundDomain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
-                domain = foundDomain;
-                const foundPattern = await getEmailPattern(domain, token || undefined);
-                pattern = foundPattern || "";
-                if (!pattern) throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
-            }
-
-            setEmailPredictorState({
-                result: { email, domain, pattern, score, source }
-            });
-            if (email || pattern) await fetchCredits(user.id, token || undefined);
-
-            setStatus('success');
-        } catch (err) {
-            console.error("Prediction failed:", err);
-            if (err instanceof Error && /insufficient credits/i.test(err.message)) {
-                setShowCreditModal(true);
-                setStatus('idle');
-            } else {
-                setError(err instanceof Error ? err.message : t('emailPredictor.errors.generic'));
-                setStatus('error');
-            }
-        }
-    };
 
     const copyToClipboard = () => {
         if (result?.email) {
