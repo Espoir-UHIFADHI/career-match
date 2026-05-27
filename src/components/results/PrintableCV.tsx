@@ -222,15 +222,14 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
                                         {exp.dates}
                                     </span>
                                 </div>
-                                <div className={`${config.smallText} font-bold text-indigo-700 mb-0.5`}>{cleanMarkdown(exp.company)}</div>
-                                <ul className="space-y-0.5">
+                                <div className={`${config.smallText} font-bold text-indigo-700 mb-1.5`}>{cleanMarkdown(exp.company)}</div>
+                                <div className="space-y-0.5">
                                     {getExperiencePoints(exp.description).map((line: string, idx: number) => (
-                                        <li key={idx} className={`flex items-start ${config.bodyText} text-slate-700`}>
-                                            <span className="mr-1.5 mt-1 w-1 h-1 bg-indigo-500 rounded-full flex-shrink-0"></span>
-                                            <span className="flex-1">{line.trim().replace(/^[-•*]\s*/, '')}</span>
-                                        </li>
+                                        <p key={idx} className={`${config.bodyText} text-slate-700`}>
+                                            {line.trim().replace(/^[-•*]\s*/, '')}
+                                        </p>
                                     ))}
-                                </ul>
+                                </div>
                             </div>
                         ))}
                     </div>
