@@ -173,13 +173,14 @@ const estimateHeight = (data: ParsedCV, d: Density): number => {
         h += p.secGap;
     }
 
-    // ── Skills grid
+    // ── Skills grid (2-column list)
     h += _SKILLS_MT;
     const wLeft  = w * 0.583;
     const wRight = w * 0.417;
-    const rowH   = _BADGE_SZ + 2*_BADGE_PY + _BADGE_GAP;
-    const techH  = (_SEC_T + _SEC_PB + _SEC_MB) + badgeRows(data.skills || [], wLeft)  * rowH;
-    const softH  = (_SEC_T + _SEC_PB + _SEC_MB) + badgeRows(data.softSkills || [], wRight) * rowH;
+    const techRows = Math.ceil((data.skills || []).length / 2);
+    const softRows = Math.ceil((data.softSkills || []).length / 2);
+    const techH  = (_SEC_T + _SEC_PB + _SEC_MB) + techRows * lh(p.base, p.lead);
+    const softH  = (_SEC_T + _SEC_PB + _SEC_MB) + softRows * lh(p.base, p.lead);
     h += Math.max(techH, softH);
 
     // ── Footer
@@ -354,7 +355,7 @@ const createStyles = (density: Density) => {
         contactLink: {
             fontSize: c.contactSize,
             color: '#4338ca',             // text-indigo-600
-            textDecoration: 'none',
+            textDecoration: 'underline',
         },
 
         // ── Section wrapper — <section className={sectionGap}>
@@ -598,10 +599,24 @@ const HEADERS = {
     },
 };
 
+const ensureHttps = (url: string): string => {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return 'https://' + url;
+};
+
+// Zero-width non-joiner inserted between ligature pairs so @react-pdf/renderer
+// doesn't collapse them into a single missing glyph (fi, fl, ff, ffi, ffl).
+const ZWNJ = '‌';
+const breakLigatures = (s: string): string =>
+    s.replace(/f([flibt])/g, `f${ZWNJ}$1`);
+
 const clean = (text: any): string => {
     if (!text) return '';
     const s = typeof text === 'string' ? text : String(text);
-    return s.replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}\s/g, '').trim();
+    return breakLigatures(
+        s.replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}\s/g, '').trim()
+    );
 };
 
 const getBullets = (text: any): string[] => {
@@ -666,13 +681,13 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                         {data.contact.linkedin && (
                             <View style={s.contactItem}>
                                 <IconLinkedin size={ic} />
-                                <Link src={data.contact.linkedin} style={s.contactLink}>LinkedIn</Link>
+                                <Link src={ensureHttps(data.contact.linkedin)} style={s.contactLink}>LinkedIn</Link>
                             </View>
                         )}
                         {data.contact.website && (
                             <View style={s.contactItem}>
                                 <IconGlobe size={ic} />
-                                <Link src={data.contact.website} style={s.contactLink}>Portfolio</Link>
+                                <Link src={ensureHttps(data.contact.website)} style={s.contactLink}>Portfolio</Link>
                             </View>
                         )}
                     </View>
@@ -744,11 +759,9 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                         {data.skills && data.skills.length > 0 && (
                             <View>
                                 <Text style={s.skillTitle}>{headers.skills}</Text>
-                                <View style={s.badgesWrap}>
+                                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                     {data.skills.map((skill, idx) => (
-                                        <View key={idx} style={s.badgeTech} wrap={false}>
-                                            <Text style={s.badgeTechText}>{clean(skill)}</Text>
-                                        </View>
+                                        <Text key={idx} style={[s.bodyText, { width: '50%' }]}>{clean(skill)}</Text>
                                     ))}
                                 </View>
                             </View>
@@ -758,11 +771,9 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                         {data.softSkills && data.softSkills.length > 0 && (
                             <View>
                                 <Text style={s.skillTitle}>{headers.softSkills}</Text>
-                                <View style={s.badgesWrap}>
+                                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                     {data.softSkills.map((skill, idx) => (
-                                        <View key={idx} style={s.badgeSoft} wrap={false}>
-                                            <Text style={s.badgeSoftText}>{clean(skill)}</Text>
-                                        </View>
+                                        <Text key={idx} style={[s.bodyText, { width: '50%' }]}>{clean(skill)}</Text>
                                     ))}
                                 </View>
                             </View>

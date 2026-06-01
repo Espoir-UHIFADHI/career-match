@@ -182,13 +182,13 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
                     {data.contact?.linkedin && (
                         <div className="flex items-center gap-1">
                             <Linkedin size={config.iconSize} className="text-indigo-600" />
-                            <a href={data.contact.linkedin} target="_blank" rel="noreferrer" className="hover:text-indigo-800 hover:underline">LinkedIn</a>
+                            <a href={data.contact.linkedin.startsWith('http') ? data.contact.linkedin : 'https://' + data.contact.linkedin} target="_blank" rel="noreferrer" className="hover:text-indigo-800 hover:underline">LinkedIn</a>
                         </div>
                     )}
                     {data.contact?.website && (
                         <div className="flex items-center gap-1">
                             <Globe size={config.iconSize} className="text-indigo-600" />
-                            <a href={data.contact.website} target="_blank" rel="noreferrer" className="hover:text-indigo-800 hover:underline">Portfolio</a>
+                            <a href={data.contact.website.startsWith('http') ? data.contact.website : 'https://' + data.contact.website} target="_blank" rel="noreferrer" className="hover:text-indigo-800 hover:underline">Portfolio</a>
                         </div>
                     )}
                 </div>
@@ -259,16 +259,16 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
 
             {/* Skills Grid - Tech & Soft */}
             <div className={`grid grid-cols-12 ${config.colGap} mt-2`}>
-                {/* Left Column: Tech Skills */}
+                {/* Left Column: Tech Skills — 2 colonnes internes */}
                 <div className="col-span-7 space-y-2">
                     {data.skills && data.skills.length > 0 && (
                         <div>
                             <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
                                 {headers.skills}
                             </h2>
-                            <div className="flex flex-wrap gap-1">
+                            <div className="grid grid-cols-2 gap-x-3">
                                 {data.skills.map((skill, idx) => (
-                                    <span key={idx} className="px-1.5 py-0.5 bg-slate-50 text-slate-700 text-[9px] font-semibold border border-slate-200 rounded-md">
+                                    <span key={idx} className="text-[9px] text-slate-700 leading-relaxed">
                                         {cleanMarkdown(skill)}
                                     </span>
                                 ))}
@@ -277,16 +277,16 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
                     )}
                 </div>
 
-                {/* Right Column: Soft Skills */}
+                {/* Right Column: Soft Skills — 2 colonnes internes */}
                 <div className="col-span-5 space-y-2">
                     {data.softSkills && data.softSkills.length > 0 && (
                         <div>
                             <h2 className="text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5">
                                 {headers.softSkills}
                             </h2>
-                            <div className="flex flex-wrap gap-1">
+                            <div className="grid grid-cols-2 gap-x-3">
                                 {data.softSkills.map((skill, idx) => (
-                                    <span key={idx} className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[9px] font-medium rounded-md">
+                                    <span key={idx} className="text-[9px] text-slate-700 leading-relaxed">
                                         {cleanMarkdown(skill)}
                                     </span>
                                 ))}
