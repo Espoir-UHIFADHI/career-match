@@ -96,10 +96,6 @@ const _JR_MB   = 1.5;  // JOB_ROW_MB
 const _EXP_GAP = 7.5;  // EXP_ITEMS_GAP
 const _EDU_GAP = 4.5;  // EDU_ITEMS_GAP
 const _BUL_GAP = 1.5;  // BULLET_GAP
-const _BADGE_PY = 1.5; // BADGE_PY
-const _BADGE_PX = 4.5; // BADGE_PX
-const _BADGE_GAP = 3;  // gap between badges
-const _BADGE_SZ  = 6.75;
 const _FOOTER_MT = 9;
 const _FOOTER_PT = 6;
 const _FOOTER_IG = 1.5;
@@ -114,15 +110,6 @@ const textLines = (text: string, sz: number, w: number): number => {
     return Math.ceil(text.length / cpl);
 };
 
-const badgeRows = (items: string[], w: number): number => {
-    if (!items?.length) return 0;
-    let rowW = 0; let rows = 1;
-    items.forEach(item => {
-        const bw = (clean(item).length * _BADGE_SZ * CW) + 2*_BADGE_PX + _BADGE_GAP;
-        if (rowW + bw > w) { rows++; rowW = bw; } else rowW += bw;
-    });
-    return rows;
-};
 
 const estimateHeight = (data: ParsedCV, d: Density): number => {
     const p   = DENSITY_PARAMS[d];
@@ -175,8 +162,6 @@ const estimateHeight = (data: ParsedCV, d: Density): number => {
 
     // ── Skills grid (2-column list)
     h += _SKILLS_MT;
-    const wLeft  = w * 0.583;
-    const wRight = w * 0.417;
     const techRows = Math.ceil((data.skills || []).length / 2);
     const softRows = Math.ceil((data.softSkills || []).length / 2);
     const techH  = (_SEC_T + _SEC_PB + _SEC_MB) + techRows * lh(p.base, p.lead);
@@ -271,7 +256,6 @@ const createStyles = (density: Density) => {
     }[density];
 
     // Shared constants (same across all densities)
-    const HEADLINE_SIZE   = 10.5;  // text-sm — always the same in PrintableCV
     const SEC_TITLE_SIZE  = 9;     // text-xs
     const BADGE_SIZE      = 6.75;  // text-[9px]
     const HEADER_PB       = 6;     // pb-2
