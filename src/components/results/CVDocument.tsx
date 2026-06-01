@@ -256,6 +256,7 @@ const createStyles = (density: Density) => {
     }[density];
 
     // Shared constants (same across all densities)
+    const HEADLINE_SIZE   = 10.5;  // text-sm
     const SEC_TITLE_SIZE  = 9;     // text-xs
     const BADGE_SIZE      = 6.75;  // text-[9px]
     const HEADER_PB       = 6;     // pb-2
