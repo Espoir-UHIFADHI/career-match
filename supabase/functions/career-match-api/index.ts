@@ -713,11 +713,12 @@ I1. CIBLAGE ATS
   - Intègre-les naturellement dans le résumé, les compétences et les descriptions d'expérience.
   - Si le candidat a une compétence décrite différemment, utilise le terme exact de l'offre.
 
-I2. RÉSUMÉ PROFESSIONNEL
-  - 2 à 3 phrases maximum, soit environ 300-400 caractères.
-  - Structure : [Profil en 1 phrase] + [Expertise principale pertinente pour le poste] + [Valeur ajoutée concrète].
-  - Pas de formules creuses ("je suis passionné(e) par", "motivé(e) à contribuer", "je reste à votre disposition").
-  - Pas de répétition du titre de poste déjà présent dans le headline.
+I2. RÉSUMÉ PROFESSIONNEL — RÈGLE DE PRÉSERVATION STRICTE
+  - CONSERVE l'intégralité de la structure, des mots-clés et du sens du résumé original du CV (champ cv.summary).
+  - N'effectue AUCUN grand changement ni aucune réécriture lourde.
+  - Ajuste UNIQUEMENT et subtilement le texte si (et seulement si) la fiche de poste exige une mise en conformité mineure (ex : accorder un mot-clé ou aligner une formulation pour optimiser le score ATS).
+  - Si aucun ajustement n'est nécessaire pour maximiser le score, restitue le résumé initial à 100% de manière brute, sans y toucher.
+  - INTERDIT : reformuler, restructurer, allonger, raccourcir ou "améliorer" le résumé si cela n'est pas exigé par l'offre d'emploi.
 
 I3. REFORMULATION DES EXPÉRIENCES
   - Reformule chaque expérience pour coller au vocabulaire de l'offre.
