@@ -13,13 +13,11 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: (id) => {
+            // Bibliothèques lourdes vraiment isolées — pas de dépendances circulaires possibles
             if (id.includes('pdfjs-dist') || id.includes('@react-pdf/renderer')) return 'pdf-vendor';
             if (id.includes('xlsx')) return 'xlsx-vendor';
-            if (id.includes('@clerk/clerk-react') || id.includes('@clerk/localizations')) return 'clerk-vendor';
-            if (id.includes('@supabase/')) return 'supabase-vendor';
-            if (id.includes('@google/generative-ai')) return 'ai-vendor';
-            if (id.includes('react') && id.includes('node_modules')) return 'react-vendor';
-            if (id.includes('node_modules')) return 'vendor';
+            // React et toutes ses dépendances (react-dom, react-router, lucide, clerk)
+            // restent dans le bundle principal — les séparer crée des TDZ errors au runtime
           },
         },
       },
