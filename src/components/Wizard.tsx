@@ -271,7 +271,9 @@ function Wizard() {
       const metadata = user.unsafeMetadata as { welcome_sent?: boolean };
 
       if (!metadata.welcome_sent) {
-        // Nouvel utilisateur confirmé - on track l'inscription et on affiche l'onboarding
+        // Marquer immédiatement pour éviter les re-déclenchements si email ou UTM échouent
+        await user.update({ unsafeMetadata: { ...metadata, welcome_sent: true } });
+
         trackSignUp(user.externalAccounts?.[0]?.provider ?? "email");
         setShowOnboarding(true);
 
@@ -279,8 +281,7 @@ function Wizard() {
           const token = await getToken({ template: 'supabase' });
           if (!token) return;
 
-          // Persister les UTMs en Supabase pour attribution Google Ads durable
-          // Lire depuis sessionStorage (capturé sur /lp/cv-ats au clic pub)
+          // Persister les UTMs (non-bloquant)
           try {
             const rawUtm = sessionStorage.getItem("career_match_utm");
             if (rawUtm) {
@@ -288,13 +289,13 @@ function Wizard() {
               const { createClerkSupabaseClient } = await import("../services/supabase");
               const supabase = createClerkSupabaseClient(token);
               await supabase.rpc("set_user_utm", {
-                p_user_id:     user.id,
-                p_utm_source:  utm.utm_source  ?? null,
-                p_utm_medium:  utm.utm_medium  ?? null,
+                p_user_id:      user.id,
+                p_utm_source:   utm.utm_source   ?? null,
+                p_utm_medium:   utm.utm_medium   ?? null,
                 p_utm_campaign: utm.utm_campaign ?? null,
-                p_utm_content: utm.utm_content  ?? null,
-                p_utm_term:    utm.utm_term     ?? null,
-                p_gclid:       utm.gclid        ?? null,
+                p_utm_content:  utm.utm_content  ?? null,
+                p_utm_term:     utm.utm_term     ?? null,
+                p_gclid:        utm.gclid        ?? null,
               });
               sessionStorage.removeItem("career_match_utm");
             }
@@ -302,22 +303,11 @@ function Wizard() {
             console.error("UTM persistence failed (non-blocking):", utmErr);
           }
 
-          const { sendTransactionalEmail } = await import("../services/emailService");
-
+          // Email de bienvenue (non-bloquant — échec n'empêche pas la suite)
           const email = user.primaryEmailAddress?.emailAddress;
-          if (!email) return;
-
-          const sent = await sendTransactionalEmail(
-            email,
-            'welcome',
-            { name: user.firstName || 'User' },
-            token
-          );
-
-          if (sent) {
-            await user.update({
-              unsafeMetadata: { ...metadata, welcome_sent: true }
-            });
+          if (email) {
+            const { sendTransactionalEmail } = await import("../services/emailService");
+            await sendTransactionalEmail(email, 'welcome', { name: user.firstName || 'User' }, token);
           }
         } catch (error) {
           console.error("Failed to send welcome email:", error);
