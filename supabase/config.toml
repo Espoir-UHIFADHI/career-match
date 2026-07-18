@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.reengage-users]
 verify_jwt = false
+
+[functions.keep-alive]
+verify_jwt = false
