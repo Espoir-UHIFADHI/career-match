@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from './ui/Button';
-import { SignUpButton, SignedIn, SignedOut, useUser } from '@clerk/clerk-react';
+import { SignUpButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, ArrowRight, FileText, CheckCircle2, Lock, XCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import { trackQuickScanStarted, trackQuickScanCompleted, trackCTAClicked } from '../utils/analytics';
@@ -36,7 +36,6 @@ export function QuickScan() {
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<ScanResult | null>(null);
     const [apiError, setApiError] = useState<string | null>(null);
-    const { isSignedIn } = useUser();
     const navigate = useNavigate();
 
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
