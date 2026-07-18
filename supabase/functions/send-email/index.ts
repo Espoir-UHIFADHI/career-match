@@ -11,7 +11,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   to: string;
-  type: "welcome" | "match_ready" | "invite_mentor";
+  type: "welcome" | "match_ready" | "invite_mentor" | "reengage_low_score" | "reengage_high_score";
   data?: any;
 }
 
@@ -123,6 +123,62 @@ const EMAIL_TEMPLATES = {
       </div>
     `),
   }),
+  reengage_low_score: (data: any) => ({
+    subject: `Votre CV a encore du potentiel — 3 corrections prioritaires`,
+    html: getEmailLayout(`
+      <h1>Votre score de ${data?.score}% peut être amélioré 💪</h1>
+      <p>Bonjour ${data?.name || ''},</p>
+      <p>Vous avez analysé votre CV pour un poste de <strong>${data?.jobTitle || 'votre poste cible'}</strong> il y a quelques jours. Avec un score de <strong>${data?.score}%</strong>, vous êtes proche — mais les filtres ATS vous éliminent encore avant d'atteindre un recruteur.</p>
+
+      <div class="highlight-box">
+        <p class="score-label">Votre Score Actuel</p>
+        <p class="score-value" style="color: #dc2626;">${data?.score}%</p>
+        <p style="margin: 8px 0 0; font-size: 14px; color: #6b7280;">Objectif : dépasser 75% pour passer les filtres</p>
+      </div>
+
+      <p><strong>Les 3 erreurs les plus fréquentes à ce niveau :</strong></p>
+      <ul>
+        <li><strong>Mots-clés manquants</strong> — L'ATS cherche des termes spécifiques au poste. Si votre CV n'en contient pas, il est rejeté automatiquement.</li>
+        <li><strong>Mise en page complexe</strong> — Colonnes, tableaux ou infographies brisent le parsing ATS.</li>
+        <li><strong>Section compétences absente ou trop vague</strong> — C'est là que les robots cherchent en priorité.</li>
+      </ul>
+
+      <p>Revenez sur Career Match, collez une nouvelle offre d'emploi — notre IA refera l'analyse et optimisera votre CV en quelques secondes.</p>
+
+      <div style="text-align: center;">
+        <a href="https://careermatch.fr/app" class="button">Optimiser mon CV maintenant</a>
+      </div>
+    `),
+  }),
+
+  reengage_high_score: (data: any) => ({
+    subject: `Vous êtes prêt à postuler — voici comment maximiser vos chances 🚀`,
+    html: getEmailLayout(`
+      <h1>Score ${data?.score}% — Vous passez les filtres ! ✅</h1>
+      <p>Bonjour ${data?.name || ''},</p>
+      <p>Votre CV pour le poste de <strong>${data?.jobTitle || 'votre poste cible'}</strong> est optimisé. Avec un score de <strong>${data?.score}%</strong>, vous passez la majorité des filtres ATS.</p>
+
+      <div class="highlight-box">
+        <p class="score-label">Votre Score</p>
+        <p class="score-value" style="color: #059669;">${data?.score}%</p>
+        <p style="margin: 8px 0 0; font-size: 14px; color: #6b7280;">Excellent — votre profil correspond aux attentes</p>
+      </div>
+
+      <p><strong>La prochaine étape : le contact humain.</strong></p>
+      <p>Un bon CV est nécessaire, mais le vrai levier pour décrocher un entretien, c'est le réseau. 80% des postes sont pourvus par cooptation.</p>
+
+      <ul>
+        <li>Identifiez 2-3 personnes qui travaillent déjà dans cette entreprise</li>
+        <li>Utilisez l'outil <strong>Networking</strong> de Career Match pour trouver leurs emails</li>
+        <li>Envoyez un message court et personnalisé — pas un copier-coller</li>
+      </ul>
+
+      <div style="text-align: center;">
+        <a href="https://careermatch.fr/app" class="button">Accéder au module Networking</a>
+      </div>
+    `),
+  }),
+
   invite_mentor: (data: any) => ({
     subject: `${data?.menteeName || 'Un contact'} sollicite votre avis d'expert 🤝`,
     html: getEmailLayout(`

@@ -12,6 +12,7 @@ import { CVUpload } from "./cv-form/CVUpload";
 import { CVReview } from "./cv-form/CVReview";
 import { JobInput } from "./job-input/JobInput";
 import { PurchaseSuccessModal } from "./modals/PurchaseSuccessModal";
+import { OnboardingModal } from "./modals/OnboardingModal";
 import { PricingPage } from "./PricingPage";
 import { CVDocument } from "./results/CVDocument";
 import { MatchingDashboard } from "./results/MatchingDashboard";
@@ -39,6 +40,9 @@ function Wizard() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [addedCreditsAmount, setAddedCreditsAmount] = useState(0);
   const prevCreditsRef = useRef(credits);
+
+  // Onboarding modal — affiché une seule fois au premier login
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Track credit increases — détecte les achats Gumroad au retour sur la page
   useEffect(() => {
@@ -254,14 +258,37 @@ function Wizard() {
       const metadata = user.unsafeMetadata as { welcome_sent?: boolean };
 
       if (!metadata.welcome_sent) {
-        // Nouvel utilisateur confirmé — on track l'inscription avant tout
+        // Nouvel utilisateur confirmé — on track l'inscription et on affiche l'onboarding
         trackSignUp(user.externalAccounts?.[0]?.provider ?? "email");
+        setShowOnboarding(true);
 
         try {
           const token = await getToken({ template: 'supabase' });
           if (!token) return;
 
-          // Dynamically import to avoid circular dependencies if any, or just use imported
+          // Persister les UTMs en Supabase pour attribution Google Ads durable
+          // Lire depuis sessionStorage (capturé sur /lp/cv-ats au clic pub)
+          try {
+            const rawUtm = sessionStorage.getItem("career_match_utm");
+            if (rawUtm) {
+              const utm = JSON.parse(rawUtm);
+              const { createClerkSupabaseClient } = await import("../services/supabase");
+              const supabase = createClerkSupabaseClient(token);
+              await supabase.rpc("set_user_utm", {
+                p_user_id:     user.id,
+                p_utm_source:  utm.utm_source  ?? null,
+                p_utm_medium:  utm.utm_medium  ?? null,
+                p_utm_campaign: utm.utm_campaign ?? null,
+                p_utm_content: utm.utm_content  ?? null,
+                p_utm_term:    utm.utm_term     ?? null,
+                p_gclid:       utm.gclid        ?? null,
+              });
+              sessionStorage.removeItem("career_match_utm");
+            }
+          } catch (utmErr) {
+            console.error("UTM persistence failed (non-blocking):", utmErr);
+          }
+
           const { sendTransactionalEmail } = await import("../services/emailService");
 
           const email = user.primaryEmailAddress?.emailAddress;
@@ -278,7 +305,6 @@ function Wizard() {
             await user.update({
               unsafeMetadata: { ...metadata, welcome_sent: true }
             });
-            console.log("Welcome email sent and metadata updated.");
           }
         } catch (error) {
           console.error("Failed to send welcome email:", error);
@@ -424,6 +450,26 @@ function Wizard() {
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         creditsAdded={addedCreditsAmount}
+      />
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onComplete={async (role, industry) => {
+          setShowOnboarding(false);
+          try {
+            const token = await getToken({ template: 'supabase' });
+            if (!token || !user?.id) return;
+            const { createClerkSupabaseClient } = await import("../services/supabase");
+            const supabase = createClerkSupabaseClient(token);
+            await supabase.rpc("set_user_utm", {
+              p_user_id:    user.id,
+              p_target_role: role,
+              p_industry:   industry,
+            });
+          } catch (err) {
+            console.error("Onboarding save failed (non-blocking):", err);
+          }
+        }}
+        onSkip={() => setShowOnboarding(false)}
       />
     </>
   );

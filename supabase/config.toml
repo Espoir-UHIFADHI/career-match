@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.analyze-cv-quick]
 verify_jwt = false
+
+[functions.reengage-users]
+verify_jwt = false
