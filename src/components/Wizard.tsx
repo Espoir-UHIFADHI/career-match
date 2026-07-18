@@ -7,6 +7,7 @@ import { pdf } from "@react-pdf/renderer";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
 import { useTranslation } from "../hooks/useTranslation";
+import { resumeService } from "../services/resumeService";
 import { CVUpload } from "./cv-form/CVUpload";
 import { CVReview } from "./cv-form/CVReview";
 import { JobInput } from "./job-input/JobInput";
@@ -17,12 +18,14 @@ import { MatchingDashboard } from "./results/MatchingDashboard";
 import { PrintableCV } from "./results/PrintableCV";
 import { EmailPredictorTool } from "./networking/EmailPredictorTool";
 import { NetworkingSearch } from "./networking/NetworkingSearch";
+import { CVHistory } from "./history/CVHistory";
+import { cvHistoryService } from "../services/cvHistoryService";
 import { Button } from "./ui/Button";
 import { Steps } from "./ui/Steps";
 import { trackPurchaseCompleted } from "../utils/analytics";
 
 function Wizard() {
-  const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset } = useAppStore();
+  const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset, prependCVHistoryCache } = useAppStore();
   const { fetchCredits, credits } = useUserStore();
   const { user, isSignedIn, isLoaded } = useUser();
   const { getToken } = useAuth();
@@ -61,7 +64,7 @@ function Wizard() {
       const blob = await pdf(
         <CVDocument
           data={analysisResults.optimizedCV}
-          language={analysisResults.analysisLanguage || language} // Use the persisted language, fallback to app language
+          language={analysisResults.analysisLanguage || language}
         />
       ).toBlob();
 
@@ -74,6 +77,29 @@ function Wizard() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      // Save to Supabase + update session cache (fire-and-forget)
+      if (cvData && jobData && userId) {
+        const entry = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          createdAt: new Date().toISOString(),
+          cvData,
+          jobData: {
+            title: jobData.title,
+            company: jobData.company,
+            description: jobData.description,
+          },
+          matchScore: analysisResults.score,
+          analysisLanguage: analysisResults.analysisLanguage || language,
+          optimizedCV: analysisResults.optimizedCV,
+          fullAnalysis: analysisResults,
+          fullJobData: jobData,
+        };
+        prependCVHistoryCache(entry);
+        getToken({ template: 'supabase' }).then((token) => {
+          cvHistoryService.add(userId, entry, token || undefined);
+        });
+      }
     } catch (e) {
       console.error("PDF download error:", e);
     }
@@ -113,7 +139,8 @@ function Wizard() {
     if (!isLoaded) return;
 
     if (isSignedIn && user) {
-      if (userId !== user.id) {
+      const userChanged = userId !== user.id;
+      if (userChanged) {
         console.log("User changed, resetting store");
         reset();
         setUserId(user.id);
@@ -122,6 +149,19 @@ function Wizard() {
       try {
         const token = await getToken({ template: 'supabase' });
         fetchCredits(user.id, token || undefined);
+
+        // Restore CV from DB if not in local store (after logout/different device)
+        const currentCvData = useAppStore.getState().cvData;
+        if (!currentCvData) {
+          const savedResume = await resumeService.getResume(user.id, token || undefined);
+          if (savedResume) {
+            setCvData(savedResume);
+            // Stay on step 1 for review, don't jump ahead
+            if (useAppStore.getState().step === 1) {
+              setStep(1);
+            }
+          }
+        }
       } catch (error) {
         console.error("Error getting Supabase token:", error);
         if (error instanceof Error && error.message.includes("No JWT template exists")) {
@@ -133,7 +173,7 @@ function Wizard() {
       console.log("User logged out, resetting store");
       reset();
     }
-  }, [isLoaded, isSignedIn, user, userId, fetchCredits, getToken, reset, setUserId]);
+  }, [isLoaded, isSignedIn, user, userId, fetchCredits, getToken, reset, setUserId, setCvData, setStep]);
 
   // Initial sync
   useEffect(() => {
@@ -257,21 +297,31 @@ function Wizard() {
     setStep(stepId);
   };
 
+  const handleCVSave = useCallback(async (data: import("../types").ParsedCV) => {
+    setCvData(data);
+    setStep(2);
+    if (isSignedIn && user) {
+      try {
+        const token = await getToken({ template: 'supabase' });
+        await resumeService.saveResume(user.id, data, token || undefined);
+      } catch (err) {
+        console.error("Failed to persist CV to DB:", err);
+      }
+    }
+  }, [isSignedIn, user, getToken, setCvData, setStep]);
+
   const renderStep = () => {
     switch (step) {
       case 1:
         return cvData ? (
           <CVReview
             initialData={cvData}
-            onSave={(data) => {
-              setCvData(data);
-              setStep(2);
-            }}
+            onSave={handleCVSave}
             onCancel={() => {
               setCvData(null); // Reset to allow re-upload
             }}
           />
-        ) : <CVUpload />;
+        ) : <CVUpload onSave={handleCVSave} />;
       case 2: return <JobInput />;
       case 3: return <MatchingDashboard />;
       case 4:
@@ -324,6 +374,7 @@ function Wizard() {
       case 5: return <NetworkingSearch />;
       case 6: return <EmailPredictorTool />;
       case 7: return <PricingPage />;
+      case 8: return <CVHistory />;
       default: return <CVUpload />;
     }
   };
@@ -364,7 +415,7 @@ function Wizard() {
         </Helmet>
       )}
       <div className="space-y-8">
-        {step < 8 && step !== 5 && step !== 6 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
+        {step < 8 && step !== 5 && step !== 6 && step !== 8 && <Steps steps={steps} currentStep={step} onStepClick={handleStepClick} />}
         {renderStep()}
       </div>
       <PurchaseSuccessModal

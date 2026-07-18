@@ -35,27 +35,65 @@ interface HunterResponse {
  * @param token Optional auth token for Supabase Edge Function calls (if needed)
  * @returns The domain name (e.g. "cimpa.com") or null if not found
  */
+const SKIP_DOMAINS = [
+    'linkedin.com', 'facebook.com', 'twitter.com', 'x.com', 'instagram.com',
+    'wikipedia.org', 'glassdoor.com', 'indeed.com', 'welcometothejungle.com',
+    'youtube.com', 'bloomberg.com', 'reuters.com', 'lefigaro.fr', 'lemonde.fr',
+    'lesechos.fr', 'bfmtv.com', 'crunchbase.com', 'societe.com', 'manageo.fr',
+];
+
 export async function findCompanyDomain(companyName: string, token?: string): Promise<string | null> {
     try {
-        // 1. Check if input is already a domain (e.g. "google.com")
+        // 1. Already a domain
         if (companyName.includes(".") && !companyName.includes(" ")) {
             return companyName.toLowerCase();
         }
 
-        // 2. Search for the domain
-        const query = `"${companyName}" official website`;
-        const results = await searchGoogle(query, 1, 0, token);
-
-        if (results && results.length > 0) {
-            const link = results[0].link;
-            try {
-                const url = new URL(link);
-                return url.hostname.replace(/^www\./, "");
-            } catch {
-                console.error("Error parsing URL:", link);
-                return null;
+        // 2. Hunter.io by company name (most reliable, no Google needed)
+        try {
+            const hunterData = await callBackend('hunter-company-domain', { company: companyName }, token);
+            const domain = hunterData?.data?.domain;
+            if (domain) {
+                console.log(`[Hunter] Domain found for "${companyName}": ${domain}`);
+                return domain;
             }
+        } catch (e) {
+            console.warn(`[Hunter] Company domain lookup failed for "${companyName}":`, e);
         }
+
+        // 3. Fallback: Google search via Serper
+        const queries = [
+            `"${companyName}" official website`,
+            `${companyName} official website`,
+            `${companyName} site officiel`,
+        ];
+
+        for (const query of queries) {
+            let results;
+            try {
+                results = await searchGoogle(query, 10, 0, token, false, 'en');
+            } catch (e) {
+                console.warn(`Serper query failed for "${query}":`, e);
+                continue;
+            }
+
+            if (!results || results.length === 0) continue;
+
+            for (const result of results) {
+                try {
+                    const hostname = new URL(result.link).hostname.replace(/^www\./, "");
+                    if (!SKIP_DOMAINS.some(d => hostname.includes(d))) {
+                        console.log(`[Serper] Domain found for "${companyName}": ${hostname}`);
+                        return hostname;
+                    }
+                } catch {
+                    continue;
+                }
+            }
+            console.warn(`[Serper] All results filtered for query "${query}"`);
+        }
+        console.warn(`[Domain] Could not find domain for "${companyName}" via Hunter or Serper`);
+
         return null;
     } catch (error) {
         console.error("Error finding company domain:", error);
@@ -277,35 +315,41 @@ export async function getCachedEmail(firstName: string, lastName: string, domain
 /**
  * Finds the professional email address using Hunter.io Email Finder API
  */
-export async function findEmail(firstName: string, lastName: string, domain: string, token?: string): Promise<EmailFinderResponse['data'] | null> {
+export async function findEmail(firstName: string, lastName: string, domain: string, token?: string, companyFallback?: string): Promise<EmailFinderResponse['data'] | null> {
     const cleanFirst = cleanName(firstName);
     const cleanLast = cleanName(lastName);
 
-    // 1. Check Global Cache first
-    const cached = await getCachedEmail(cleanFirst, cleanLast, domain, token);
-    if (cached) return cached;
+    // 1. Check Global Cache first (only if we have a domain)
+    if (domain) {
+        const cached = await getCachedEmail(cleanFirst, cleanLast, domain, token);
+        if (cached) return cached;
+    }
 
     // 2. Call Backend (Secure Relay)
     try {
-        console.log(`[Hunter Backend] Searching for ${cleanFirst} ${cleanLast} at ${domain}...`);
+        console.log(`[Hunter Backend] Searching for ${cleanFirst} ${cleanLast} at ${domain || companyFallback}...`);
 
-        const data: EmailFinderResponse = await callBackend('hunter-email-finder', {
-            domain,
+        const payload: Record<string, string> = {
             first_name: cleanFirst,
-            last_name: cleanLast
-        }, token);
+            last_name: cleanLast,
+        };
+        if (domain) payload.domain = domain;
+        else if (companyFallback) payload.company = companyFallback;
+
+        const data: EmailFinderResponse = await callBackend('hunter-email-finder', payload, token);
 
         if (data.data && data.data.email) {
             console.log(`[Hunter Backend] Result found: ${data.data.email} (Score: ${data.data.score})`);
 
             // 2. Save to Global Cache
+            const cacheableDomain = domain || data.data.domain;
             try {
                 const client = token ? createClerkSupabaseClient(token) : supabase;
                 await client.from('found_emails').upsert({
                     email: data.data.email,
                     first_name: cleanFirst.toLowerCase(),
                     last_name: cleanLast.toLowerCase(),
-                    domain: domain,
+                    domain: cacheableDomain,
                     score: data.data.score,
                     status: data.data.verification?.status || 'unknown',
                     source: 'hunter'

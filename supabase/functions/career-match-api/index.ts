@@ -149,6 +149,8 @@ serve(async (req) => {
                     return await handleNetworkingMarkMessageCopied(payload, user.id)
                 case 'hunter-domain-search':
                     return await handleHunterDomainSearch(payload)
+                case 'hunter-company-domain':
+                    return await handleHunterCompanyDomain(payload)
                 case 'hunter-email-finder':
                     return await handleHunterEmailFinder(payload)
                 case 'hunter-email-verifier':
@@ -660,128 +662,155 @@ async function handleOptimizeCV(payload: any) {
     const _language = language || "French";
 
     const prompt = `
-  Rôle : Expert Mondial en Optimisation de CV & Recrutement "Top Tier" (ex-Recruteur Google/Amazon/McKinsey).
-  Objectif : Réécrire ce CV pour qu'il obtienne un score de pertinence (ATS Score) maximal pour l'Offre d'Emploi fournie.
+Tu es un expert en recrutement et optimisation de CV, spécialisé dans les marchés français et anglophone.
+Ton objectif : réécrire le CV fourni pour maximiser son score ATS et ses chances d'obtenir un entretien pour le poste cible.
 
-  Données CV Original : ${JSON.stringify(cv)}
-  Données Offre d'Emploi : ${JSON.stringify(job)}
+CV ORIGINAL : ${JSON.stringify(cv)}
+OFFRE D'EMPLOI : ${JSON.stringify(job)}
 
-  TES INSTRUCTIONS PRIORITAIRES (A RESPECTER À LA LETTRE) :
+═══════════════════════════════════════════════════════
+BLOC 1 — RÈGLES INVIOLABLES (non négociables)
+═══════════════════════════════════════════════════════
 
-  1. **ZÉRO COPIER-COLLER (REFORMULATION TOTALE)** : 
-     - Ne reprends PAS les phrases du CV original telles quelles.
-     - Tu dois REFAÇONNER chaque phrase pour coller au vocabulaire et au ton de l'Offre d'Emploi.
-     - Le CV final doit donner l'impression que le candidat a fait ce CV *spécifiquement* pour ce poste.
+R1. LANGUE DE SORTIE : ${_language.toUpperCase()}
+  - TOUT le contenu du JSON doit être dans cette langue, sans exception.
+  - Traduis y compris les titres de poste, compétences et descriptions.
+  - Seuls les noms propres d'entreprises et d'outils restent dans leur langue d'origine.
 
-  2. **OPTIMISATION ATS (Mots-clés)** :
-     - Identifie les "Hard Skills", "Soft Skills" et mots-clés critiques de l'Offre.
-     - INTÈGRE ces mots-clés de manière naturelle dans le "Summary", les "Skills" et les descriptions d'"Experience".
-     - Si le candidat a une expérience similaire mais décrite différemment, utilise le terme exact de l'offre.
+R2. INTÉGRITÉ DES DONNÉES
+  - Reprends EXACTEMENT les informations de contact du CV original (email, téléphone, localisation, LinkedIn).
+  - N'invente AUCUNE information de contact.
+  - N'invente AUCUN chiffre, pourcentage ou métrique absente du CV original.
+    ✓ Si le CV original dit "réduction de 40%", tu peux le garder.
+    ✗ Si le CV original ne donne pas de chiffre, n'en crée pas un.
+  - Si l'original manque de détails sur une expérience, enrichis intelligemment avec des actions et résultats qualitatifs plausibles pour ce type de poste — jamais de chiffres inventés.
 
-  3. **ORIENTÉ RÉSULTATS & IMPACT (Méthode Google)** :
-     - Bannis les descriptions de tâches passives ("Responsable de...", "En charge de...").
-     - Utilise des verbes d'action forts (Piloté, Conçu, Augmenté, Réduit, Optimisé...).
-     - Structure : "Action + Contexte + Résultat Chiffré/Impact".
-     - Exemple : Au lieu de "Vente de logiciels", écris "Génération de 50k€ de revenus additionnels (+20%) via la prospection de 15 grands comptes".
-  
-  6. **LANGUE DE SORTIE (CRITIQUE & ABSOLUE)** :
-     - LA SORTIE JSON DOIT ÊTRE EN : **${_language.toUpperCase()}**.
-     - C'est la règle LA PLUS IMPORTANTE.
-     - Si la langue demandée est "FRENCH" -> TOUT le contenu (Experience, Skills, Summary, Job Titles, Descriptions) DOIT être en FRANÇAIS.
-     - MÊME SI le CV original est en Anglais ou si l'Offre est en Anglais, TU DOIS TRADUIRE la sortie en FRANÇAIS.
-     - Si la langue demandée est "ENGLISH" -> TOUT le contenu DOIT être en ANGLAIS.
-     - Ne laisse AUCUN mot dans la mauvaise langue (sauf noms propres d'entreprises/outils).
+R3. FORMAT DES BULLETS D'EXPÉRIENCE
+  - Chaque bullet COMMENCE par un NOM D'ACTION (substantif) : "Optimisation", "Gestion", "Analyse", "Pilotage", "Développement", "Mise en place", "Coordination", "Conception"...
+  - Le résultat ou l'impact est FONDU dans la phrase : "Optimisation de X, [résultat ou impact]"
+  - 3 bullets MAXIMUM par expérience, séparés par \n.
+  - INTERDITS en début de bullet : participes passés ("Optimisé", "Géré", "Réalisé", "Effectué"...)
+  - INTERDITS partout : labels "Impact :", "Environnement :", "Outils :", tiret long "—"
+  - ORTHOGRAPHE STRICTE : "lettrage" (deux t), "rapprochement", "trésorerie", "comptabilité" — vérifie l'orthographe de chaque mot technique avant de l'écrire.
+  - ✓ CORRECT : "- Analyse de la rentabilité de 3 clients via 8 ratios financiers, renforçant la visibilité sur la liquidité"
+  - ✗ INTERDIT : "- Analysé la rentabilité\n- Impact : meilleure visibilité\n- Environnement : Excel"
 
-  4. **FORMATAGE DE L'EXPÉRIENCE (RÈGLE DES 2+1+1)** :
-      - Pour CHAQUE expérience, le champ "description" DOIT respecter STRICTEMENT cette structure :
-        - 2 tirets MAX pour la description des tâches (les plus importantes).
-        - 1 tiret "Impact" : Résultat chiffré ou qualitatif majeur.
-        - 1 tiret "Environnement" : Liste des outils/technos utilisés.
-      - Total = 4 lignes par expérience MAXIMUM. C'est CRUCIAL pour tenir sur 1 page.
-      - Sépare CHAQUE point par un saut de ligne réel (\n).
-      - Exemple :
-        "- Action majeure 1...\n- Action majeure 2...\n- Action majeure 3...\n- Impact : Augmentation de 30%...\n- Environnement : React, Node.js, AWS"
-      - Pas de paragraphes compacts.
+R4. CHAMPS LANGUES ET CENTRES D'INTÉRÊT
+  - TOUTES les langues du candidat vont dans "languages". Jamais dans "interests".
+  - "interests" contient uniquement des loisirs et passions.
 
-  5. **DONNÉES DE CONTACT (CRITIQUE)** :
-     - Tu dois REPRENDRE EXACTEMENT les infos de contact du CV original.
-     - **NE PAS OUBLIER LE LIEN LINKEDIN** (field: contact.linkedin). C'est obligatoire.
-     - Ne pas inventer d'infos de contact.
+R5. ACCORD DE GENRE
+  - Détecte le genre à partir du prénom et des accords dans le CV original.
+  - Accorde systématiquement tous les titres, adjectifs et participes au genre détecté.
+  - Exemples féminins : "Analyste confirmée", "Experte en...", "Spécialisée dans..."
 
-   7. **OPTIMISATION DES COMPÉTENCES TECHNIQUES (LIMITATION STRICTE)** :
-      - **FORMAT** : Une liste SIMPLE et PLATE de mots-clés séparés par des virgules. PAS DE CATÉGORIES.
-      - **VOLUME** : Garde UNIQUEMENT les 8 à 12 compétences les plus CRITIQUES pour ce poste spécifique.
-      - **CONTRAINTE ABSOLUE** : Le CV final DOIT tenir sur UNE SEULE PAGE. Si tu mets trop de compétences, ça déborde. Coupe ce qui n'est pas essentiel.
-      - **QUALITÉ** : Choisis les "Hard Skills" qui font dire "Wow" au recruteur.
+═══════════════════════════════════════════════════════
+BLOC 2 — INSTRUCTIONS DE RÉDACTION
+═══════════════════════════════════════════════════════
 
-   8. **RÉDACTION "DREAM JOB" (TOP 1%)** :
-      - Ton but est que ce CV décroche l'entretien à coup sûr.
-      - Utilise un langage d'impact, orienté résultats ("Augmenté de X%", "Réduit de Y%").
-      - Sois précis, concis, et percutant. Chaque mot doit "vendre" le candidat.
+I1. CIBLAGE ATS
+  - Identifie les mots-clés critiques de l'offre (hard skills, soft skills, certifications, outils).
+  - Intègre-les naturellement dans le résumé, les compétences et les descriptions d'expérience.
+  - Si le candidat a une compétence décrite différemment, utilise le terme exact de l'offre.
 
-   9. **ACCORD DE GENRE (INTELLIGENT)** :
-      - ANALYSE le Prénom et le contenu du CV original pour détecter le genre.
-      - SI C'EST UNE FEMME (ex: Sophie, Marie... ou adjectifs féminins dans le CV source) :
-        - TU DOIS ACCORDER tous les titres et adjectifs au FÉMININ.
-        - Ex: "Ingénieure", "Directrice", "Experte", "Passionnée", "Spécialisée".
-        - C'est un détail qui change tout pour la candidate.
-      - Sinon, garde le masculin standard.
+I2. RÉSUMÉ PROFESSIONNEL — RÈGLE DE PRÉSERVATION STRICTE
+  - CONSERVE l'intégralité de la structure, des mots-clés et du sens du résumé original du CV (champ cv.summary).
+  - N'effectue AUCUN grand changement ni aucune réécriture lourde.
+  - Ajuste UNIQUEMENT et subtilement le texte si (et seulement si) la fiche de poste exige une mise en conformité mineure (ex : accorder un mot-clé ou aligner une formulation pour optimiser le score ATS).
+  - Si aucun ajustement n'est nécessaire pour maximiser le score, restitue le résumé initial à 100% de manière brute, sans y toucher.
+  - INTERDIT : reformuler, restructurer, allonger, raccourcir ou "améliorer" le résumé si cela n'est pas exigé par l'offre d'emploi.
 
-   PROCESSUS DE MATCHING :
-  1. Calcule un Score de Pertinence (0-100).
-  2. SI SCORE < 45 : Renvoie "optimizedCV": null.
-  3. SI SCORE >= 45 : Génère le JSON complet avec le CV optimisé selon les règles ci-dessus.
+I3. REFORMULATION DES EXPÉRIENCES
+  - Reformule chaque expérience pour coller au vocabulaire de l'offre.
+  - Pour les expériences avec peu de contenu dans le CV original (jobs étudiants, stages courts) : valorise intelligemment les compétences transférables réellement exercées dans ce type de poste.
+  - Pour les résultats : utilise les chiffres du CV original s'ils existent. Sinon, décris l'impact de façon qualitative ("facilitant la prise de décision", "améliorant la lisibilité des données").
+  - Bannis les tournures passives ("Responsable de...", "En charge de...", "Participation à...").
 
-  Structure JSON attendue :
-  {
-    "score": 85,
-    "analysis": {
-      "strengths": ["..."],
-      "weaknesses": ["..."],
-      "missingKeywords": ["..."],
-      "cultureFit": "..."
+I4. FORMATION
+  - La description ne répète pas le nom du diplôme.
+  - 1 phrase courte décrivant les compétences clés acquises.
+  - Pas de participes présents ("approfondissant", "acquérant", "posant"...).
+  - ✓ CORRECT : "Techniques avancées en comptabilité, contrôle de gestion et audit financier."
+  - ✗ INTERDIT : "Master CCA, approfondissant l'expertise en techniques comptables..."
+
+I5. COMPÉTENCES TECHNIQUES
+  - Liste plate de mots-clés, sans catégories ni sous-titres.
+  - Entre 8 et 12 compétences, priorisées selon leur pertinence pour l'offre.
+  - Pas d'anglicismes : "flux de cash" → "flux de trésorerie", "digital" → "numérique".
+
+I6. CAS PARTICULIERS
+  - CV étudiant / peu d'expérience : valorise les projets académiques, les soft skills et la progression rapide.
+  - Trous dans le parcours : ne les cache pas, reformule la période de façon neutre si nécessaire.
+  - Freelance / auto-entrepreneur : indique "Consultant indépendant" ou "Freelance" comme rôle, avec les missions comme bullets.
+  - CV technique (dev, ingénieur) : les noms d'action peuvent être plus techniques ("Implémentation", "Déploiement", "Refactorisation", "Modélisation"...).
+  - Score < 45 : renvoie "optimizedCV": null — le profil est trop éloigné du poste.
+
+═══════════════════════════════════════════════════════
+BLOC 3 — STRUCTURE JSON ATTENDUE
+═══════════════════════════════════════════════════════
+
+{
+  "score": 85,
+  "analysis": {
+    "strengths": ["..."],
+    "weaknesses": ["..."],
+    "missingKeywords": ["..."],
+    "cultureFit": "..."
+  },
+  "optimizedCV": {
+    "contact": {
+      "firstName": "...", "lastName": "...",
+      "email": "...", "phone": "...", "location": "...",
+      "linkedin": "..."
     },
-    "optimizedCV": {
-      "contact": { ... }, // Garder LinkedIn !
-      "headline": "Titre du poste visé | Expertise clé",
-      "summary": "Résumé ultra-ciblé de 3-4 lignes...",
-      "skills": ["Catégorie : Skill 1, Skill 2...", ...],
-      "softSkills": ["Soft Skill 1", "Soft Skill 2", ...],
-      "experience": [ ... ],
-      "education": [ ... ],
-      "languages": ["Langue 1 (Niveau)", ...],
-      "certifications": [ { "name": "Certification 1", "url": "..." } ],
-      "interests": ["Intérêt 1", ...]
-    },
-    "recommendations": ["..."],
-    "multilingual": {
-      "fr": {
-        "analysis": {
-            "strengths": ["Force 1", "Force 2"],
-            "weaknesses": ["Faiblesse 1"],
-            "cultureFit": "Analyse culturelle en français"
-        },
-        "recommendations": ["Recommandation 1", "Recommandation 2"]
-      },
-      "en": {
-        "analysis": {
-            "strengths": ["Strength 1", "Strength 2"],
-            "weaknesses": ["Weakness 1"],
-            "cultureFit": "Cultural analysis in English"
-        },
-        "recommendations": ["Recommendation 1", "Recommendation 2"]
+    "headline": "Titre du poste visé | Expertise clé",
+    "summary": "Résumé ciblé en 2-3 phrases...",
+    "skills": ["Skill 1", "Skill 2", "Skill 3"],
+    "softSkills": ["Soft Skill 1", "Soft Skill 2"],
+    "experience": [
+      {
+        "company": "Nom de l'entreprise",
+        "role": "Titre du poste",
+        "dates": "Mois AAAA - Mois AAAA",
+        "description": "- Bullet 1\n- Bullet 2\n- Bullet 3"
       }
+    ],
+    "education": [
+      {
+        "school": "Nom de l'école",
+        "degree": "Nom du diplôme",
+        "dates": "Mois AAAA - Mois AAAA",
+        "description": "Description courte des compétences acquises."
+      }
+    ],
+    "languages": ["Français (Natif)", "Anglais (B1/B2)"],
+    "certifications": [{ "name": "Nom", "url": "https://..." }],
+    "interests": ["Loisir 1", "Loisir 2"]
+  },
+  "recommendations": ["Conseil actionnable 1", "Conseil actionnable 2"],
+  "multilingual": {
+    "fr": {
+      "analysis": {
+        "strengths": ["Force 1"],
+        "weaknesses": ["Faiblesse 1"],
+        "cultureFit": "Analyse en français"
+      },
+      "recommendations": ["Recommandation 1"]
+    },
+    "en": {
+      "analysis": {
+        "strengths": ["Strength 1"],
+        "weaknesses": ["Weakness 1"],
+        "cultureFit": "Analysis in English"
+      },
+      "recommendations": ["Recommendation 1"]
     }
   }
+}
 
-  IMPORTANT : 
-  1. LE CHAMP "multilingual" EST OBLIGATOIRE.
-  2. REMPLIS "multilingual.fr" AVEC DU CONTENU EN FRANÇAIS.
-  3. REMPLIS "multilingual.en" AVEC DU CONTENU EN ANGLAIS.
-  4. La racine "analysis" et "recommendations" doit correspondre à la langue demandée (${_language}).
-  5. C'EST LA RÈGLE LA PLUS IMPORTANTE.
-  TRADUIS INTEGRALEMENT LE CONTENU.
-  `;
+Le champ "multilingual" est obligatoire. "multilingual.fr" en français, "multilingual.en" en anglais.
+La racine "analysis" et "recommendations" correspond à la langue demandée (${_language}).
+`;
 
     const { text, provider } = await generateTextWithFallback({
         prompt,
@@ -790,7 +819,13 @@ async function handleOptimizeCV(payload: any) {
     });
 
     console.log(`🤖 LLM provider (optimize-cv): ${provider}`);
-    return new Response(JSON.stringify({ text, provider, serverBilled: true }), {
+
+    const fixedText = text
+        .replace(/\bletrage\b/gi, 'lettrage')
+        .replace(/\bflux de cash\b/gi, 'flux de trésorerie')
+        .replace(/\bdigital(?=\b)/g, 'numérique');
+
+    return new Response(JSON.stringify({ text: fixedText, provider, serverBilled: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
     })
@@ -1240,6 +1275,24 @@ async function callHunterRaw(endpoint: string, params: Record<string, string>) {
     return await response.json()
 }
 
+async function handleHunterCompanyDomain(payload: any) {
+    const { company } = payload
+    try {
+        const data = await callHunterRaw('domain-search', { company })
+        return new Response(JSON.stringify(data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    } catch (error) {
+        // Return null domain gracefully so the client can fall back to Serper
+        console.warn(`[Hunter] company-domain lookup failed for "${company}":`, error instanceof Error ? error.message : error)
+        return new Response(JSON.stringify({ data: { domain: null, pattern: null, webmail: false, organization: company } }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    }
+}
+
 async function handleHunterDomainSearch(payload: any) {
     const { domain } = payload
     try {
@@ -1258,13 +1311,12 @@ async function handleHunterDomainSearch(payload: any) {
 }
 
 async function handleHunterEmailFinder(payload: any) {
-    const { domain, first_name, last_name } = payload
+    const { domain, company, first_name, last_name } = payload
     try {
-        const data = await callHunterRaw('email-finder', {
-            domain,
-            first_name,
-            last_name
-        })
+        const params: Record<string, string> = { first_name, last_name };
+        if (domain) params.domain = domain;
+        else if (company) params.company = company;
+        const data = await callHunterRaw('email-finder', params)
         return new Response(JSON.stringify(data), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,

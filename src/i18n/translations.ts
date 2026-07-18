@@ -13,7 +13,8 @@ export const translations = {
             jobDetails: "Job Details",
             analysis: "Analysis",
             results: "Results",
-            pricing: "Pricing"
+            pricing: "Pricing",
+            history: "CV History"
         },
         about: {
             hero: {
@@ -305,6 +306,27 @@ export const translations = {
             closePreview: "Close Preview",
             cvLanguage: "CV Language"
         },
+        history: {
+            title: "CV History",
+            subtitle: "{count} generated CV(s) saved locally",
+            emptyTitle: "No generated CV yet",
+            emptyDesc: "Your CV history will appear here each time you download an optimized CV. No need to redo the whole process.",
+            redownload: "Download",
+            delete: "Delete this entry",
+            preview: "Preview",
+            resume: "Resume",
+            unknownRole: "Unknown role",
+            unknownCompany: "Unknown company",
+            storageNote: "History is saved locally in your browser (max 10 entries).",
+            searchPlaceholder: "Search by job title or company…",
+            filterAll: "All",
+            filterHigh: "≥ 80% Excellent",
+            filterMedium: "60–79% Good",
+            filterLow: "< 60% Low",
+            noResults: "No CV matches your search.",
+            resultSingular: "result",
+            resultPlural: "results"
+        },
         networking: {
             title: "Enterprise Networking",
             subtitle: "Find the right people and connect with confidence.",
@@ -356,6 +378,7 @@ export const translations = {
         },
         emailPredictor: {
             title: "Email Predictor",
+            comingSoon: "Coming Soon",
             subtitle: "Find any professional email address in seconds.",
             firstName: "First Name",
             firstNamePlaceholder: "e.g. Jean",
@@ -637,7 +660,8 @@ export const translations = {
             jobDetails: "Détails du Poste",
             analysis: "Analyse",
             results: "Résultats",
-            pricing: "Tarifs"
+            pricing: "Tarifs",
+            history: "Historique CV"
         },
         about: {
             hero: {
@@ -937,6 +961,27 @@ export const translations = {
             closePreview: "Fermer Aperçu",
             cvLanguage: "Langue du CV"
         },
+        history: {
+            title: "Historique des CV",
+            subtitle: "{count} CV généré(s) sauvegardé(s) en local",
+            emptyTitle: "Aucun CV généré pour le moment",
+            emptyDesc: "Votre historique apparaîtra ici à chaque fois que vous téléchargerez un CV optimisé. Pas besoin de refaire tout le parcours.",
+            redownload: "Télécharger",
+            delete: "Supprimer cette entrée",
+            preview: "Aperçu",
+            resume: "Reprendre",
+            unknownRole: "Poste inconnu",
+            unknownCompany: "Entreprise inconnue",
+            storageNote: "L'historique est sauvegardé localement dans votre navigateur (max 10 entrées).",
+            searchPlaceholder: "Rechercher par poste ou entreprise…",
+            filterAll: "Tous",
+            filterHigh: "≥ 80% Excellent",
+            filterMedium: "60–79% Bon",
+            filterLow: "< 60% Faible",
+            noResults: "Aucun CV ne correspond à votre recherche.",
+            resultSingular: "résultat",
+            resultPlural: "résultats"
+        },
         networking: {
             title: "Réseautage d'Entreprise",
             subtitle: "Trouvez les bonnes personnes et connectez-vous avec confiance.",
@@ -988,6 +1033,7 @@ export const translations = {
         },
         emailPredictor: {
             title: "Email Finder",
+            comingSoon: "Bientôt disponible",
             subtitle: "Trouvez n'importe quel email professionnel en quelques secondes.",
             firstName: "Prénom",
             firstNamePlaceholder: "ex: Jean",

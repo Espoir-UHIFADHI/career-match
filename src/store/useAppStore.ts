@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { type ParsedCV, type JobAnalysis, type MatchResult } from "../types";
+import { type ParsedCV, type JobAnalysis, type MatchResult, type CVHistoryEntry } from "../types";
 import type { SearchResult } from "../services/search/serper";
 import type { NetworkingQualityProfile } from "../services/networking/quality";
 import { normalizeMatchResult, normalizeParsedCV } from "../utils/normalizeCV";
@@ -24,7 +24,7 @@ interface NetworkingSectionCacheEntry {
     company: string;
     title: string;
     profiles: Array<SearchResult & Partial<NetworkingQualityProfile>>;
-    cachedAt: number; // ms epoch
+    cachedAt: number;
 }
 
 export interface AppState {
@@ -35,10 +35,12 @@ export interface AppState {
     language: "English" | "French";
     userId: string | null;
 
-    // New Slices
     emailPredictor: EmailPredictorState;
     networking: NetworkingState;
     networkingSectionCache: Record<string, NetworkingSectionCacheEntry>;
+
+    // In-memory session cache only — NOT persisted to localStorage
+    cvHistoryCache: CVHistoryEntry[];
 
     setStep: (step: number) => void;
     setCvData: (data: ParsedCV | null) => void;
@@ -47,10 +49,16 @@ export interface AppState {
     setLanguage: (lang: "English" | "French") => void;
     setUserId: (id: string | null) => void;
 
-    // New Setters
     setEmailPredictorState: (state: Partial<EmailPredictorState>) => void;
     setNetworkingState: (state: Partial<NetworkingState>) => void;
     setNetworkingSectionCache: (key: string, entry: NetworkingSectionCacheEntry) => void;
+
+    // History session cache setters (Supabase is the source of truth)
+    setCVHistoryCache: (entries: CVHistoryEntry[]) => void;
+    prependCVHistoryCache: (entry: CVHistoryEntry) => void;
+    removeCVHistoryCacheEntry: (id: string) => void;
+
+    restoreHistoryEntry: (entry: CVHistoryEntry) => void;
 
     reset: () => void;
 }
@@ -79,6 +87,7 @@ export const useAppStore = create<AppState>()(
                 hasSearched: false
             },
             networkingSectionCache: {},
+            cvHistoryCache: [],
 
             setStep: (step) => set({ step }),
             setCvData: (cvData) => set({ cvData: normalizeParsedCV(cvData) }),
@@ -97,6 +106,30 @@ export const useAppStore = create<AppState>()(
                 networkingSectionCache: { ...state.networkingSectionCache, [key]: entry }
             })),
 
+            setCVHistoryCache: (entries) => set({ cvHistoryCache: entries }),
+            prependCVHistoryCache: (entry) => set((state) => {
+                // Remove existing entry for same job+company+cv owner before prepending
+                const deduped = state.cvHistoryCache.filter(
+                    (e) => !(
+                        e.jobData.title === entry.jobData.title &&
+                        e.jobData.company === entry.jobData.company &&
+                        e.cvData.contact.firstName === entry.cvData.contact.firstName &&
+                        e.cvData.contact.lastName === entry.cvData.contact.lastName
+                    )
+                );
+                return { cvHistoryCache: [entry, ...deduped].slice(0, 10) };
+            }),
+            removeCVHistoryCacheEntry: (id) => set((state) => ({
+                cvHistoryCache: state.cvHistoryCache.filter((e) => e.id !== id)
+            })),
+
+            restoreHistoryEntry: (entry) => set({
+                cvData: normalizeParsedCV(entry.cvData),
+                jobData: entry.fullJobData,
+                analysisResults: normalizeMatchResult(entry.fullAnalysis),
+                step: 4,
+            }),
+
             reset: () => set({
                 step: 1,
                 cvData: null,
@@ -106,7 +139,8 @@ export const useAppStore = create<AppState>()(
                 userId: null,
                 emailPredictor: { company: "", firstName: "", lastName: "", result: null },
                 networking: { company: "", role: "", location: "", results: [], hasSearched: false },
-                networkingSectionCache: {}
+                networkingSectionCache: {},
+                cvHistoryCache: [],
             }),
         }),
         {
@@ -120,15 +154,22 @@ export const useAppStore = create<AppState>()(
                 userId: state.userId,
                 emailPredictor: state.emailPredictor,
                 networking: state.networking,
-                networkingSectionCache: state.networkingSectionCache
+                networkingSectionCache: state.networkingSectionCache,
+                // cvHistoryCache intentionally excluded — Supabase is the source of truth
             }),
             merge: (persistedState, currentState) => {
-                const persisted = persistedState as Partial<AppState> | undefined;
+                const persisted = persistedState as Partial<AppState> & {
+                    cvHistory?: unknown;
+                    cvHistoryByUser?: unknown;
+                } | undefined;
+                // Drop any legacy history keys from old localStorage
+                const { cvHistory: _a, cvHistoryByUser: _b, ...safe } = persisted ?? {};
                 return {
                     ...currentState,
-                    ...persisted,
-                    cvData: normalizeParsedCV(persisted?.cvData),
-                    analysisResults: normalizeMatchResult(persisted?.analysisResults),
+                    ...safe,
+                    cvData: normalizeParsedCV(safe?.cvData),
+                    analysisResults: normalizeMatchResult(safe?.analysisResults),
+                    cvHistoryCache: [],
                 };
             },
         }

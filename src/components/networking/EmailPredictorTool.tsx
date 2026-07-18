@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { findCompanyDomain, getEmailPattern, generateEmail, formatEmailPattern, verifyEmail, getCachedEmail, findEmail, type VerificationResponse } from "../../services/emailService";
+import { formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
 import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
@@ -21,12 +21,12 @@ export function EmailPredictorTool() {
 
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     // Error and Copied are transient UI states, keep local
-    const [error, setError] = useState<string | null>(null);
+    const [error] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [showCreditModal, setShowCreditModal] = useState(false);
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
-    const { fetchCredits, credits } = useUserStore();
+    const { fetchCredits } = useUserStore();
 
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
@@ -38,113 +38,6 @@ export function EmailPredictorTool() {
             setStatus('success');
         }
     }, [result, status]);
-
-    const handlePredict = async () => {
-        if (!company) return;
-
-        if (!isSignedIn || !user) {
-            return;
-        }
-
-        let token: string | null = null;
-        try {
-            token = await getToken({ template: 'supabase', skipCache: true });
-        } catch (error) {
-            console.error("Error getting Supabase token:", error);
-            if (error instanceof Error && error.message.includes("No JWT template exists")) {
-                alert(t('emailPredictor.errors.configMissing'));
-                return;
-            }
-        }
-
-        if (!token) {
-            console.error("❌ Auth Error: No token generated");
-            setError(t('emailPredictor.errors.authFailed'));
-            setStatus('error');
-            return;
-        }
-
-        // The server performs the authoritative debit; this local check is only UX.
-        if (credits < 1) {
-            setShowCreditModal(true);
-            return;
-        }
-
-        setStatus('loading');
-        setError(null);
-        setEmailPredictorState({ result: null });
-        setVerificationStatus('idle');
-        setVerificationResult(null);
-
-        // Token is already fetched above
-
-
-        try {
-            // 1. Find domain
-            const domain = await findCompanyDomain(company, token || undefined);
-            if (!domain) throw new Error(t('emailPredictor.errors.domainNotFound', { company }));
-
-            // 2. Get pattern
-            const pattern = await getEmailPattern(domain, token || undefined);
-
-            // 3. Find or Generate email
-            let email: string | undefined;
-            let score: number | undefined;
-            let source: 'finder' | 'pattern' | 'cache' = 'pattern';
-
-            // FALLBACK STRATEGY: If pattern not found, try deep search if names are present
-            if (!pattern) {
-                if (firstName && lastName) {
-                    console.log("Pattern not found, trying deep search...");
-                    const deepResult = await findEmail(firstName, lastName, domain, token || undefined);
-                    if (deepResult && deepResult.email) {
-                        email = deepResult.email;
-                        score = deepResult.score;
-                        source = 'finder'; // It was found by Hunter directly
-                        // We can't infer pattern reliably from one email, so leave it null
-                    } else {
-                        // Truly failed
-                        throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
-                    }
-                } else {
-                    throw new Error(t('emailPredictor.errors.patternNotFound', { domain }));
-                }
-            } else {
-                // Standard flow: We have a pattern
-                if (firstName && lastName) {
-                    // 1. Check Cache first (Free for us)
-                    const cached = await getCachedEmail(firstName, lastName, domain, token || undefined);
-
-                    if (cached) {
-                        email = cached.email;
-                        score = cached.score;
-                        source = 'cache';
-                    } else {
-                        // 2. Generate Pattern Suggestion (No API call yet)
-                        const generated = generateEmail(firstName, lastName, pattern!, domain);
-                        email = generated || undefined;
-                        source = 'pattern';
-                    }
-                }
-            }
-
-            setEmailPredictorState({
-                result: { email, domain, pattern: pattern || "", score, source }
-            });
-            if (email || pattern) await fetchCredits(user.id, token || undefined);
-
-            setStatus('success');
-        } catch (err) {
-            console.error("Prediction failed:", err);
-            if (err instanceof Error && /insufficient credits/i.test(err.message)) {
-                setShowCreditModal(true);
-                setStatus('idle');
-            } else {
-                setError(err instanceof Error ? err.message : t('emailPredictor.errors.generic'));
-                setStatus('error');
-            }
-        }
-    };
 
     const copyToClipboard = () => {
         if (result?.email) {
@@ -225,7 +118,13 @@ export function EmailPredictorTool() {
     return (
         <div className="w-full max-w-none mx-auto space-y-8 animate-fade-in">
             <div className="text-center space-y-3">
-                <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
+                <div className="flex items-center justify-center gap-3">
+                    <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-600 border border-amber-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                        {t('emailPredictor.comingSoon')}
+                    </span>
+                </div>
                 <p className="text-slate-600 text-lg">{t('emailPredictor.subtitle')}</p>
             </div>
 
@@ -285,25 +184,11 @@ export function EmailPredictorTool() {
 
                             {isSignedIn ? (
                                 <Button
-                                    onClick={handlePredict}
-                                    disabled={status === 'loading'}
-                                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25 transition-all text-base"
+                                    disabled={true}
+                                    className="w-full h-12 bg-slate-400 cursor-not-allowed text-white font-medium shadow-sm transition-all text-base opacity-70"
                                 >
-                                    {status === 'loading' ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            {t('emailPredictor.analyzePatterns')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {firstName && lastName ? (
-                                                <Mail className="mr-2 h-5 w-5" />
-                                            ) : (
-                                                <Lock className="mr-2 h-5 w-5" />
-                                            )}
-                                            {firstName && lastName ? t('emailPredictor.findEmail') : t('emailPredictor.findPattern')}
-                                        </>
-                                    )}
+                                    <Lock className="mr-2 h-5 w-5" />
+                                    {t('emailPredictor.findEmail')}
                                 </Button>
                             ) : (
                                 <SignInButton mode="modal">

@@ -102,3 +102,22 @@ export const MatchResultSchema = z.object({
 });
 
 export type MatchResult = z.infer<typeof MatchResultSchema>;
+
+// CV History Entry — one saved generation
+export interface CVHistoryEntry {
+    id: string;
+    createdAt: string; // ISO date
+    cvData: ParsedCV;
+    jobData: {
+        title: string;
+        company: string;
+        description: string;
+    };
+    matchScore: number;
+    analysisLanguage: "English" | "French";
+    optimizedCV: ParsedCV;
+    // Full analysis results stored so the user can resume without re-running
+    fullAnalysis: MatchResult;
+    // Full job analysis to restore wizard state completely
+    fullJobData: JobAnalysis;
+}
