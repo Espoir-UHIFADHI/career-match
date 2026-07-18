@@ -14,10 +14,10 @@ function pushToDataLayer(eventName: string, details?: Record<string, any>) {
 }
 
 export function trackEvent(eventName: string, details?: Record<string, any>) {
-    // GTM / Google Ads / GA4 — source de vérité pour les conversions
+    // GTM / Google Ads / GA4 - source de vérité pour les conversions
     pushToDataLayer(eventName, details);
 
-    // Microsoft Clarity — heatmaps et session recording
+    // Microsoft Clarity - heatmaps et session recording
     if (window.clarity) {
         window.clarity("event", eventName);
         if (details) {

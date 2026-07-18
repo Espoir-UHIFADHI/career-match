@@ -19,7 +19,7 @@ export const translations = {
         about: {
             hero: {
                 title: "Your skills deserve to be seen.",
-                subtitle: "Most CVs are rejected before a human reads them — not because of the candidate's skills, but because of formatting and keywords. Career Match fixes that."
+                subtitle: "Most CVs are rejected before a human reads them - not because of the candidate's skills, but because of formatting and keywords. Career Match fixes that."
             },
             stats: {
                 rejected: "CVs filtered before human review",
@@ -28,13 +28,13 @@ export const translations = {
             },
             story: {
                 title: "Why we built this",
-                p1: "Recruitment software (ATS) has become a black box. Candidates send CVs into a void and never hear back — not because they're unqualified, but because the formatting or keywords don't match what the algorithm expects.",
-                p2: "Career Match was built to fix that. We analyze your CV against a real job posting, identify exactly what's missing, and generate an optimized version — so your actual skills get seen."
+                p1: "Recruitment software (ATS) has become a black box. Candidates send CVs into a void and never hear back - not because they're unqualified, but because the formatting or keywords don't match what the algorithm expects.",
+                p2: "Career Match was built to fix that. We analyze your CV against a real job posting, identify exactly what's missing, and generate an optimized version - so your actual skills get seen."
             },
             values: {
                 title: "What we stand for",
                 transparency: "No guesswork",
-                transparencyDesc: "We show you exactly what's wrong and why — not vague scores, specific issues.",
+                transparencyDesc: "We show you exactly what's wrong and why - not vague scores, specific issues.",
                 privacy: "Your data stays yours",
                 privacyDesc: "We don't store your CVs or sell your data. Everything runs in your session.",
                 empowerment: "Built for candidates",
@@ -49,7 +49,7 @@ export const translations = {
             tech: {
                 title: "How it works under the hood",
                 subtitle: "A real analysis engine, not a keyword highlighter.",
-                p1: "We parse your CV the same way ATS software does — extracting sections, matching vocabulary, and checking structural compatibility against the job posting.",
+                p1: "We parse your CV the same way ATS software does - extracting sections, matching vocabulary, and checking structural compatibility against the job posting.",
                 cards: {
                     parsing: { title: "ATS Parsing", desc: "Checks whether robots can correctly read your contact info, job titles and dates." },
                     keywords: { title: "Keyword Matching", desc: "Compares your vocabulary against the exact terms used in the job description." },
@@ -59,7 +59,7 @@ export const translations = {
             faq: {
                 title: "Common questions",
                 q1: "Is using AI to optimize my CV ethical?",
-                a1: "Recruiters already use AI to filter candidates. Using a tool to make sure your CV is readable by those systems is not an unfair advantage — it's a necessary one.",
+                a1: "Recruiters already use AI to filter candidates. Using a tool to make sure your CV is readable by those systems is not an unfair advantage - it's a necessary one.",
                 q2: "Will the optimized CV look obviously AI-generated?",
                 a2: "No. The output is plain text reformatted around your actual experience. There are no watermarks, no robotic phrasing, no AI signatures."
             }
@@ -128,7 +128,7 @@ export const translations = {
             newVersion: "AI-Powered Analysis",
             titleLine1: "Your CV,",
             titleLine2: "Built to Get Interviews",
-            subtitle: "Analyze your CV against any job posting. Get a compatibility score, identify missing keywords, and download an optimized version — in under a minute.",
+            subtitle: "Analyze your CV against any job posting. Get a compatibility score, identify missing keywords, and download an optimized version - in under a minute.",
             ctaStart: "Analyze My CV for Free →",
             ctaDashboard: "Go to App",
 
@@ -667,7 +667,7 @@ export const translations = {
         about: {
             hero: {
                 title: "Vos compétences méritent d'être vues.",
-                subtitle: "La plupart des CVs sont rejetés avant qu'un humain les lise — pas à cause du profil du candidat, mais à cause du formatage et des mots-clés. Career Match règle ça."
+                subtitle: "La plupart des CVs sont rejetés avant qu'un humain les lise - pas à cause du profil du candidat, mais à cause du formatage et des mots-clés. Career Match règle ça."
             },
             stats: {
                 rejected: "des CVs filtrés avant lecture humaine",
@@ -676,8 +676,8 @@ export const translations = {
             },
             story: {
                 title: "Pourquoi on a construit ça",
-                p1: "Les logiciels de recrutement (ATS) sont devenus une boîte noire. Les candidats envoient des CVs dans le vide et n'ont jamais de réponse — non pas parce qu'ils ne sont pas qualifiés, mais parce que le formatage ou les mots-clés ne correspondent pas à ce que l'algorithme attend.",
-                p2: "Career Match a été créé pour corriger ça. On analyse votre CV face à une vraie offre d'emploi, on identifie exactement ce qui manque, et on génère une version optimisée — pour que vos vraies compétences soient enfin lues."
+                p1: "Les logiciels de recrutement (ATS) sont devenus une boîte noire. Les candidats envoient des CVs dans le vide et n'ont jamais de réponse - non pas parce qu'ils ne sont pas qualifiés, mais parce que le formatage ou les mots-clés ne correspondent pas à ce que l'algorithme attend.",
+                p2: "Career Match a été créé pour corriger ça. On analyse votre CV face à une vraie offre d'emploi, on identifie exactement ce qui manque, et on génère une version optimisée - pour que vos vraies compétences soient enfin lues."
             },
             howItWorks: {
                 title: "Comment ça marche concrètement",
@@ -694,7 +694,7 @@ export const translations = {
             values: {
                 title: "Ce qu'on défend",
                 transparency: "Pas de vague",
-                transparencyDesc: "On vous dit exactement ce qui ne va pas et pourquoi — pas des scores abstraits, des problèmes précis.",
+                transparencyDesc: "On vous dit exactement ce qui ne va pas et pourquoi - pas des scores abstraits, des problèmes précis.",
                 privacy: "Vos données restent les vôtres",
                 privacyDesc: "On ne stocke pas vos CVs et on ne revend pas vos données. Tout s'exécute dans votre session.",
                 empowerment: "Fait pour les candidats",
@@ -703,7 +703,7 @@ export const translations = {
             tech: {
                 title: "Ce qui se passe sous le capot",
                 subtitle: "Un vrai moteur d'analyse, pas un surligneur de mots-clés.",
-                p1: "On parse votre CV de la même façon que les logiciels ATS — extraction des sections, correspondance du vocabulaire, vérification de la compatibilité structurelle avec l'offre d'emploi.",
+                p1: "On parse votre CV de la même façon que les logiciels ATS - extraction des sections, correspondance du vocabulaire, vérification de la compatibilité structurelle avec l'offre d'emploi.",
                 cards: {
                     parsing: { title: "Parsing ATS", desc: "Vérifie si les robots lisent correctement vos coordonnées, vos titres de poste et vos dates." },
                     keywords: { title: "Correspondance mots-clés", desc: "Compare votre vocabulaire avec les termes exacts utilisés dans l'offre d'emploi." },
@@ -713,7 +713,7 @@ export const translations = {
             faq: {
                 title: "Questions fréquentes",
                 q1: "Est-ce éthique d'utiliser cet outil ?",
-                a1: "Les recruteurs utilisent déjà l'IA pour filtrer les candidats. S'assurer que votre CV est lisible par ces systèmes n'est pas un avantage déloyal — c'est une nécessité.",
+                a1: "Les recruteurs utilisent déjà l'IA pour filtrer les candidats. S'assurer que votre CV est lisible par ces systèmes n'est pas un avantage déloyal - c'est une nécessité.",
                 q2: "Le CV optimisé va-t-il paraître généré par IA ?",
                 a2: "Non. Le résultat est du texte brut reformaté autour de votre vraie expérience. Pas de filigrane, pas de tournures robotiques, pas de signature IA."
             },
@@ -788,7 +788,7 @@ export const translations = {
             newVersion: "Analyse IA",
             titleLine1: "Votre CV,",
             titleLine2: "Conçu pour décrocher des entretiens",
-            subtitle: "Analysez votre CV face à une offre d'emploi. Obtenez un score de compatibilité, identifiez les mots-clés manquants, et téléchargez une version optimisée — en moins d'une minute.",
+            subtitle: "Analysez votre CV face à une offre d'emploi. Obtenez un score de compatibilité, identifiez les mots-clés manquants, et téléchargez une version optimisée - en moins d'une minute.",
             ctaStart: "Analyser mon CV Gratuitement →",
             ctaDashboard: "Accéder à l'application",
 

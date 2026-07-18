@@ -39,7 +39,7 @@ export interface AppState {
     networking: NetworkingState;
     networkingSectionCache: Record<string, NetworkingSectionCacheEntry>;
 
-    // In-memory session cache only — NOT persisted to localStorage
+    // In-memory session cache only - NOT persisted to localStorage
     cvHistoryCache: CVHistoryEntry[];
 
     setStep: (step: number) => void;
@@ -155,7 +155,7 @@ export const useAppStore = create<AppState>()(
                 emailPredictor: state.emailPredictor,
                 networking: state.networking,
                 networkingSectionCache: state.networkingSectionCache,
-                // cvHistoryCache intentionally excluded — Supabase is the source of truth
+                // cvHistoryCache intentionally excluded - Supabase is the source of truth
             }),
             merge: (persistedState, currentState) => {
                 const persisted = persistedState as Partial<AppState> & {

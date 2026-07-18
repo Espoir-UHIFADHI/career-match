@@ -5,7 +5,7 @@ import {
 import type { ParsedCV } from "../../types";
 import { normalizeParsedCV } from "../../utils/normalizeCV";
 
-// Register Outfit — same font as PrintableCV (font-sans = Outfit)
+// Register Outfit - same font as PrintableCV (font-sans = Outfit)
 Font.register({
     family: 'Outfit',
     fonts: [
@@ -15,10 +15,10 @@ Font.register({
     ],
 });
 
-// No automatic hyphenation — prevents "OPÉRA-\nTIONNEL"
+// No automatic hyphenation - prevents "OPÉRA-\nTIONNEL"
 Font.registerHyphenationCallback((word) => [word]);
 
-// ─── SVG Icons — exact Lucide paths used in PrintableCV ─────────────────────
+// ─── SVG Icons - exact Lucide paths used in PrintableCV ─────────────────────
 
 const IconMail = ({ size }: { size: number }) => (
     <Svg width={size} height={size} viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ const IconCalendar = ({ size }: { size: number }) => (
     </Svg>
 );
 
-// Bullet dots — identical to PrintableCV
+// Bullet dots - identical to PrintableCV
 // Experience: w-1 h-1 bg-indigo-500 = 4px = 3pt, #6366f1
 // Footer:     w-1 h-1 bg-indigo-400 = 4px = 3pt, #818cf8
 const FooterDot = () => (
@@ -66,7 +66,7 @@ const FooterDot = () => (
     </Svg>
 );
 
-// ─── Density — height-based selection ────────────────────────────────────────
+// ─── Density - height-based selection ────────────────────────────────────────
 //
 // Rather than a char-count heuristic, we estimate the real rendered height in pt
 // for each density level, then pick the loosest one that fits in A4.
@@ -87,7 +87,7 @@ const DENSITY_PARAMS = {
     ultra:       { pv: 6*MM,  ph: 8*MM,  base: 7.5,   lead: 1.375, small: 6.75, role: 9,    name: 15,   secGap: 6,  hlMb: 3  },
 } as const;
 
-// Shared layout constants (same for all densities — mirrors createStyles)
+// Shared layout constants (same for all densities - mirrors createStyles)
 const _SEC_T  = 9;     // SEC_TITLE_SIZE
 const _SEC_PB = 1.5;   // SEC_TITLE_PB
 const _SEC_MB = 4.5;   // SEC_TITLE_MB
@@ -194,7 +194,7 @@ const calculateDensity = (data: ParsedCV): Density => {
     return 'ultra'; // ultra always used as last resort
 };
 
-// ─── Styles — every value is px × 0.75 = pt, matching PrintableCV exactly ───
+// ─── Styles - every value is px × 0.75 = pt, matching PrintableCV exactly ───
 //
 // Tailwind → pt conversion reference:
 //   text-3xl  = 30px = 22.5pt    text-2xl = 24px = 18pt   text-xl = 20px = 15pt
@@ -290,7 +290,7 @@ const createStyles = (density: Density) => {
             lineHeight: c.bodyLead,
         },
 
-        // ── Header — <header className={`border-b-2 border-slate-800 pb-2 ${sectionGap}`}>
+        // ── Header - <header className={`border-b-2 border-slate-800 pb-2 ${sectionGap}`}>
         header: {
             paddingBottom: HEADER_PB,
             marginBottom: c.sectionGap,
@@ -343,10 +343,10 @@ const createStyles = (density: Density) => {
             textDecoration: 'underline',
         },
 
-        // ── Section wrapper — <section className={sectionGap}>
+        // ── Section wrapper - <section className={sectionGap}>
         section: { marginBottom: c.sectionGap },
 
-        // ── Section title — <h2 text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5>
+        // ── Section title - <h2 text-xs font-bold uppercase tracking-wider text-indigo-800 border-b border-indigo-100 pb-0.5 mb-1.5>
         sectionTitle: {
             fontSize: SEC_TITLE_SIZE,
             fontFamily: 'Outfit',
@@ -360,7 +360,7 @@ const createStyles = (density: Density) => {
             marginBottom: SEC_TITLE_MB,
         },
 
-        // ── Body text — summary paragraph
+        // ── Body text - summary paragraph
         bodyText: {
             fontSize: c.bodySize,
             color: '#334155',             // text-slate-700
@@ -368,11 +368,11 @@ const createStyles = (density: Density) => {
             lineHeight: c.bodyLead,
         },
 
-        // ── Experience items — <div space-y-2.5>
+        // ── Experience items - <div space-y-2.5>
         expList: { gap: EXP_ITEMS_GAP },
         expItem: {},
 
-        // ── Role / dates row — <div flex justify-between items-baseline mb-0.5>
+        // ── Role / dates row - <div flex justify-between items-baseline mb-0.5>
         jobRow: {
             flexDirection: 'row',
             justifyContent: 'space-between',
@@ -406,7 +406,7 @@ const createStyles = (density: Density) => {
             marginBottom: COMPANY_MB,
         },
 
-        // ── Bullet list — <ul space-y-0.5>
+        // ── Bullet list - <ul space-y-0.5>
         bulletList: { gap: BULLET_GAP },
         // <li flex items-start>
         bulletRow: {
@@ -428,7 +428,7 @@ const createStyles = (density: Density) => {
             marginBottom: BULLET_GAP,
         },
 
-        // ── Education items — <div space-y-1.5>
+        // ── Education items - <div space-y-1.5>
         eduList: { gap: EDU_ITEMS_GAP },
         eduItem: {},
         // <div smallText text-slate-800 font-medium>  (degree)
@@ -444,14 +444,14 @@ const createStyles = (density: Density) => {
             color: '#475569',             // text-slate-600
             marginTop: 1.5,              // mt-0.5 = 2px = 1.5pt
         },
-        // Education dates — no calendar icon, text-slate-500
+        // Education dates - no calendar icon, text-slate-500
         eduDates: {
             fontSize: c.smallSize,
             color: '#64748b',
             marginLeft: 12,
         },
 
-        // ── Skills grid — <div grid grid-cols-12 colGap mt-2>
+        // ── Skills grid - <div grid grid-cols-12 colGap mt-2>
         skillsGrid: {
             flexDirection: 'row',
             gap: c.colGap,
@@ -462,7 +462,7 @@ const createStyles = (density: Density) => {
         // col-span-5 / 12 ≈ 41.7%
         skillsRight: { flex: 5 },
 
-        // Skill block title — same h2 class as sectionTitle
+        // Skill block title - same h2 class as sectionTitle
         skillTitle: {
             fontSize: SEC_TITLE_SIZE,
             fontFamily: 'Outfit',
@@ -516,7 +516,7 @@ const createStyles = (density: Density) => {
             color: '#4338ca',             // text-indigo-700  ← was wrong (#3730a3)
         },
 
-        // ── Footer row — <div grid grid-cols-3 colGap mt-3 pt-2 border-t border-slate-100>
+        // ── Footer row - <div grid grid-cols-3 colGap mt-3 pt-2 border-t border-slate-100>
         footerRow: {
             flexDirection: 'row',
             gap: c.colGap,
@@ -527,7 +527,7 @@ const createStyles = (density: Density) => {
         },
         footerCol: { flex: 1 },
 
-        // Footer title — same h2 class as sectionTitle
+        // Footer title - same h2 class as sectionTitle
         footerTitle: {
             fontSize: SEC_TITLE_SIZE,
             fontFamily: 'Outfit',
@@ -643,7 +643,7 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                     <Text style={s.name}>{data.contact.firstName} {data.contact.lastName}</Text>
                     {data.headline && <Text style={s.headline}>{clean(data.headline)}</Text>}
 
-                    {/* Contact row — flex flex-wrap gap-x-4 gap-y-1 */}
+                    {/* Contact row - flex flex-wrap gap-x-4 gap-y-1 */}
                     <View style={s.contactRow}>
                         {data.contact.email && (
                             <View style={s.contactItem}>
@@ -703,7 +703,7 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                                     </View>
                                     {/* Company */}
                                     <Text style={s.company}>{clean(exp.company)}</Text>
-                                    {/* Lines — no bullet */}
+                                    {/* Lines - no bullet */}
                                     <View>
                                         {getBullets(exp.description).map((line, idx) => (
                                             <Text key={idx} style={s.bulletText}>
@@ -738,7 +738,7 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                     </View>
                 )}
 
-                {/* ── Skills grid — col-span-7 / col-span-5 ── */}
+                {/* ── Skills grid - col-span-7 / col-span-5 ── */}
                 <View style={s.skillsGrid}>
                     <View style={s.skillsLeft}>
                         {data.skills && data.skills.length > 0 && (
@@ -766,7 +766,7 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ data: rawData, language 
                     </View>
                 </View>
 
-                {/* ── Footer — Languages / Certifications / Interests ── */}
+                {/* ── Footer - Languages / Certifications / Interests ── */}
                 <View style={s.footerRow}>
                     {data.languages && data.languages.length > 0 && (
                         <View style={s.footerCol}>

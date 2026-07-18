@@ -259,7 +259,7 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
 
             {/* Skills Grid - Tech & Soft */}
             <div className={`grid grid-cols-12 ${config.colGap} mt-2`}>
-                {/* Left Column: Tech Skills — 2 colonnes internes */}
+                {/* Left Column: Tech Skills - 2 colonnes internes */}
                 <div className="col-span-7 space-y-2">
                     {data.skills && data.skills.length > 0 && (
                         <div>
@@ -277,7 +277,7 @@ export const PrintableCV = React.forwardRef<HTMLDivElement, PrintableCVProps>(({
                     )}
                 </div>
 
-                {/* Right Column: Soft Skills — 2 colonnes internes */}
+                {/* Right Column: Soft Skills - 2 colonnes internes */}
                 <div className="col-span-5 space-y-2">
                     {data.softSkills && data.softSkills.length > 0 && (
                         <div>

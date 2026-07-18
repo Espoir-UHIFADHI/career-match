@@ -10,7 +10,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Do not retry auth failures — repeating the call will not help. */
+/** Do not retry auth failures - repeating the call will not help. */
 function isNonRetryableInvokeError(error: unknown): boolean {
   const msg = error instanceof Error ? error.message : String(error);
   if (/401|402|403|Unauthorized|Forbidden|Insufficient credits/i.test(msg)) return true;
@@ -61,7 +61,7 @@ async function callBackend(action: string, payload: BackendPayload, token?: stri
       data && typeof data === "object" && data !== null && "error" in data
         ? String((data as { error: unknown }).error)
         : "";
-    lastMessage = [error.message, serverDetail].filter(Boolean).join(" — ") || lastMessage;
+    lastMessage = [error.message, serverDetail].filter(Boolean).join(" - ") || lastMessage;
     console.error(`🔥 Secure Backend Error (${action}):`, error, serverDetail ? { serverDetail } : "");
 
     if (isNonRetryableInvokeError(error) || /Insufficient credits/i.test(lastMessage)) {

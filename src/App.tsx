@@ -4,7 +4,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { Layout } from "./components/Layout";
 import { LandingPage } from "./components/LandingPage";
 
-// Heavy routes loaded lazily — kept out of the landing page bundle
+// Heavy routes loaded lazily - kept out of the landing page bundle
 const Wizard = lazy(() => import("./components/Wizard"));
 const PricingPage = lazy(() => import("./components/PricingPage").then(m => ({ default: m.PricingPage })));
 const About = lazy(() => import("./components/pages/About").then(m => ({ default: m.About })));
@@ -15,7 +15,7 @@ const PrivacyPolicy = lazy(() => import("./components/pages/PrivacyPolicy").then
 const TermsOfService = lazy(() => import("./components/pages/TermsOfService").then(m => ({ default: m.TermsOfService })));
 const Contact = lazy(() => import("./components/pages/Contact").then(m => ({ default: m.Contact })));
 const PublicAnalysis = lazy(() => import("./components/share/PublicAnalysis").then(m => ({ default: m.PublicAnalysis })));
-// Standalone — rendu sans Layout global (no nav, no footer)
+// Standalone - rendu sans Layout global (no nav, no footer)
 const LandingPageAds = lazy(() => import("./components/pages/LandingPageAds").then(m => ({ default: m.LandingPageAds })));
 
 function PageLoader() {
@@ -40,7 +40,7 @@ function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Route standalone — pas de Layout (no nav, no footer) */}
+        {/* Route standalone - pas de Layout (no nav, no footer) */}
         <Route path="/lp/cv-ats" element={<LandingPageAds />} />
 
         {/* Routes avec Layout global */}

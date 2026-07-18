@@ -1068,7 +1068,7 @@ export function NetworkingSearch() {
             <Modal
                 isOpen={showDraft}
                 onClose={() => setShowDraft(false)}
-                title={selectedContact ? `Plan d’action réseau — ${selectedContact.name}` : (t('networking.draftTitle') || "Réseautage")}
+                title={selectedContact ? `Plan d’action réseau - ${selectedContact.name}` : (t('networking.draftTitle') || "Réseautage")}
                 className="max-w-5xl"
             >
                 <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2">

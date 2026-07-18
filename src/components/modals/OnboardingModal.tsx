@@ -71,7 +71,7 @@ export function OnboardingModal({ isOpen, onComplete, onSkip }: OnboardingModalP
                             {step === 1 ? "Quel poste visez-vous ?" : "Dans quel secteur ?"}
                         </h2>
                         <p className="text-xs text-slate-500">
-                            {step === 1 ? "Étape 1/2" : "Étape 2/2"} — Pour personnaliser vos analyses
+                            {step === 1 ? "Étape 1/2" : "Étape 2/2"} - Pour personnaliser vos analyses
                         </p>
                     </div>
                 </div>

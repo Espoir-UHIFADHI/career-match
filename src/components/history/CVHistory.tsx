@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Download, Trash2, Briefcase, Calendar, TrendingUp, FileText, Clock, Eye, RotateCcw, Search, X, Loader2 } from "lucide-react";
-// @ts-ignore — @react-pdf/renderer entry types
+// @ts-ignore - @react-pdf/renderer entry types
 import { pdf } from "@react-pdf/renderer";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ function PreviewModal({ entry, onClose }: { entry: CVHistoryEntry; onClose: () =
         <Modal
             isOpen
             onClose={onClose}
-            title={`${entry.jobData.title} — ${entry.jobData.company}`}
+            title={`${entry.jobData.title} - ${entry.jobData.company}`}
             className="max-w-3xl"
         >
             <div className="overflow-auto max-h-[70vh] bg-slate-50 rounded-lg p-2">

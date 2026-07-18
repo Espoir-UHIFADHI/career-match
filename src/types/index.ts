@@ -103,7 +103,7 @@ export const MatchResultSchema = z.object({
 
 export type MatchResult = z.infer<typeof MatchResultSchema>;
 
-// CV History Entry — one saved generation
+// CV History Entry - one saved generation
 export interface CVHistoryEntry {
     id: string;
     createdAt: string; // ISO date

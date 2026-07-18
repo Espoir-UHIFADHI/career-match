@@ -51,7 +51,7 @@ export async function findCompanyDomain(companyName: string, token?: string): Pr
             return name.toLowerCase();
         }
 
-        // 2. Cache Supabase — chercher si le domaine de cette entreprise est déjà connu
+        // 2. Cache Supabase - chercher si le domaine de cette entreprise est déjà connu
         try {
             const client = token ? createClerkSupabaseClient(token) : supabase;
             const { data } = await client
@@ -68,7 +68,7 @@ export async function findCompanyDomain(companyName: string, token?: string): Pr
             console.warn("[Cache] domain lookup failed:", e);
         }
 
-        // 3. Hunter.io — plusieurs variantes du nom pour maximiser les chances
+        // 3. Hunter.io - plusieurs variantes du nom pour maximiser les chances
         const nameVariants = [
             name,                                          // "Capgemini"
             name.toLowerCase(),                            // "capgemini"

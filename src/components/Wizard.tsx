@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { ArrowLeft, Download } from "lucide-react";
-// @ts-ignore — @react-pdf/renderer entry types
+// @ts-ignore - @react-pdf/renderer entry types
 import { pdf } from "@react-pdf/renderer";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
@@ -41,10 +41,10 @@ function Wizard() {
   const [addedCreditsAmount, setAddedCreditsAmount] = useState(0);
   const prevCreditsRef = useRef(credits);
 
-  // Onboarding modal — affiché une seule fois au premier login
+  // Onboarding modal - affiché une seule fois au premier login
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Track credit increases — détecte les achats Gumroad au retour sur la page
+  // Track credit increases - détecte les achats Gumroad au retour sur la page
   useEffect(() => {
     if (credits > prevCreditsRef.current && prevCreditsRef.current !== 0) {
       const diff = credits - prevCreditsRef.current;
@@ -258,7 +258,7 @@ function Wizard() {
       const metadata = user.unsafeMetadata as { welcome_sent?: boolean };
 
       if (!metadata.welcome_sent) {
-        // Nouvel utilisateur confirmé — on track l'inscription et on affiche l'onboarding
+        // Nouvel utilisateur confirmé - on track l'inscription et on affiche l'onboarding
         trackSignUp(user.externalAccounts?.[0]?.provider ?? "email");
         setShowOnboarding(true);
 

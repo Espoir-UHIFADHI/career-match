@@ -69,7 +69,7 @@ async function callNetworkingBackend<T>(action: string, payload: Record<string, 
         ? [
             "error" in body ? String(body.error) : "",
             "details" in body ? String(body.details) : "",
-          ].filter(Boolean).join(" — ")
+          ].filter(Boolean).join(" - ")
         : String(body || response.statusText);
     throw new Error(details || `Edge Function HTTP ${response.status}`);
   }

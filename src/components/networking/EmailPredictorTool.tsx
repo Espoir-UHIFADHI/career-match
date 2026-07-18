@@ -58,7 +58,7 @@ export function EmailPredictorTool() {
             const { getCachedEmail } = await import("../../services/emailService");
 
             // ── Étape 1 : Résolution silencieuse du domaine (tentative) ───────
-            // L'utilisateur entre uniquement le nom — on tente de résoudre en arrière-plan
+            // L'utilisateur entre uniquement le nom - on tente de résoudre en arrière-plan
             const domain = await findCompanyDomain(company.trim(), token || undefined);
 
             // ── Étape 2 : Cache found_emails (0 crédit) ───────────────────────
@@ -329,7 +329,7 @@ export function EmailPredictorTool() {
                             </CardContent>
                         </Card>
                     ) : (
-                        /* État initial — exemple */
+                        /* État initial - exemple */
                         <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full">
                             <CardHeader className="border-b border-slate-100 pb-4">
                                 <CardTitle className="text-lg text-slate-900 flex items-center justify-between gap-2">

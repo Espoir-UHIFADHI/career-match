@@ -88,7 +88,7 @@ export function About() {
                                         <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">CV</div>
                                         <div>
                                             <div className="text-white text-sm font-semibold">Thomas Dupont</div>
-                                            <div className="text-slate-400 text-xs">Développeur Fullstack — 4 ans d'exp.</div>
+                                            <div className="text-slate-400 text-xs">Développeur Fullstack - 4 ans d'exp.</div>
                                         </div>
                                         <div className="ml-auto text-emerald-400 text-sm font-bold">87%</div>
                                     </div>

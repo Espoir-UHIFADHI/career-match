@@ -243,7 +243,7 @@ export function MatchingDashboard() {
         }
         prevCvLanguageRef.current = cvLanguage;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cvLanguage, cvData, jobData]); // analysisResults/isProcessing/runAnalysis intentionally omitted — including them causes infinite re-analysis loop
+    }, [cvLanguage, cvData, jobData]); // analysisResults/isProcessing/runAnalysis intentionally omitted - including them causes infinite re-analysis loop
 
     const runAnalysis = async () => {
         if (!cvData || !jobData) return;
@@ -536,7 +536,7 @@ export function MatchingDashboard() {
                 </CardContent>
             </Card>
 
-            {/* Upsell contextuel — visible uniquement si crédits épuisés */}
+            {/* Upsell contextuel - visible uniquement si crédits épuisés */}
             {credits === 0 && (
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white shadow-xl shadow-indigo-500/20">
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
@@ -547,13 +547,13 @@ export function MatchingDashboard() {
                                 Crédits épuisés
                             </div>
                             <h3 className="text-xl font-bold mb-1">
-                                Continuez sur votre lancée — votre profil est prêt
+                                Continuez sur votre lancée - votre profil est prêt
                             </h3>
                             <p className="text-indigo-100 text-sm max-w-md">
                                 Rechargez en quelques secondes et analysez vos prochaines offres sans interruption. Crédits sans expiration.
                             </p>
                             <p className="text-indigo-200 text-xs mt-2 font-medium">
-                                Satisfait ou remboursé sous 7 jours — sans question
+                                Satisfait ou remboursé sous 7 jours - sans question
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 shrink-0 w-full sm:w-auto">
@@ -565,7 +565,7 @@ export function MatchingDashboard() {
                                 }}
                                 className="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-8 py-3 rounded-xl shadow-lg shadow-indigo-900/20 transition-all hover:scale-105 w-full sm:w-auto"
                             >
-                                +100 crédits — 14,99 €
+                                +100 crédits - 14,99 €
                             </Button>
                             <Button
                                 onClick={() => {
@@ -575,7 +575,7 @@ export function MatchingDashboard() {
                                 }}
                                 className="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-3 rounded-xl transition-all w-full sm:w-auto"
                             >
-                                +20 crédits — 4,99 €
+                                +20 crédits - 4,99 €
                             </Button>
                         </div>
                     </div>
