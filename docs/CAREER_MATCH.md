@@ -307,11 +307,11 @@ Fichiers principaux :
 
 ### 4.14 Tarifs, crédits et achats
 
-Chaque nouvel utilisateur obtient 7 crédits au premier appel à `get_user_credits`.
+Chaque nouvel utilisateur obtient 3 crédits au premier appel à `get_user_credits`.
 
 Les offres visibles dans l'application sont :
 
-- gratuit : 7 crédits ;
+- gratuit : 3 crédits ;
 - booster : +20 crédits ;
 - coach : +100 crédits.
 
@@ -574,7 +574,7 @@ Stocke le profil applicatif minimal :
 - `credits` : solde de crédits ;
 - timestamps selon migration.
 
-Le profil peut être créé automatiquement par `get_user_credits` avec 7 crédits.
+Le profil peut être créé automatiquement par `get_user_credits` avec 3 crédits.
 
 ### 8.2 `resumes`
 
@@ -743,7 +743,7 @@ Les crédits protègent les actions qui ont un coût réel : IA, recherche, Hunt
 
 ### 10.2 Crédit initial
 
-Un nouveau profil reçoit 7 crédits via la RPC `get_user_credits`.
+Un nouveau profil reçoit 3 crédits via la RPC `get_user_credits`.
 
 ### 10.3 Actions actuellement facturées côté `career-match-api`
 

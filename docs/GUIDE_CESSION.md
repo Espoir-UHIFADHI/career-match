@@ -57,8 +57,10 @@ Utilisateur → DNS (domaine) → Hébergeur SPA (ex. Vercel) → React
 | **Resend** | E-mails transactionnels et parrainage | `send-email`, `process-referral`, `sync-resend-contacts` |
 | **Hébergeur frontend** (ex. **Vercel**) | SPA + headers/CSP | Site public |
 | **Registrar DNS** | Domaine `A`/`CNAME`, éventuellement sous-domaine Clerk | Production |
-| **Microsoft Clarity** | Analytics (script dans `index.html`) | Optionnel mais présent |
+| **Microsoft Clarity** | Analytics (script dans `index.html`, ID `uiwllp7pu5`) | Optionnel mais présent |
 | **Google Search Console** | Meta `google-site-verification` dans `index.html` | SEO (à remplacer ou retirer) |
+| **Google Tag Manager** | Conteneur `GTM-WKC22G6S` — tracking conversions Google Ads | `index.html` (à reconfigurer lors d'une cession) |
+| **Google Ads** | Conversion ID `18330710463`, Label `hBNlCO0podlcEL_j4aRE` | Configuré dans GTM — à remplacer par les IDs du nouvel acquéreur |
 
 **Non bloquant mais référencé dans le code** : polices Google Fonts, images Unsplash (blog), Wikimedia (landing), `grainy-gradients.vercel.app` (décor).
 
@@ -177,7 +179,7 @@ Appliquer sur une base **vide** en respectant l’ordre des fichiers (timestamps
 | `20241205_change_id_to_text.sql` | Alignement types ID |
 | `20241205_reset_schema.sql` | **Destructif** : drop/recreate `profiles` + `resumes` — **ne pas réappliquer** sur une base déjà en prod avec données sauf stratégie de migration explicite |
 | `20241205_fix_profiles_rls.sql` | RLS `profiles` |
-| `20241205_create_get_user_credits_rpc.sql` | RPC + **7 crédits** à la création profil |
+| `20241205_create_get_user_credits_rpc.sql` | RPC + **3 crédits** à la création profil |
 | `20241205_create_decrease_credits_rpc.sql` | RPC débit atomique |
 | `20241207_create_used_licenses.sql` | Licences Gumroad |
 | `20251211_create_public_analyses.sql` | Partage public |
@@ -218,9 +220,17 @@ Fonctions présentes sous `supabase/functions/` :
 | `career-match-api` | `/functions/v1/career-match-api` |
 | `gumroad-webhook` | `/functions/v1/gumroad-webhook` |
 | `redeem-license` | `/functions/v1/redeem-license` |
-| `send-email` | `/functions/v1/send-email` |
+| `send-email` | `/functions/v1/send-email` — emails transactionnels (bienvenue, match prêt, invitation mentor, re-engagement low/high score) |
 | `process-referral` | `/functions/v1/process-referral` |
 | `sync-resend-contacts` | `/functions/v1/sync-resend-contacts` |
+| `analyze-cv-quick` | `/functions/v1/analyze-cv-quick` — analyse ATS publique (QuickScan landing page, `verify_jwt=false`) |
+| `reengage-users` | `/functions/v1/reengage-users` — cron quotidien 9h UTC, emails re-engagement automatiques selon score |
+| `keep-alive` | `/functions/v1/keep-alive` — cron 48h, maintient le projet Supabase actif (évite la pause plan gratuit) |
+
+**Crons pg_cron actifs** (vérifier dans SQL Editor → `SELECT * FROM cron.job`) :
+- `reengage-users-daily` — `0 9 * * *` — re-engagement emails
+- `keep-alive-48h` — `0 10 */2 * *` — ping keep-alive
+- `sync-resend-every-night` — `30 3 * * *` — sync contacts Resend
 
 **URL complète** : `https://<PROJECT_REF>.supabase.co/functions/v1/<nom>`
 
@@ -228,13 +238,16 @@ Déploiement typique (machine avec Supabase CLI liée au projet) :
 
 ```bash
 supabase link --project-ref <PROJECT_REF>
-supabase db push   # ou application manuelle des migrations selon votre processus
+supabase db push
 supabase functions deploy career-match-api
 supabase functions deploy gumroad-webhook
 supabase functions deploy redeem-license
 supabase functions deploy send-email
 supabase functions deploy process-referral
 supabase functions deploy sync-resend-contacts
+supabase functions deploy analyze-cv-quick
+supabase functions deploy reengage-users
+supabase functions deploy keep-alive
 ```
 
 (L’acquéreur adapte à son CI/CD.)
@@ -398,6 +411,15 @@ Si tu transfères **la base Supabase** telle quelle :
 2. **Base légale** : contrat de cession / DPA entre cédant et acquéreur ; information aux utilisateurs si la loi l’exige.
 3. **Clerk** : les comptes restent chez Clerk — prévoir **transfert d’application** ou export selon politique Clerk.
 4. **Droits utilisateurs** : les e-mails de contact dans `translations.ts` et les pages légales doivent refléter le **nouveau responsable de traitement**.
+
+### 15.1 Bannière de consentement et Consent Mode v2
+
+Le site implémente le **Consent Mode v2 Google** natif :
+- Initialisation `denied` par défaut dans `index.html` (avant GTM)
+- Composant `src/components/CookieBanner.tsx` — bannière RGPD avec Accept/Reject/Personnaliser
+- Utilitaire `src/utils/consent.ts` — met à jour `gtag(‘consent’, ‘update’, ...)` et persiste dans `localStorage` (clé `cm_consent`)
+
+L’acquéreur doit reconfigurer GTM (nouveau conteneur) et s’assurer que la bannière communique bien avec son propre GTM ID.
 
 Si tu vends **uniquement le code** sans données : fournir une base **vide** + migrations, et effacer les données de l’ancien projet.
 

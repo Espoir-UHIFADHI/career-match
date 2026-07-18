@@ -7,7 +7,9 @@
       "Bash(node -e \"try{require\\('puppeteer'\\);console.log\\('ok'\\)}catch{console.log\\('no'\\)}\")",
       "Bash(node scripts/generate-og-image.mjs)",
       "Bash(python3 -c ' *)",
-      "Bash(npx supabase *)"
+      "Bash(npx supabase *)",
+      "Bash(grep -n \"^ \\\\`send-email\\\\`\\\\|^ \\\\`career-match\\\\|^ \\\\`gumroad\\\\|^ \\\\`process\\\\|^ \\\\`redeem\\\\|^ \\\\`sync\\\\|^ \\\\`analyze\\\\|^ \\\\`reengage\\\\|^ \\\\`keep-alive\" \"c:/Users/espoi/Desktop/ADOUWEKONOU/MICRO USINE SAAS/Tous les projets/career-match/docs/GUIDE_CESSION.md\")",
+      "Bash(grep -v \"node_modules\\\\|comment\\\\|//.*credit\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\espoi\\.claude\\projects\\c--Users-espoi-Desktop-ADOUWEKONOU-MICRO-USINE-SAAS-Tous-les-projets-career-match\\memory"

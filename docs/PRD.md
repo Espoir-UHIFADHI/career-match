@@ -103,7 +103,7 @@ Career Match est une application web **B2C** qui aide les candidats à **adapter
 
 ### 6.4 Monétisation
 
-- **FR-PAY-1** : Nouveau profil : **7 crédits** via `get_user_credits` (création `profiles`).  
+- **FR-PAY-1** : Nouveau profil : **3 crédits** via `get_user_credits` (création `profiles`).  
 - **FR-PAY-2** : Packs Gumroad **+20** (booster) et **+100** (coach) mappés par permalink (webhook).  
 - **FR-PAY-3** : Rachat licence Gumroad via `redeem-license` + `used_licenses`.  
 - **FR-PAY-4** : Ajouts de crédits idempotents via `credit_grants` et `grant_user_credits_once`.  

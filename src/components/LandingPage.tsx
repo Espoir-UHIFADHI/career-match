@@ -132,7 +132,7 @@ export function LandingPage() {
                                         </div>
                                         <div className="flex gap-2">
                                             <div className="px-2 py-1 rounded-md bg-white/50 border border-white/60 text-[10px] font-semibold text-slate-600 shadow-sm">
-                                                7 Crédits
+                                                3 Crédits
                                             </div>
                                         </div>
                                     </div>

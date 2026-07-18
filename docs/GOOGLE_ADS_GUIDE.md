@@ -156,7 +156,7 @@ T5 : Analyse CV vs offre d'emploi          (28c)
 T6 : Mots-clés manquants = CV invisible    (30c)
 T7 : CV optimisé téléchargeable            (26c)
 T8 : Career Match — Analyse IA gratuite    (30c)
-T9 : 7 crédits offerts à l'inscription     (30c)
+T9 : 3 crédits offerts à l'inscription     (30c)
 T10: Votre CV est-il lisible par les ATS ? (30c)
 T11: Décrochez plus d'entretiens           (27c)
 T12: Compatibilité CV/Offre en 30 sec      (30c)
@@ -170,7 +170,7 @@ T15: Offre d'emploi analysée en 1 clic     (29c)
 D1 (90c): Uploadez votre CV + collez une offre. L'IA calcule votre score ATS et génère un CV optimisé. Gratuit.
 D2 (90c): Les recruteurs utilisent des logiciels pour filtrer les CV. Career Match vous montre ce qu'ils voient vraiment.
 D3 (88c): Score de compatibilité précis, mots-clés manquants identifiés, CV PDF prêt à envoyer. Résultat en 30 sec.
-D4 (87c): 7 crédits offerts. Aucune carte bancaire. Vos données ne sont pas stockées. Commencez maintenant.
+D4 (87c): 3 crédits offerts. Aucune carte bancaire. Vos données ne sont pas stockées. Commencez maintenant.
 ```
 
 ---
@@ -183,7 +183,7 @@ T1 : Améliorez votre CV avec l'IA          (28c)
 T2 : CV optimisé pour chaque offre         (27c)
 T3 : Plus d'entretiens, même CV de base    (30c)
 T4 : Votre CV est-il vraiment lu ?         (27c)
-T5 : Analyse CV gratuite — 7 crédits       (29c)
+T5 : Analyse CV gratuite — 3 crédits       (29c)
 T6 : CV sur-mesure pour chaque poste       (28c)
 T7 : Identifiez vos lacunes en 30 sec      (28c)
 T8 : Career Match — IA pour candidats      (29c)
@@ -193,14 +193,14 @@ T11: Téléchargez votre CV optimisé         (27c)
 T12: Sans inscription longue. Résultat IA  (29c)
 T13: Le CV qui passe les filtres            (27c)
 T14: Optimisation CV en quelques secondes  (30c)
-T15: Gratuit — 7 analyses offertes         (27c)
+T15: Gratuit — 3 crédits à l'inscription   (27c)
 ```
 
 **4 Descriptions** :
 ```
 D1 (89c): Collez votre CV et une offre d'emploi. Career Match identifie les mots-clés manquants et optimise votre profil.
 D2 (87c): Comprenez pourquoi votre candidature est ignorée. Score ATS + CV reformaté prêt à envoyer. Sans carte bancaire.
-D3 (90c): L'IA analyse votre compatibilité avec le poste visé. Résultat en 30 secondes. 7 crédits offerts à l'inscription.
+D3 (90c): L'IA analyse votre compatibilité avec le poste visé. Résultat en 30 secondes. 3 crédits offerts à l'inscription.
 D4 (88c): Career Match reformate votre CV avec les bons mots-clés pour chaque offre. Essai gratuit. Données non stockées.
 ```
 
@@ -211,14 +211,14 @@ D4 (88c): Career Match reformate votre CV avec les bons mots-clés pour chaque o
 ### Sitelinks (liens supplémentaires sous l'annonce)
 | Texte (25c max) | Description 1 | Description 2 | URL |
 |-----------------|---------------|---------------|-----|
-| Voir les tarifs | Dès 4.99€ — sans abonnement | 7 crédits offerts | /pricing |
+| Voir les tarifs | Dès 4.99€ — sans abonnement | 3 crédits offerts | /pricing |
 | Comment ça marche | Upload CV + offre en 30 sec | Score ATS immédiat | /#how-it-works |
 | À propos | Pourquoi on a construit ça | Transparence totale | /about |
 | Email Finder | Trouvez l'email du recruteur | Pour contacter directement | /app |
 
 ### Callouts (accroches, pas de lien)
 ```
-✓ Gratuit — 7 crédits offerts
+✓ Gratuit — 3 crédits offerts
 ✓ Sans carte bancaire
 ✓ Résultats en 30 secondes
 ✓ Données non stockées
@@ -316,7 +316,22 @@ Vérifier :
 
 Le statut affichera "Mauvaise configuration" jusqu'à la **première vraie conversion**. C'est normal. Il passera à "Opérationnel" automatiquement après le premier achat.
 
-### Point 2 — Test du Tag Achat en conditions réelles
+### Point 2 — Vérification Consent Mode v2 (obligatoire EEE)
+
+Le site implémente le Consent Mode v2 natif. Avant de lancer, vérifier :
+
+1. Ouvrir `careermatch.fr` en navigation privée (localStorage vide)
+2. Dans Tag Assistant, observer que `ad_storage = denied` par défaut
+3. Cliquer "Tout accepter" sur la bannière cookies
+4. Observer que GTM reçoit un hit `consent` avec `ad_storage = granted`
+
+Si `ad_storage` reste `denied` après consentement → vérifier que `consent.ts` appelle bien `gtag('consent', 'update', ...)`.
+
+**Dans GTM** : Admin → Consent Overview → confirmer que les balises Google Ads ont le statut "Consent checked".
+
+---
+
+### Point 4 — Test du Tag Achat en conditions réelles
 Procédure de test (à faire avant de dépenser 1€ de pub) :
 
 1. Installer l'extension Chrome **Google Tag Assistant**
@@ -328,7 +343,7 @@ Procédure de test (à faire avant de dépenser 1€ de pub) :
 
 Si elle ne se déclenche pas → vérifier dans GTM que le déclencheur `Event - purchase` écoute bien l'événement `purchase` (pas `Purchase` avec majuscule).
 
-### Point 3 — Délai d'activation Smart Bidding
+### Point 5 — Délai d'activation Smart Bidding
 **NE PAS activer Target CPA ou Target ROAS avant :**
 - 30 conversions `purchase` enregistrées dans les 30 derniers jours
 - Minimum 2 semaines de données
