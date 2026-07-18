@@ -1,35 +1,80 @@
 declare global {
     interface Window {
         clarity: (command: string, ...args: any[]) => void;
+        dataLayer: Record<string, any>[];
     }
 }
 
+function pushToDataLayer(eventName: string, details?: Record<string, any>) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+        event: eventName,
+        ...details,
+    });
+}
+
 export function trackEvent(eventName: string, details?: Record<string, any>) {
+    // GTM / Google Ads / GA4 — source de vérité pour les conversions
+    pushToDataLayer(eventName, details);
+
+    // Microsoft Clarity — heatmaps et session recording
     if (window.clarity) {
-        // Clarity expects "event" as the first argument, then the event name
-        // It doesn't natively support a details object in the same way as others for custom tags in the same call traditionally,
-        // but custom labels/tags can be set via "set".
-        // However, for simple custom events: clarity("event", "EventName")
-        // If you need key-value pairs, Clarity uses 'set', or upgrade" events.
-        // For this specific request, we follow the prompt's instruction:
-        // window.clarity("event", eventName, details);
-
-        // Note: Clarity's API for "event" is strictly clarity("event", "name"). 
-        // Passing an object might not rely do anything in standard Clarity, but we will pass it as the user requested
-        // or maybe they map it on the backend.
-        // To be safe and useful, we can also try to set tags if details exist.
-
         window.clarity("event", eventName);
-
         if (details) {
-            // Attempt to log details as tags if possible, or just ignore if Clarity doesn't support it directly in this call
-            // But strictly following the USER PROMPT example:
-            // window.clarity("event", eventName, details);
-            window.clarity("event", eventName, details);
-        }
-    } else {
-        if (import.meta.env.DEV) {
-            console.log(`[Analytics] ${eventName}`, details);
+            Object.entries(details).forEach(([key, value]) => {
+                window.clarity("set", key, String(value));
+            });
         }
     }
+
+    if (import.meta.env.DEV) {
+        console.log(`[Analytics] ${eventName}`, details);
+    }
+}
+
+// ─── Événements funnel nommés ────────────────────────────────────────────────
+
+export function trackSignUp(method: string) {
+    trackEvent("sign_up", { method });
+}
+
+export function trackCVUploaded(fileType: string) {
+    trackEvent("cv_uploaded", { file_type: fileType });
+}
+
+export function trackAnalysisStarted() {
+    trackEvent("analysis_started");
+}
+
+export function trackAnalysisCompleted(matchScore: number) {
+    trackEvent("analysis_completed", { match_score: matchScore });
+}
+
+export function trackPricingPageViewed() {
+    trackEvent("pricing_page_viewed");
+}
+
+export function trackCheckoutStarted(plan: string, value: number) {
+    trackEvent("begin_checkout", { plan, value, currency: "EUR" });
+}
+
+export function trackPurchaseCompleted(plan: string, value: number, transactionId?: string) {
+    trackEvent("purchase", {
+        plan,
+        value,
+        currency: "EUR",
+        transaction_id: transactionId ?? `gumroad_${Date.now()}`,
+    });
+}
+
+export function trackQuickScanStarted() {
+    trackEvent("quick_scan_started");
+}
+
+export function trackQuickScanCompleted(score: number) {
+    trackEvent("quick_scan_completed", { ats_score: score });
+}
+
+export function trackCTAClicked(location: string, label: string) {
+    trackEvent("cta_clicked", { location, label });
 }

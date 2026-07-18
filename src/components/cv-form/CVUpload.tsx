@@ -10,6 +10,7 @@ import type { ParsedCV } from "../../types";
 import { CVReview } from "./CVReview";
 import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
+import { trackCVUploaded } from "../../utils/analytics";
 
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 
@@ -54,6 +55,8 @@ export function CVUpload() {
                 }
             }
             if (user?.id) await fetchCredits(user.id, supabaseToken || undefined);
+
+            trackCVUploaded(file.type === "application/pdf" ? "pdf" : "txt");
 
             console.log("Parsed Data:", parsedData);
 

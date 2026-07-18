@@ -1,12 +1,13 @@
-import { Check, X, Zap, Coins, Rocket, Briefcase, Loader2 } from "lucide-react";
+import { Check, X, Zap, Coins, Rocket, Briefcase, Loader2, ShieldCheck, RefreshCw, HeadphonesIcon } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { toast } from "sonner";
 import { Button } from "./ui/Button";
 import { useUserStore } from "../store/useUserStore";
 import { cn } from "../lib/utils";
 import { useTranslation } from "../hooks/useTranslation";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { useState } from "react";
-import { trackEvent } from "../utils/analytics";
+import { useState, useEffect } from "react";
+import { trackEvent, trackPricingPageViewed, trackCheckoutStarted } from "../utils/analytics";
 
 export function PricingPage() {
     const { credits } = useUserStore();
@@ -14,6 +15,10 @@ export function PricingPage() {
     const { user } = useUser();
     const { getToken } = useAuth(); // Import useAuth
     const [loadingProduct, setLoadingProduct] = useState<string | null>(null);
+
+    useEffect(() => {
+        trackPricingPageViewed();
+    }, []);
 
     // Redemption State
     const [licenseKey, setLicenseKey] = useState("");
@@ -66,28 +71,43 @@ export function PricingPage() {
 
     const handleCheckout = (productSlug: string) => {
         if (!user) {
-            alert(t('pricingPage.license.loginRequired'));
+            toast.error(t('pricingPage.license.loginRequired'));
             return;
         }
 
         setLoadingProduct(productSlug);
 
+        const priceMap: Record<string, number> = { "pack-booster": 4.99, "career-coach": 14.99 };
         trackEvent("pricing_button_click", { plan: productSlug });
+        trackCheckoutStarted(productSlug, priceMap[productSlug] ?? 0);
 
-        // Gumroad URL construction with custom tracking parameters
-        // These are critical for the webhook to credit the correct user
-        const baseUrl = `https://careermatch.gumroad.com/l/${productSlug}`;
         const params = new URLSearchParams({
             custom_user_id: user.id,
-            email: user.primaryEmailAddress?.emailAddress || ''
+            email: user.primaryEmailAddress?.emailAddress || '',
+            wanted: 'true',
         });
 
-        const gumroadUrl = `${baseUrl}?${params.toString()}`;
+        const gumroadUrl = `https://careermatch.gumroad.com/l/${productSlug}?${params.toString()}`;
 
-        window.open(gumroadUrl, '_blank');
-
-        // Simple timeout to reset loading state as we open in new tab
-        setTimeout(() => setLoadingProduct(null), 2000);
+        // Gumroad overlay : crée un lien fantôme avec l'attribut attendu par le script gumroad.js
+        // et simule un clic pour ouvrir la modale de paiement sans quitter la page.
+        try {
+            const link = document.createElement('a');
+            link.href = gumroadUrl;
+            link.className = 'gumroad-button';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch {
+            // Fallback : nouvel onglet si l'overlay échoue (navigateurs trop restrictifs)
+            const newTab = window.open(gumroadUrl, '_blank');
+            if (!newTab) {
+                toast.error("Votre navigateur a bloqué l'ouverture du paiement. Autorisez les popups pour ce site.");
+            }
+        } finally {
+            setTimeout(() => setLoadingProduct(null), 2000);
+        }
     };
 
     const plans = [
@@ -170,6 +190,31 @@ export function PricingPage() {
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 font-medium text-sm mt-4">
                     <Briefcase className="w-4 h-4" />
                     <span>{t('pricingPage.currentBalance').replace('{amount}', credits.toString())}</span>
+                </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="flex flex-wrap justify-center gap-6 px-4">
+                <div className="flex items-center gap-2.5 px-5 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div>
+                        <p className="text-sm font-bold text-emerald-800">Satisfait ou remboursé</p>
+                        <p className="text-xs text-emerald-600">Remboursement sous 7 jours, sans question</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2.5 px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                    <RefreshCw className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <div>
+                        <p className="text-sm font-bold text-indigo-800">Crédits sans expiration</p>
+                        <p className="text-xs text-indigo-600">Utilisez-les à votre rythme</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2.5 px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <HeadphonesIcon className="w-5 h-5 text-slate-600 shrink-0" />
+                    <div>
+                        <p className="text-sm font-bold text-slate-800">Support réactif</p>
+                        <p className="text-xs text-slate-500">Réponse en moins de 24h</p>
+                    </div>
                 </div>
             </div>
 

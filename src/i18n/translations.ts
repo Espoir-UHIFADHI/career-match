@@ -128,7 +128,7 @@ export const translations = {
             titleLine1: "Your Career",
             titleLine2: "Deserves Excellence",
             subtitle: "The first AI platform that turns your anonymous CV into concrete opportunities. Optimize, target, and connect with recruiters in one click.",
-            ctaStart: "Start for Free",
+            ctaStart: "Analyze My CV for Free →",
             ctaDashboard: "Go to App",
 
             badges: {
@@ -764,7 +764,7 @@ export const translations = {
             titleLine1: "Votre Carrière",
             titleLine2: "Mérite l'Excellence",
             subtitle: "La première plateforme qui propulse votre CV anonyme vers des opportunités concrètes. Optimisez, ciblez et connectez-vous aux recruteurs en un clic.",
-            ctaStart: "Commencer Gratuitement",
+            ctaStart: "Analyser mon CV Gratuitement →",
             ctaDashboard: "Accéder à l'application",
 
             badges: {

@@ -19,6 +19,7 @@ import { EmailPredictorTool } from "./networking/EmailPredictorTool";
 import { NetworkingSearch } from "./networking/NetworkingSearch";
 import { Button } from "./ui/Button";
 import { Steps } from "./ui/Steps";
+import { trackPurchaseCompleted } from "../utils/analytics";
 
 function Wizard() {
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset } = useAppStore();
@@ -36,16 +37,17 @@ function Wizard() {
   const [addedCreditsAmount, setAddedCreditsAmount] = useState(0);
   const prevCreditsRef = useRef(credits);
 
-  // Track credit increases
+  // Track credit increases — détecte les achats Gumroad au retour sur la page
   useEffect(() => {
-    // Only trigger if we have a valid previous balance (not initial load 0->X)
-    // AND if the credits actually increased
     if (credits > prevCreditsRef.current && prevCreditsRef.current !== 0) {
       const diff = credits - prevCreditsRef.current;
-      // Only show for significant increases (purchases), e.g. >= 20
       if (diff >= 20) {
         setAddedCreditsAmount(diff);
         setShowSuccessModal(true);
+        // Identifie le plan acheté d'après la quantité de crédits reçus
+        const plan = diff >= 100 ? "career-coach" : "pack-booster";
+        const value = diff >= 100 ? 14.99 : 4.99;
+        trackPurchaseCompleted(plan, value);
       }
     }
     prevCreditsRef.current = credits;
@@ -359,7 +361,6 @@ function Wizard() {
           <meta name="description" content={seo.desc} />
           <meta property="og:title" content={seo.title} />
           <meta property="og:description" content={seo.desc} />
-          <link rel="canonical" href={`https://careermatch.fr/app/step-${step}`} />
         </Helmet>
       )}
       <div className="space-y-8">

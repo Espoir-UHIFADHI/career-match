@@ -9,7 +9,7 @@ import { analyzeJobPosting } from "../../services/ai/gemini";
 import type { JobAnalysis } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
-import { trackEvent } from "../../utils/analytics";
+import { trackAnalysisStarted } from "../../utils/analytics";
 
 export function JobInput() {
     const { t, language } = useTranslation();
@@ -41,7 +41,7 @@ export function JobInput() {
         setIsProcessing(true);
         setError(null);
 
-        trackEvent("start_analysis", { length: description.length });
+        trackAnalysisStarted();
 
         let apiToken: string | null = null;
         let supabaseToken: string | null = null;

@@ -13,6 +13,8 @@ import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import type { MatchResult } from "../../types";
 
 import { useTranslation } from "../../hooks/useTranslation";
+import { trackAnalysisCompleted, trackCTAClicked } from "../../utils/analytics";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth, useUser } from "@clerk/clerk-react";
 
@@ -48,6 +50,7 @@ export function MatchingDashboard() {
     const { t, language } = useTranslation();
     const { user } = useUser();
     const { getToken } = useAuth();
+    const navigate = useNavigate();
     const { cvData, jobData, analysisResults, setAnalysisResults } = useAppStore();
     const { credits, fetchCredits, useCredit: spendCredit } = useUserStore();
     const [cvLanguage] = useState<"French" | "English">("French");
@@ -278,6 +281,10 @@ export function MatchingDashboard() {
 
             setAnalysisResults(results as MatchResult);
             setShowPreview(true);
+
+            if (!isUpdate && 'score' in results) {
+                trackAnalysisCompleted((results as MatchResult).score ?? 0);
+            }
 
             // Only send email on initial run, not on language switch updates
             if (!isUpdate && results && 'score' in results && user?.primaryEmailAddress?.emailAddress) {
@@ -524,6 +531,52 @@ export function MatchingDashboard() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Upsell contextuel — visible uniquement si crédits épuisés */}
+            {credits === 0 && (
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white shadow-xl shadow-indigo-500/20">
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none" />
+                    <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="text-center sm:text-left">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold mb-3">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                Crédits épuisés
+                            </div>
+                            <h3 className="text-xl font-bold mb-1">
+                                Continuez sur votre lancée — votre profil est prêt
+                            </h3>
+                            <p className="text-indigo-100 text-sm max-w-md">
+                                Rechargez en quelques secondes et analysez vos prochaines offres sans interruption. Crédits sans expiration.
+                            </p>
+                            <p className="text-indigo-200 text-xs mt-2 font-medium">
+                                Satisfait ou remboursé sous 7 jours — sans question
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3 shrink-0 w-full sm:w-auto">
+                            <Button
+                                onClick={() => {
+                                    trackCTAClicked("upsell_post_analysis", "pack_pro_14.99");
+                                    useAppStore.getState().setStep(7);
+                                    navigate('/app');
+                                }}
+                                className="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-8 py-3 rounded-xl shadow-lg shadow-indigo-900/20 transition-all hover:scale-105 w-full sm:w-auto"
+                            >
+                                +100 crédits — 14,99 €
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    trackCTAClicked("upsell_post_analysis", "pack_booster_4.99");
+                                    useAppStore.getState().setStep(7);
+                                    navigate('/app');
+                                }}
+                                className="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-3 rounded-xl transition-all w-full sm:w-auto"
+                            >
+                                +20 crédits — 4,99 €
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <NetworkingSection />
 
