@@ -18,50 +18,50 @@ export const translations = {
         },
         about: {
             hero: {
-                title: "We believe talent shouldn't be filtered by a robot.",
-                subtitle: "The recruitment market is broken. 75% of qualified CVs are rejected by ATS algorithms before they even reach a human. We built the technology to fight back."
+                title: "Your skills deserve to be seen.",
+                subtitle: "Most CVs are rejected before a human reads them — not because of the candidate's skills, but because of formatting and keywords. Career Match fixes that."
             },
             stats: {
-                rejected: "CVs Rejected by AI",
-                interview: "Avg. Interview Rate",
-                time: "Time Saved/App"
+                rejected: "CVs filtered before human review",
+                interview: "Faster interview rate",
+                time: "Time saved per application"
             },
             story: {
-                title: "Our Mission: Transparency",
-                p1: "For years, recruitment software (ATS) has been a 'black box'. Candidates send their CVs into a void, hoping for a response that never comes. We discovered that it's often not the candidate's skills that are the problem, but their formatting or keywords.",
-                p2: "Career Match was born from a simple idea: give candidates the same weapon recruiters use—Artificial Intelligence. We reverse-engineered the logic of ATS to create a tool that speaks their language, while preserving your unique human story."
+                title: "Why we built this",
+                p1: "Recruitment software (ATS) has become a black box. Candidates send CVs into a void and never hear back — not because they're unqualified, but because the formatting or keywords don't match what the algorithm expects.",
+                p2: "Career Match was built to fix that. We analyze your CV against a real job posting, identify exactly what's missing, and generate an optimized version — so your actual skills get seen."
             },
             values: {
-                title: "Our Core Values",
-                transparency: "Radical Transparency",
-                transparencyDesc: "We tell you exactly why your CV isn't working. No sugar-coating.",
-                privacy: "Privacy First",
-                privacyDesc: "Your career data belongs to you. We don't sell your CVs to third parties.",
-                empowerment: "Candidate Empowerment",
-                empowermentDesc: "We build tools for YOU, not for HR departments."
+                title: "What we stand for",
+                transparency: "No guesswork",
+                transparencyDesc: "We show you exactly what's wrong and why — not vague scores, specific issues.",
+                privacy: "Your data stays yours",
+                privacyDesc: "We don't store your CVs or sell your data. Everything runs in your session.",
+                empowerment: "Built for candidates",
+                empowermentDesc: "We build tools for job seekers, not for HR software vendors."
             },
             cta: {
-                title: "Don't let an algorithm decide your future.",
-                subtitle: "Join 15,000+ candidates who reclaimed their power. Optimized for 50+ ATS systems.",
+                title: "See how your CV scores right now.",
+                subtitle: "Free analysis. No credit card. Results in under a minute.",
                 button: "Start Free Analysis",
                 guarantee: "No credit card required • Instant Results"
             },
             tech: {
-                title: "Inside the Technology",
-                subtitle: "We didn't just wrap ChatGPT. We built a proprietary analysis engine.",
-                p1: "Our engine runs your CV through the same parsing libraries used by Taleo, Workday, and Greenhouse.",
+                title: "How it works under the hood",
+                subtitle: "A real analysis engine, not a keyword highlighter.",
+                p1: "We parse your CV the same way ATS software does — extracting sections, matching vocabulary, and checking structural compatibility against the job posting.",
                 cards: {
-                    parsing: { title: "ATS Parsing", desc: "Verifies if robots can read your contact info and work history." },
-                    keywords: { title: "Semantic Matching", desc: "Compares your vocabulary against the job description's vector embeddings." },
-                    formatting: { title: "Format Compliance", desc: "Checks for layout errors that cause auto-rejection." }
+                    parsing: { title: "ATS Parsing", desc: "Checks whether robots can correctly read your contact info, job titles and dates." },
+                    keywords: { title: "Keyword Matching", desc: "Compares your vocabulary against the exact terms used in the job description." },
+                    formatting: { title: "Format Check", desc: "Detects layout issues (tables, columns, special characters) that cause ATS to misread your CV." }
                 }
             },
             faq: {
-                title: "Common Questions",
-                q1: "Is using AI for my CV cheating?",
-                a1: "Recruiters use AI to filter you out. Using AI to optimize your application is fairness, not cheating.",
-                q2: "Will anyone know I used Career Match?",
-                a2: "No. Our output is 100% human-readable standard text. No watermarks, no 'AI written' style."
+                title: "Common questions",
+                q1: "Is using AI to optimize my CV ethical?",
+                a1: "Recruiters already use AI to filter candidates. Using a tool to make sure your CV is readable by those systems is not an unfair advantage — it's a necessary one.",
+                q2: "Will the optimized CV look obviously AI-generated?",
+                a2: "No. The output is plain text reformatted around your actual experience. There are no watermarks, no robotic phrasing, no AI signatures."
             }
         },
         blog: {
@@ -92,7 +92,7 @@ export const translations = {
             }
         },
         footer: {
-            mission: "Empowering your career with the most advanced AI technology. We help you break through the noise and connect with the right people.",
+            mission: "Career Match helps job seekers optimize their CV for ATS systems and connect with the right recruiters.",
             product: "Product",
             company: "Company",
             legal: "Legal",
@@ -125,19 +125,20 @@ export const translations = {
             pricingDesc: "Invest in your career with our flexible plans."
         },
         hero: {
-            newVersion: "New AI 2.0 Version",
-            titleLine1: "Your Career",
-            titleLine2: "Deserves Excellence",
-            subtitle: "The first AI platform that turns your anonymous CV into concrete opportunities. Optimize, target, and connect with recruiters in one click.",
+            newVersion: "AI-Powered Analysis",
+            titleLine1: "Your CV,",
+            titleLine2: "Built to Get Interviews",
+            subtitle: "Analyze your CV against any job posting. Get a compatibility score, identify missing keywords, and download an optimized version — in under a minute.",
             ctaStart: "Analyze My CV for Free →",
             ctaDashboard: "Go to App",
 
             badges: {
                 privacy: "Data Privacy Guaranteed",
                 trust: "Trusted Technology",
-                ai: "Powered by AI"
+                ai: "Powered by AI",
+                candidate: "Built for Candidates"
             },
-            joinedTeams: "Do you want to join these top companies?",
+            joinedTeams: "Companies our users are targeting",
             freeCreditsOffer: "(7 credits offered on signup)"
         },
         features: {
@@ -159,11 +160,11 @@ export const translations = {
             },
             emailFinder: {
                 title: "Email Finder",
-                description: "Professional email prediction algorithm verified at 98% to directly contact decision makers."
+                description: "Find the professional email of any recruiter or hiring manager at your target company."
             },
             speed: {
-                title: "Lightning Speed",
-                description: "Generate, optimize, and send. What used to take hours now takes minutes."
+                title: "Fast Results",
+                description: "Upload your CV, paste a job posting, get your optimized CV. The full process takes under 5 minutes."
             }
         },
         howItWorks: {
@@ -464,13 +465,13 @@ export const translations = {
                 },
                 pro: {
                     name: "Career Coach",
-                    description: "The complete kit to sign a contract this month.",
+                    description: "For an intensive, active job search.",
                     button: "Get 100 Credits",
                     features: {
-                        feat1: "Massive Networking Strategy",
-                        feat2: "Reduced Cost per Application",
-                        feat3: "VIP Priority Support",
-                        feat4: "Guaranteed Access to Future Features"
+                        feat1: "Full Networking Access",
+                        feat2: "Lower cost per application",
+                        feat3: "Priority Support",
+                        feat4: "Early access to new features"
                     }
                 }
             }
@@ -665,60 +666,60 @@ export const translations = {
         },
         about: {
             hero: {
-                title: "Ne soyez plus jamais invisible.",
-                subtitle: "L'automatisation du recrutement a rompu le contrat de confiance. Notre technologie de sens sémantique rétablit l'équité en traduisant votre parcours pour les algorithmes, sans jamais dénaturer votre histoire."
+                title: "Vos compétences méritent d'être vues.",
+                subtitle: "La plupart des CVs sont rejetés avant qu'un humain les lise — pas à cause du profil du candidat, mais à cause du formatage et des mots-clés. Career Match règle ça."
             },
             stats: {
-                rejected: "CV Sauvés de l'Oubli",
-                interview: "Fois Plus d'Entretiens",
-                time: "Temps Gagné"
+                rejected: "des CVs filtrés avant lecture humaine",
+                interview: "Plus d'entretiens obtenus",
+                time: "Temps gagné par candidature"
             },
             story: {
-                title: "Votre Passeport Technologique",
-                p1: "La compétence ne suffit plus si elle n'est pas détectée. Le marché du travail est désormais un environnement automatisé où les systèmes de filtrage décident qui passe l'étape du premier tri.",
-                p2: "Career Match est votre passeport technologique. Nous ne sommes pas un simple éditeur, mais une couche d'intelligence qui aligne mathématiquement votre profil avec les attentes des systèmes ATS, garantissant que votre talent soit enfin vu à sa juste valeur."
+                title: "Pourquoi on a construit ça",
+                p1: "Les logiciels de recrutement (ATS) sont devenus une boîte noire. Les candidats envoient des CVs dans le vide et n'ont jamais de réponse — non pas parce qu'ils ne sont pas qualifiés, mais parce que le formatage ou les mots-clés ne correspondent pas à ce que l'algorithme attend.",
+                p2: "Career Match a été créé pour corriger ça. On analyse votre CV face à une vraie offre d'emploi, on identifie exactement ce qui manque, et on génère une version optimisée — pour que vos vraies compétences soient enfin lues."
             },
             howItWorks: {
-                title: "Une optimisation en trois temps",
-                step1Title: "Importation Universelle",
-                step1Desc: "Chargez votre CV (PDF) ou URL LinkedIn. Notre système sécurisé ingère instantanément vos données.",
-                step2Title: "Analyse Propriétaire",
-                step2Desc: "Notre moteur scanne votre profil avec la rigueur d'un ATS pour identifier les points de friction.",
-                step3Title: "Optimisation de Précision",
-                step3Desc: "L'algorithme restructure l'information et calibre le vocabulaire pour maximiser votre score."
+                title: "Comment ça marche concrètement",
+                step1Title: "Importez votre CV",
+                step1Desc: "Chargez votre CV en PDF. L'IA extrait automatiquement votre parcours.",
+                step2Title: "Ajoutez l'offre d'emploi",
+                step2Desc: "Collez le texte de l'offre ciblée. L'outil compare votre profil avec ce que le recruteur cherche.",
+                step3Title: "Téléchargez votre CV optimisé",
+                step3Desc: "Recevez un CV reformaté avec les bons mots-clés, prêt à être envoyé."
             },
             socialProof: {
-                title: "Nos utilisateurs ont été recrutés par l'élite."
+                title: "Entreprises ciblées par nos utilisateurs"
             },
             values: {
-                title: "Nos Piliers",
-                transparency: "Vérité des Données",
-                transparencyDesc: "Un diagnostic brut et honnête. Nous vous révélons ce que les algorithmes voient vraiment.",
-                privacy: "Souveraineté Numérique",
-                privacyDesc: "Vos données ne servent pas à entraîner d'autres modèles. Elles restent votre propriété exclusive.",
-                empowerment: "Avantage Candidat",
-                empowermentDesc: "Nous construisons une technologie offensive pour maximiser vos chances de réussite."
+                title: "Ce qu'on défend",
+                transparency: "Pas de vague",
+                transparencyDesc: "On vous dit exactement ce qui ne va pas et pourquoi — pas des scores abstraits, des problèmes précis.",
+                privacy: "Vos données restent les vôtres",
+                privacyDesc: "On ne stocke pas vos CVs et on ne revend pas vos données. Tout s'exécute dans votre session.",
+                empowerment: "Fait pour les candidats",
+                empowermentDesc: "On construit des outils pour les chercheurs d'emploi, pas pour les éditeurs de logiciels RH."
             },
             tech: {
-                title: "L'Avantage Technologique",
-                subtitle: "Au-delà des mots-clés, une compréhension structurelle.",
-                p1: "Notre algorithme ne devine pas, il calcule. Il assure une compatibilité technique totale avec les standards du marché.",
+                title: "Ce qui se passe sous le capot",
+                subtitle: "Un vrai moteur d'analyse, pas un surligneur de mots-clés.",
+                p1: "On parse votre CV de la même façon que les logiciels ATS — extraction des sections, correspondance du vocabulaire, vérification de la compatibilité structurelle avec l'offre d'emploi.",
                 cards: {
-                    parsing: { title: "Lecture Robotique Certifiée", desc: "Garantit que chaque ligne de votre expérience est parfaitement indexée." },
-                    keywords: { title: "Alignement Sémantique", desc: "Synchronise votre vocabulaire avec les attentes précises du poste visé." },
-                    formatting: { title: "Structure Anti-Rejet", desc: "Élimine les erreurs de formatage invisibles qui provoquent le rejet automatique." }
+                    parsing: { title: "Parsing ATS", desc: "Vérifie si les robots lisent correctement vos coordonnées, vos titres de poste et vos dates." },
+                    keywords: { title: "Correspondance mots-clés", desc: "Compare votre vocabulaire avec les termes exacts utilisés dans l'offre d'emploi." },
+                    formatting: { title: "Vérification du format", desc: "Détecte les problèmes de mise en page (tableaux, colonnes, caractères spéciaux) qui font rater la lecture ATS." }
                 }
             },
             faq: {
-                title: "Questions Légitimes",
+                title: "Questions fréquentes",
                 q1: "Est-ce éthique d'utiliser cet outil ?",
-                a1: "Les recruteurs utilisent des algorithmes pour filtrer massivement. Utiliser notre technologie pour assurer votre visibilité n'est pas de la triche, c'est rétablir l'égalité des armes.",
-                q2: "Est-ce détectable par les recruteurs ?",
-                a2: "Absolument pas. Le résultat final est un document 100% naturel, humain et authentique. Aucune signature robotique, aucun filigrane."
+                a1: "Les recruteurs utilisent déjà l'IA pour filtrer les candidats. S'assurer que votre CV est lisible par ces systèmes n'est pas un avantage déloyal — c'est une nécessité.",
+                q2: "Le CV optimisé va-t-il paraître généré par IA ?",
+                a2: "Non. Le résultat est du texte brut reformaté autour de votre vraie expérience. Pas de filigrane, pas de tournures robotiques, pas de signature IA."
             },
             cta: {
-                title: "Ne laissez pas un algorithme décider de votre avenir.",
-                subtitle: "Rejoignez ceux qui ont choisi de maîtriser leur destin professionnel. Compatible avec plus de 50 systèmes ATS dont Workday, Taleo et Greenhouse.",
+                title: "Voyez comment votre CV se classe maintenant.",
+                subtitle: "Analyse gratuite. Sans carte bancaire. Résultats en moins d'une minute.",
                 button: "Voir mon score ATS",
                 guarantee: "Analyse gratuite • Résultat immédiat"
             }
@@ -751,7 +752,7 @@ export const translations = {
             }
         },
         footer: {
-            mission: "Propulser votre carrière avec la technologie IA la plus avancée. Nous vous aidons à sortir du lot et à rencontrer les bonnes personnes.",
+            mission: "Career Match aide les candidats à optimiser leur CV pour les systèmes ATS et à contacter les bons recruteurs.",
             product: "Produit",
             company: "Entreprise",
             legal: "Légal",
@@ -784,19 +785,20 @@ export const translations = {
             pricingDesc: "Investissez dans votre carrière avec nos offres flexibles."
         },
         hero: {
-            newVersion: "Nouvelle version AI 2.0",
-            titleLine1: "Votre Carrière",
-            titleLine2: "Mérite l'Excellence",
-            subtitle: "La première plateforme qui propulse votre CV anonyme vers des opportunités concrètes. Optimisez, ciblez et connectez-vous aux recruteurs en un clic.",
+            newVersion: "Analyse IA",
+            titleLine1: "Votre CV,",
+            titleLine2: "Conçu pour décrocher des entretiens",
+            subtitle: "Analysez votre CV face à une offre d'emploi. Obtenez un score de compatibilité, identifiez les mots-clés manquants, et téléchargez une version optimisée — en moins d'une minute.",
             ctaStart: "Analyser mon CV Gratuitement →",
             ctaDashboard: "Accéder à l'application",
 
             badges: {
                 privacy: "Confidentialité Garantie",
                 trust: "Technologie de Confiance",
-                ai: "Propulsé par l'IA"
+                ai: "Propulsé par l'IA",
+                candidate: "Fait pour les candidats"
             },
-            joinedTeams: "Souhaitez-vous rejoindre ces entreprises ?",
+            joinedTeams: "Entreprises ciblées par nos utilisateurs",
             freeCreditsOffer: "(7 crédits offerts à l'inscription)"
         },
         features: {
@@ -818,11 +820,11 @@ export const translations = {
             },
             emailFinder: {
                 title: "Email Finder",
-                description: "Algorithme de prédiction d'emails professionnels vérifié à 98% pour contacter directement les décideurs."
+                description: "Trouvez l'email professionnel de n'importe quel recruteur ou responsable dans votre entreprise cible."
             },
             speed: {
-                title: "Vitesse Éclair",
-                description: "Générez, optimisez et envoyez. Ce qui prenait des heures ne prend plus que quelques minutes."
+                title: "Résultats rapides",
+                description: "Importez votre CV, collez une offre, récupérez votre CV optimisé. Le tout en moins de 5 minutes."
             }
         },
         howItWorks: {
@@ -1119,13 +1121,13 @@ export const translations = {
                 },
                 pro: {
                     name: "Career Coach",
-                    description: "Le kit complet pour signer un CDI ce mois-ci.",
+                    description: "Pour une recherche active et intensive.",
                     button: "Obtenir 100 Crédits",
                     features: {
-                        feat1: "Stratégie de Networking Massive",
+                        feat1: "Accès complet au Networking",
                         feat2: "Coût par candidature réduit",
-                        feat3: "Support Prioritaire VIP",
-                        feat4: "Accès garanti futures features"
+                        feat3: "Support Prioritaire",
+                        feat4: "Accès anticipé aux nouvelles fonctionnalités"
                     }
                 }
             }

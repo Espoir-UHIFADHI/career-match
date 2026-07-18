@@ -108,7 +108,7 @@ export function LandingPage() {
                                 </div>
                                 <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:shadow-md transition-shadow">
                                     <Shield className="w-4 h-4 text-blue-500" />
-                                    <span className="text-sm font-medium text-slate-700">100% Côté Candidat</span>
+                                    <span className="text-sm font-medium text-slate-700">{t('hero.badges.candidate') || 'Pour les candidats'}</span>
                                 </div>
 
                             </div>

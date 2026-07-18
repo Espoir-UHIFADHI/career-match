@@ -9,34 +9,31 @@ import { trackCTAClicked, trackEvent } from "../../utils/analytics";
 import { useAppStore } from "../../store/useAppStore";
 import {
     ArrowRight, CheckCircle, ShieldCheck, Zap, FileText,
-    Star, AlertTriangle, TrendingUp, Clock
+    AlertTriangle, Clock
 } from "lucide-react";
 
-const TESTIMONIALS = [
+const WHY_IT_WORKS = [
     {
-        name: "Marie L.",
-        role: "Chef de Projet — Paris",
-        text: "Mon CV était refusé par les ATS depuis 3 mois. Après optimisation, j'ai eu 4 entretiens en 2 semaines.",
-        score: 92,
+        stat: "75%",
+        label: "des CVs filtrés avant lecture humaine",
+        desc: "Source : Jobscan, 2023. La plupart des candidatures n'atteignent jamais un recruteur.",
     },
     {
-        name: "Karim B.",
-        role: "Développeur Senior — Lyon",
-        text: "J'avais un bon profil mais aucune réponse. Career Match m'a montré exactement quels mots-clés manquaient.",
-        score: 87,
+        stat: "< 5 min",
+        label: "pour obtenir votre CV optimisé",
+        desc: "Uploadez votre CV, collez l'offre, téléchargez le résultat.",
     },
     {
-        name: "Sophie M.",
-        role: "Responsable Marketing — Bordeaux",
-        text: "Interface super claire. En 5 minutes j'avais mon rapport complet et un CV prêt à envoyer.",
-        score: 95,
+        stat: "4.99€",
+        label: "pour commencer après les 7 crédits gratuits",
+        desc: "Pas d'abonnement. Vous payez uniquement ce que vous utilisez.",
     },
 ];
 
 const BENEFITS = [
     { icon: Zap, title: "Résultats en 30 secondes", desc: "L'IA analyse votre CV et l'offre d'emploi instantanément." },
     { icon: FileText, title: "CV optimisé téléchargeable", desc: "Recevez un CV reformaté et enrichi en mots-clés ciblés." },
-    { icon: TrendingUp, title: "Score de compatibilité précis", desc: "Comprenez exactement pourquoi vous passez ou non les filtres." },
+    { icon: CheckCircle, title: "Score de compatibilité précis", desc: "Comprenez exactement pourquoi vous passez ou non les filtres." },
     { icon: ShieldCheck, title: "Données privées & sécurisées", desc: "Aucun CV stocké. Vous gardez le contrôle total." },
 ];
 
@@ -204,31 +201,18 @@ export function LandingPageAds() {
                 </div>
             </section>
 
-            {/* ── Témoignages ── */}
+            {/* ── Pourquoi ça marche ── */}
             <section className="py-20 px-6 bg-white">
                 <div className="max-w-5xl mx-auto">
                     <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
-                        Ils ont décroché leurs entretiens
+                        Ce que vous devez savoir
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {TESTIMONIALS.map((t, i) => (
-                            <div key={i} className="p-6 rounded-2xl border border-slate-100 bg-slate-50 shadow-sm flex flex-col gap-4">
-                                <div className="flex items-center gap-1">
-                                    {Array.from({ length: 5 }).map((_, j) => (
-                                        <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                                    ))}
-                                </div>
-                                <p className="text-slate-700 text-sm leading-relaxed flex-1">"{t.text}"</p>
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-900">{t.name}</p>
-                                        <p className="text-xs text-slate-500">{t.role}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-2xl font-extrabold text-emerald-600">{t.score}%</p>
-                                        <p className="text-xs text-slate-400">Score ATS</p>
-                                    </div>
-                                </div>
+                        {WHY_IT_WORKS.map((item, i) => (
+                            <div key={i} className="p-6 rounded-2xl border border-slate-100 bg-slate-50 shadow-sm flex flex-col gap-3">
+                                <div className="text-4xl font-extrabold text-indigo-600">{item.stat}</div>
+                                <p className="text-base font-bold text-slate-900">{item.label}</p>
+                                <p className="text-sm text-slate-500 leading-relaxed flex-1">{item.desc}</p>
                             </div>
                         ))}
                     </div>

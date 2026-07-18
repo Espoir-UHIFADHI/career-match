@@ -25,7 +25,7 @@ export function About() {
                 <div className="container relative z-10 mx-auto px-6 text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/50 backdrop-blur-md border border-indigo-100 text-indigo-700 text-sm font-semibold mb-8 shadow-sm">
                         <Sparkles className="w-4 h-4 fill-indigo-200" />
-                        <span>Technologie Propriétaire</span>
+                        <span>{t('about.hero.badge') || 'Analyse ATS'}</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-8 tracking-tight leading-[1.1]">
@@ -48,19 +48,20 @@ export function About() {
                             </div>
                             <div className="text-3xl font-bold text-slate-900 mb-1">75%</div>
                             <div className="text-sm text-slate-500 font-medium">{t('about.stats.rejected')}</div>
+                            <div className="text-xs text-slate-400 mt-1">Source : Jobscan, 2023</div>
                         </div>
                         <div className="flex flex-col items-center text-center p-6 border-t md:border-t-0 md:border-l border-slate-100">
                             <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 mb-4">
                                 <Users className="w-6 h-6" />
                             </div>
-                            <div className="text-3xl font-bold text-slate-900 mb-1">3x</div>
+                            <div className="text-3xl font-bold text-slate-900 mb-1">5 min</div>
                             <div className="text-sm text-slate-500 font-medium">{t('about.stats.interview')}</div>
                         </div>
                         <div className="flex flex-col items-center text-center p-6 border-t md:border-t-0 md:border-l border-slate-100">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-4">
                                 <Target className="w-6 h-6" />
                             </div>
-                            <div className="text-3xl font-bold text-slate-900 mb-1">90%</div>
+                            <div className="text-3xl font-bold text-slate-900 mb-1">4.99€</div>
                             <div className="text-sm text-slate-500 font-medium">{t('about.stats.time')}</div>
                         </div>
                     </div>
@@ -80,13 +81,31 @@ export function About() {
                                 {t('about.story.p2')}
                             </p>
                         </div>
-                        <div className="flex-1 relative group">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-3xl rotate-3 opacity-10 group-hover:rotate-6 transition-transform duration-500" />
-                            <img
-                                src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2940"
-                                alt="Team Working"
-                                className="relative rounded-3xl shadow-2xl border border-white/20 transform group-hover:scale-[1.02] transition-transform duration-500"
-                            />
+                        <div className="flex-1 relative">
+                            <div className="bg-slate-900 rounded-3xl p-8 shadow-2xl border border-slate-800">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
+                                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">CV</div>
+                                        <div>
+                                            <div className="text-white text-sm font-semibold">Thomas Dupont</div>
+                                            <div className="text-slate-400 text-xs">Développeur Fullstack — 4 ans d'exp.</div>
+                                        </div>
+                                        <div className="ml-auto text-emerald-400 text-sm font-bold">87%</div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-xs text-slate-400 uppercase tracking-widest">Mots-clés ajoutés</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['React', 'TypeScript', 'CI/CD', 'Agile', 'API REST'].map(kw => (
+                                                <span key={kw} className="px-2 py-1 bg-indigo-900/50 border border-indigo-700 text-indigo-300 text-xs rounded-md">{kw}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                                        <span className="text-slate-400 text-xs">Score avant : 52%</span>
+                                        <span className="text-emerald-400 text-xs font-semibold">+35 points</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -199,18 +218,19 @@ export function About() {
                 </div>
             </section>
 
-            {/* Social Proof (NEW SECTION) */}
+            {/* Entreprises ciblées */}
             <section className="py-16 bg-white border-b border-slate-100">
                 <div className="container mx-auto px-6 text-center">
                     <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">{t('about.socialProof.title')}</p>
-                    <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                        {/* Placeholders for logos, using text for now or generic SVGs */}
-                        <div className="text-xl font-bold text-slate-400">Google</div>
-                        <div className="text-xl font-bold text-slate-400">Amazon</div>
-                        <div className="text-xl font-bold text-slate-400">Microsoft</div>
-                        <div className="text-xl font-bold text-slate-400">Salesforce</div>
-                        <div className="text-xl font-bold text-slate-400">Tesla</div>
+                    <div className="flex flex-wrap justify-center gap-12 opacity-40">
+                        <div className="text-xl font-bold text-slate-600">Google</div>
+                        <div className="text-xl font-bold text-slate-600">Amazon</div>
+                        <div className="text-xl font-bold text-slate-600">Microsoft</div>
+                        <div className="text-xl font-bold text-slate-600">Capgemini</div>
+                        <div className="text-xl font-bold text-slate-600">L'Oréal</div>
+                        <div className="text-xl font-bold text-slate-600">BNP Paribas</div>
                     </div>
+                    <p className="text-xs text-slate-400 mt-6">Exemples d'entreprises ciblées par les utilisateurs de Career Match</p>
                 </div>
             </section>
 

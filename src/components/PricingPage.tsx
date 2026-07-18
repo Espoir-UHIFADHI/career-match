@@ -198,8 +198,8 @@ export function PricingPage() {
                 <div className="flex items-center gap-2.5 px-5 py-3 bg-emerald-50 border border-emerald-100 rounded-2xl">
                     <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div>
-                        <p className="text-sm font-bold text-emerald-800">Satisfait ou remboursé</p>
-                        <p className="text-xs text-emerald-600">Remboursement sous 7 jours, sans question</p>
+                        <p className="text-sm font-bold text-emerald-800">Paiement sécurisé</p>
+                        <p className="text-xs text-emerald-600">Traité par Gumroad. Facture disponible.</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2.5 px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-2xl">
