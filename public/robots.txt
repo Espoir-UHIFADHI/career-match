@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+# Pages privées / applicatives — pas d'intérêt SEO
+Disallow: /app
+Disallow: /lp/
+
+# Empêcher l'indexation des partages publics individuels
+Disallow: /share/
+
 Sitemap: https://careermatch.fr/sitemap.xml

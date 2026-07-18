@@ -22,7 +22,7 @@ import { CVHistory } from "./history/CVHistory";
 import { cvHistoryService } from "../services/cvHistoryService";
 import { Button } from "./ui/Button";
 import { Steps } from "./ui/Steps";
-import { trackPurchaseCompleted } from "../utils/analytics";
+import { trackPurchaseCompleted, trackSignUp } from "../utils/analytics";
 
 function Wizard() {
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset, prependCVHistoryCache } = useAppStore();
@@ -254,7 +254,9 @@ function Wizard() {
       const metadata = user.unsafeMetadata as { welcome_sent?: boolean };
 
       if (!metadata.welcome_sent) {
-        console.log("New user detected, sending welcome email...");
+        // Nouvel utilisateur confirmé — on track l'inscription avant tout
+        trackSignUp(user.externalAccounts?.[0]?.provider ?? "email");
+
         try {
           const token = await getToken({ template: 'supabase' });
           if (!token) return;

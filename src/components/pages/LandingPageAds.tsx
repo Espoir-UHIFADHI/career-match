@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Button } from "../ui/Button";
 import { QuickScan } from "../QuickScan";
-import { trackCTAClicked } from "../../utils/analytics";
+import { trackCTAClicked, trackEvent } from "../../utils/analytics";
 import { useAppStore } from "../../store/useAppStore";
 import {
     ArrowRight, CheckCircle, ShieldCheck, Zap, FileText,
@@ -43,7 +43,29 @@ const BENEFITS = [
 export function LandingPageAds() {
     const { isLoaded } = useUser();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
+
+    // Capture les paramètres UTM dès l'arrivée et les pousse dans dataLayer
+    // GTM les associe automatiquement à toutes les conversions de la session
+    useEffect(() => {
+        const utm = {
+            utm_source: searchParams.get("utm_source"),
+            utm_medium: searchParams.get("utm_medium"),
+            utm_campaign: searchParams.get("utm_campaign"),
+            utm_content: searchParams.get("utm_content"),
+            utm_term: searchParams.get("utm_term"),
+            gclid: searchParams.get("gclid"), // Google Click ID — critique pour le tracking Google Ads
+        };
+        const hasUtm = Object.values(utm).some(Boolean);
+        if (hasUtm) {
+            trackEvent("ads_landing_view", Object.fromEntries(
+                Object.entries(utm).filter(([, v]) => v !== null) as [string, string][]
+            ));
+            // Persister en sessionStorage pour les conversions ultérieures
+            sessionStorage.setItem("career_match_utm", JSON.stringify(utm));
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleCTAClick = () => {
         setIsLoading(true);
