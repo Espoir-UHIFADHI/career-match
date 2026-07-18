@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth, useUser } from "@clerk/clerk-react";
 
-import { useReactToPrint } from "react-to-print";
 
 const SHARE_EXPIRY_DAYS = 30;
 
@@ -229,12 +228,6 @@ export function MatchingDashboard() {
             setIsSendingInvite(false);
         }
     };
-
-    const handleDownload = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: `CV_${cvData?.contact?.lastName || 'Optimized'}_${cvData?.contact?.firstName || 'Candidate'}`,
-        onAfterPrint: () => console.log("Print successful"),
-    });
 
     const prevCvLanguageRef = useRef(cvLanguage);
 
@@ -696,7 +689,7 @@ export function MatchingDashboard() {
 
                                 <Button
                                     size="lg"
-                                    onClick={handleDownload}
+                                    onClick={() => useAppStore.getState().setStep(4)}
                                     className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 border-0"
                                 >
                                     <Download className="h-4 w-4" />
