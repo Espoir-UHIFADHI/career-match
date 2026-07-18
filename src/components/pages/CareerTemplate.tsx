@@ -56,7 +56,7 @@ export function CareerTemplate() {
                                 </Button>
                             </Link>
                             <p className="text-sm text-slate-400 mt-4 sm:mt-0 font-medium">
-                                7 crédits offerts à l'inscription
+                                3 crédits offerts à l'inscription
                             </p>
                         </div>
                     </div>

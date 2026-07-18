@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Toaster, toast } from "sonner";
+import { CookieBanner } from "./CookieBanner";
 import { FileText, User, Mail, Menu, X, Coins, History } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useUserStore } from "../store/useUserStore";
@@ -374,6 +375,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 )}
             </SignedIn>
             <Toaster richColors position="top-center" />
+            <CookieBanner />
         </div>
     );
 }

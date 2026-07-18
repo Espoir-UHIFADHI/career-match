@@ -23,7 +23,8 @@ import { CVHistory } from "./history/CVHistory";
 import { cvHistoryService } from "../services/cvHistoryService";
 import { Button } from "./ui/Button";
 import { Steps } from "./ui/Steps";
-import { trackPurchaseCompleted, trackSignUp } from "../utils/analytics";
+import { trackPurchaseCompleted, trackSignUp, trackCTAClicked } from "../utils/analytics";
+import { isAdminEmail } from "../lib/adminUsers";
 
 function Wizard() {
   const { step, setStep, cvData, jobData, analysisResults, setCvData, language, userId, setUserId, reset, prependCVHistoryCache } = useAppStore();
@@ -44,6 +45,11 @@ function Wizard() {
   // Onboarding modal - affiché une seule fois au premier login
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Gating du téléchargement PDF
+  const [showDownloadUpsell, setShowDownloadUpsell] = useState(false);
+  const isAdmin = isAdminEmail(user?.primaryEmailAddress?.emailAddress);
+  const canDownload = isAdmin || credits > 0;
+
   // Track credit increases - détecte les achats Gumroad au retour sur la page
   useEffect(() => {
     if (credits > prevCreditsRef.current && prevCreditsRef.current !== 0) {
@@ -63,6 +69,13 @@ function Wizard() {
   // Handle Resize for CV Preview
   const handleDownload = async () => {
     if (!analysisResults?.optimizedCV) return;
+
+    // Gating : si l'utilisateur n'a plus de crédits, afficher l'upsell avant de télécharger
+    if (!canDownload) {
+      trackCTAClicked("download_gate", "upsell_shown");
+      setShowDownloadUpsell(true);
+      return;
+    }
 
     try {
       const blob = await pdf(
@@ -451,6 +464,59 @@ function Wizard() {
         onClose={() => setShowSuccessModal(false)}
         creditsAdded={addedCreditsAmount}
       />
+      {/* Modal upsell déclenché avant le téléchargement PDF quand crédits = 0 */}
+      {showDownloadUpsell && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-slide-up">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Download className="w-8 h-8 text-indigo-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                Votre CV optimisé est prêt
+              </h2>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Vous avez utilisé vos 3 crédits gratuits. Pour télécharger votre CV optimisé en PDF, rechargez votre compte.
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => {
+                  setShowDownloadUpsell(false);
+                  trackCTAClicked("download_gate", "pack_pro");
+                  setStep(7);
+                }}
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all hover:scale-[1.02] shadow-lg shadow-indigo-500/20"
+              >
+                +100 crédits — 14,99 € <span className="text-indigo-200 font-normal text-sm ml-1">(recommandé)</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowDownloadUpsell(false);
+                  trackCTAClicked("download_gate", "pack_booster");
+                  setStep(7);
+                }}
+                className="w-full py-3 border border-slate-200 text-slate-700 font-semibold rounded-2xl hover:bg-slate-50 transition-all text-sm"
+              >
+                +20 crédits — 4,99 €
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 text-center">
+              Paiement sécurisé via Gumroad · Crédits disponibles immédiatement
+            </p>
+
+            <button
+              onClick={() => setShowDownloadUpsell(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <OnboardingModal
         isOpen={showOnboarding}
         onComplete={async (role, industry) => {

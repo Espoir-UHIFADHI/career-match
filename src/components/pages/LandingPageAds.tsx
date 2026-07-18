@@ -83,7 +83,7 @@ export function LandingPageAds() {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                             </span>
-                            7 crédits offerts
+                            3 crédits offerts
                         </div>
                         <SignedOut>
                             <SignUpButton mode="modal">
@@ -183,7 +183,7 @@ export function LandingPageAds() {
 
                             {/* Micro-commitments - 2 colonnes sur mobile */}
                             <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-500">
-                                <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" /> 7 crédits gratuits</span>
+                                <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" /> 3 crédits gratuits</span>
                                 <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" /> Sans CB</span>
                                 <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" /> 30 secondes</span>
                                 <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" /> Données privées</span>
@@ -241,7 +241,7 @@ export function LandingPageAds() {
                         Arrêtez d'envoyer des CVs<br />dans le vide.
                     </h2>
                     <p className="text-indigo-100 text-lg mb-10">
-                        7 crédits gratuits. Aucune carte bancaire. Résultats en 30 secondes.
+                        3 crédits gratuits. Aucune carte bancaire. Résultats en 30 secondes.
                     </p>
 
                     <SignedOut>

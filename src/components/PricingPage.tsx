@@ -115,7 +115,7 @@ export function PricingPage() {
             id: "free",
             name: t('pricingPage.plans.free.name'),
             price: t('pricingPage.plans.free.price'),
-            credits: "7 Crédits",
+            credits: "3 Crédits",
             description: t('pricingPage.plans.free.description'),
             features: [
                 { name: t('pricingPage.plans.free.features.feat1'), included: true },
@@ -174,7 +174,7 @@ export function PricingPage() {
         <div className="max-w-7xl mx-auto space-y-12 animate-fade-in pb-20">
             <Helmet>
                 <title>Tarifs - Career Match</title>
-                <meta name="description" content="Découvrez nos offres pour optimiser votre CV. De 7 crédits gratuits à des plans booster pour maximiser vos chances." />
+                <meta name="description" content="Découvrez nos offres pour optimiser votre CV. De 3 crédits gratuits à des plans booster pour maximiser vos chances." />
                 <link rel="canonical" href="https://careermatch.fr/pricing" />
             </Helmet>
             {/* Header Section */}

@@ -39,6 +39,25 @@
   <!-- Gumroad overlay — paiement sans quitter la page -->
   <script src="https://gumroad.com/js/gumroad.js" async></script>
 
+  <!-- Consent Mode v2 — DOIT être avant GTM (obligatoire RGPD / Google EU User Consent Policy) -->
+  <!-- Par défaut tout est refusé. Le composant CookieBanner met à jour ces valeurs après consentement. -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    // Lire la préférence stockée pour éviter de bloquer les utilisateurs qui ont déjà consenti
+    var _cm = JSON.parse(localStorage.getItem('cm_consent') || 'null');
+    gtag('consent', 'default', {
+      ad_storage:              _cm ? _cm.ads      : 'denied',
+      analytics_storage:       _cm ? _cm.analytics: 'denied',
+      ad_user_data:            _cm ? _cm.ads      : 'denied',
+      ad_personalization:      _cm ? _cm.ads      : 'denied',
+      functionality_storage:   'granted',  // nécessaire pour l'auth Clerk
+      security_storage:        'granted',  // nécessaire pour la sécurité
+      wait_for_update: 500    // attendre 500ms avant d'envoyer des hits si consentement non encore lu
+    });
+  </script>
+
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

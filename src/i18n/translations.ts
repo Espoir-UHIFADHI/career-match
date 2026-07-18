@@ -139,7 +139,7 @@ export const translations = {
                 candidate: "Built for Candidates"
             },
             joinedTeams: "Companies our users are targeting",
-            freeCreditsOffer: "(7 credits offered on signup)"
+            freeCreditsOffer: "(3 credits offered on signup)"
         },
         features: {
             title: "Everything you need.",
@@ -799,7 +799,7 @@ export const translations = {
                 candidate: "Fait pour les candidats"
             },
             joinedTeams: "Entreprises ciblées par nos utilisateurs",
-            freeCreditsOffer: "(7 crédits offerts à l'inscription)"
+            freeCreditsOffer: "(3 crédits offerts à l'inscription)"
         },
         features: {
             title: "Tout ce qu'il vous faut.",
