@@ -44,30 +44,55 @@ const SKIP_DOMAINS = [
 
 export async function findCompanyDomain(companyName: string, token?: string): Promise<string | null> {
     try {
-        // 1. Already a domain
-        if (companyName.includes(".") && !companyName.includes(" ")) {
-            return companyName.toLowerCase();
+        const name = companyName.trim();
+
+        // 1. Déjà un domaine valide saisi directement (ex: "capgemini.com")
+        if (name.includes(".") && !name.includes(" ")) {
+            return name.toLowerCase();
         }
 
-        // 2. Hunter.io by company name (most reliable, no Google needed)
+        // 2. Cache Supabase — chercher si le domaine de cette entreprise est déjà connu
         try {
-            const hunterData = await callBackend('hunter-company-domain', { company: companyName }, token);
-            const domain = hunterData?.data?.domain;
-            if (domain) {
-                console.log(`[Hunter] Domain found for "${companyName}": ${domain}`);
-                return domain;
+            const client = token ? createClerkSupabaseClient(token) : supabase;
+            const { data } = await client
+                .from('domain_patterns')
+                .select('domain')
+                .ilike('domain', `%${name.toLowerCase().replace(/\s+/g, '')}%`)
+                .limit(1)
+                .maybeSingle();
+            if (data?.domain) {
+                console.log(`[Cache] Domain found for "${name}": ${data.domain}`);
+                return data.domain;
             }
         } catch (e) {
-            console.warn(`[Hunter] Company domain lookup failed for "${companyName}":`, e);
+            console.warn("[Cache] domain lookup failed:", e);
         }
 
-        // 3. Fallback: Google search via Serper
-        const queries = [
-            `"${companyName}" official website`,
-            `${companyName} official website`,
-            `${companyName} site officiel`,
+        // 3. Hunter.io — plusieurs variantes du nom pour maximiser les chances
+        const nameVariants = [
+            name,                                          // "Capgemini"
+            name.toLowerCase(),                            // "capgemini"
+            name.replace(/\s+/g, ''),                     // "CapGemini" → "CapGemini"
+            name.split(' ')[0],                            // "BNP Paribas" → "BNP"
         ];
+        for (const variant of nameVariants) {
+            try {
+                const hunterData = await callBackend('hunter-company-domain', { company: variant }, token);
+                const domain = hunterData?.data?.domain;
+                if (domain) {
+                    console.log(`[Hunter] Domain found for "${variant}": ${domain}`);
+                    return domain;
+                }
+            } catch (e) {
+                console.warn(`[Hunter] Domain lookup failed for variant "${variant}":`, e);
+            }
+        }
 
+        // 4. Fallback : recherche Google via Serper
+        const queries = [
+            `"${name}" site officiel`,
+            `${name} official website`,
+        ];
         for (const query of queries) {
             let results;
             try {
@@ -76,24 +101,19 @@ export async function findCompanyDomain(companyName: string, token?: string): Pr
                 console.warn(`Serper query failed for "${query}":`, e);
                 continue;
             }
-
             if (!results || results.length === 0) continue;
-
             for (const result of results) {
                 try {
                     const hostname = new URL(result.link).hostname.replace(/^www\./, "");
                     if (!SKIP_DOMAINS.some(d => hostname.includes(d))) {
-                        console.log(`[Serper] Domain found for "${companyName}": ${hostname}`);
+                        console.log(`[Serper] Domain found for "${name}": ${hostname}`);
                         return hostname;
                     }
-                } catch {
-                    continue;
-                }
+                } catch { continue; }
             }
-            console.warn(`[Serper] All results filtered for query "${query}"`);
         }
-        console.warn(`[Domain] Could not find domain for "${companyName}" via Hunter or Serper`);
 
+        console.warn(`[Domain] Could not find domain for "${name}"`);
         return null;
     } catch (error) {
         console.error("Error finding company domain:", error);

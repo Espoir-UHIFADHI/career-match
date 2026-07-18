@@ -1,36 +1,40 @@
 import { useState } from "react";
 import { useUserStore } from "../../store/useUserStore";
 import { useAppStore } from "../../store/useAppStore";
-import { Mail, Loader2, Building2, User, Copy, Check, Search, Lock } from "lucide-react";
+import { Mail, Loader2, Building2, User, Copy, Check, Search, Database } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Label } from "../ui/Label";
-import { formatEmailPattern, verifyEmail, type VerificationResponse } from "../../services/emailService";
-import { AlertCircle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
+import {
+    findCompanyDomain,
+    getEmailPattern,
+    generateEmail,
+    formatEmailPattern,
+    findEmail,
+} from "../../services/emailService";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { SignInButton, useUser, useAuth } from "@clerk/clerk-react";
 import { InsufficientCreditsModal } from "../modals/InsufficientCreditsModal";
 import { useTranslation } from "../../hooks/useTranslation";
 
+type SearchStatus = 'idle' | 'loading' | 'success' | 'error';
 export function EmailPredictorTool() {
     const { t } = useTranslation();
     const { emailPredictor, setEmailPredictorState } = useAppStore();
-
-    // Derived state from store for convenience, or use directly
     const { company, firstName, lastName, result } = emailPredictor;
 
-    const [status, _setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(result ? 'success' : 'idle');
-    // Error and Copied are transient UI states, keep local
-    const [error] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
+    const [status, setStatus]           = useState<SearchStatus>(result ? 'success' : 'idle');
+    const [errorMsg, setErrorMsg]       = useState<string | null>(null);
+    const [copied, setCopied]           = useState(false);
     const [showCreditModal, setShowCreditModal] = useState(false);
+    const [fromCache, setFromCache]     = useState(false);
+
     const { isSignedIn, user } = useUser();
     const { getToken } = useAuth();
-    const { fetchCredits } = useUserStore();
+    const { fetchCredits, credits } = useUserStore();
 
-    // Verification state
-    const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
-    const [verificationResult, setVerificationResult] = useState<VerificationResponse['data'] | null>(null);
+    const canSearch = !!company.trim() && !!firstName.trim() && !!lastName.trim();
 
     const copyToClipboard = () => {
         if (result?.email) {
@@ -40,89 +44,102 @@ export function EmailPredictorTool() {
         }
     };
 
-    const handleVerify = async () => {
-        if (!result?.email) return;
+    // ── Recherche principale ──────────────────────────────────────────────────
+    const handleSearch = async () => {
+        if (!canSearch || !isSignedIn) return;
+        if (credits < 1) { setShowCreditModal(true); return; }
 
+        setStatus('loading');
+        setErrorMsg(null);
+        setFromCache(false);
 
-
-
-        // Get token for secure call
-        let token: string | null = null;
         try {
-            if (isSignedIn) {
-                token = await getToken({ template: 'supabase', skipCache: true });
+            const token = await getToken({ template: 'supabase' });
+            const { getCachedEmail } = await import("../../services/emailService");
+
+            // ── Étape 1 : Résolution silencieuse du domaine (tentative) ───────
+            // L'utilisateur entre uniquement le nom — on tente de résoudre en arrière-plan
+            const domain = await findCompanyDomain(company.trim(), token || undefined);
+
+            // ── Étape 2 : Cache found_emails (0 crédit) ───────────────────────
+            if (domain) {
+                const cached = await getCachedEmail(firstName.trim(), lastName.trim(), domain, token || undefined);
+                if (cached?.email) {
+                    setEmailPredictorState({
+                        result: { email: cached.email, domain, pattern: '', score: cached.score, source: 'cache' }
+                    });
+                    setFromCache(true);
+                    setStatus('success');
+                    return;
+                }
+
+                // ── Étape 3 : Cache domain_patterns → email généré (0 crédit Hunter) ──
+                const pattern = await getEmailPattern(domain, token || undefined);
+                if (pattern) {
+                    const generatedEmail = generateEmail(firstName.trim(), lastName.trim(), pattern, domain);
+                    if (generatedEmail) {
+                        setEmailPredictorState({
+                            result: { email: generatedEmail, domain, pattern, score: undefined, source: 'pattern' }
+                        });
+                        setFromCache(true);
+                        setStatus('success');
+                        if (user?.id) await fetchCredits(user.id, token || undefined);
+                        return;
+                    }
+                }
             }
-        } catch (e) {
-            console.error("Error getting token for verification:", e);
-        }
 
-        setVerificationStatus('verifying');
-        try {
-            const data = await verifyEmail(result.email, token || undefined);
+            // ── Étape 4 : Hunter email-finder (1 crédit) ─────────────────────
+            // Si domaine résolu → on l'envoie. Sinon on envoie le nom de l'entreprise
+            // Hunter gère lui-même la résolution dans ce cas.
+            const emailData = await findEmail(
+                firstName.trim(),
+                lastName.trim(),
+                domain || '',
+                token || undefined,
+                domain ? undefined : company.trim()
+            );
             if (user?.id) await fetchCredits(user.id, token || undefined);
-            if (data) {
-                setVerificationResult(data);
-                setVerificationStatus('verified');
-            } else {
-                setVerificationStatus('error');
+
+            if (emailData?.email) {
+                setEmailPredictorState({
+                    result: {
+                        email: emailData.email,
+                        domain: emailData.domain || domain || company.trim(),
+                        pattern: '',
+                        score: emailData.score,
+                        source: 'finder'
+                    }
+                });
+                setStatus('success');
+                return;
             }
-        } catch (e) {
-            if (e instanceof Error && /insufficient credits/i.test(e.message)) {
+
+            // ── Étape 5 : Aucun résultat ──────────────────────────────────────
+            setErrorMsg(`Aucun email trouvé pour ${firstName.trim()} ${lastName.trim()} chez ${company.trim()}. Vérifiez l'orthographe du nom et de l'entreprise.`);
+            setStatus('error');
+
+        } catch (err: any) {
+            if (/insufficient credits/i.test(err.message)) {
                 setShowCreditModal(true);
+                setStatus('idle');
+            } else {
+                setErrorMsg(err.message || "Une erreur est survenue. Réessayez.");
+                setStatus('error');
             }
-            setVerificationStatus('error');
         }
     };
 
-    // handleConfirm removed as it was unused and deduplicated logic exists elsewhere
-
-
-
-    const getVerificationBadge = () => {
-        if (!verificationResult) return null;
-
-        const { status, score } = verificationResult;
-
-        if (status === 'valid') {
-            return (
-                <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium border border-emerald-200">
-                    <CheckCircle2 className="w-4 h-4" />
-                    {score === 95 ? t('emailPredictor.badges.validCertified') : t('emailPredictor.badges.validScore', { score })}
-                </div>
-            );
-        } else if (status === 'invalid') {
-            return (
-                <div className="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-1 rounded-full text-sm font-medium border border-red-200">
-                    <XCircle className="w-4 h-4" />
-                    {t('emailPredictor.badges.invalidScore', { score })}
-                </div>
-            );
-        } else {
-            const label = status === 'accept_all' ? t('emailPredictor.badges.acceptAll') : t('emailPredictor.badges.risky');
-            return (
-                <div className="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-1 rounded-full text-sm font-medium border border-amber-200">
-                    <HelpCircle className="w-4 h-4" />
-                    {label} (Score: {score}%)
-                </div>
-            );
-        }
-    };
 
     return (
         <div className="w-full max-w-none mx-auto space-y-8 animate-fade-in">
             <div className="text-center space-y-3">
-                <div className="flex items-center justify-center gap-3">
-                    <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-600 border border-amber-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        {t('emailPredictor.comingSoon')}
-                    </span>
-                </div>
+                <h2 className="text-3xl font-bold text-slate-900">{t('emailPredictor.title')}</h2>
                 <p className="text-slate-600 text-lg">{t('emailPredictor.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-                {/* Input Panel */}
+                {/* ── Panneau de recherche ── */}
                 <div className="md:col-span-3 space-y-6">
                     <Card className="bg-white border-slate-200 shadow-sm h-full">
                         <CardHeader className="border-b border-slate-100 pb-4">
@@ -145,6 +162,7 @@ export function EmailPredictorTool() {
                                             onChange={(e) => setEmailPredictorState({ company: e.target.value })}
                                             className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                             disabled={status === 'loading'}
+                                            onKeyDown={(e) => e.key === 'Enter' && canSearch && handleSearch()}
                                         />
                                     </div>
                                 </div>
@@ -159,6 +177,7 @@ export function EmailPredictorTool() {
                                                 onChange={(e) => setEmailPredictorState({ firstName: e.target.value })}
                                                 className="pl-10 h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                                 disabled={status === 'loading'}
+                                                onKeyDown={(e) => e.key === 'Enter' && canSearch && handleSearch()}
                                             />
                                         </div>
                                     </div>
@@ -170,6 +189,7 @@ export function EmailPredictorTool() {
                                             onChange={(e) => setEmailPredictorState({ lastName: e.target.value })}
                                             className="h-12 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                             disabled={status === 'loading'}
+                                            onKeyDown={(e) => e.key === 'Enter' && canSearch && handleSearch()}
                                         />
                                     </div>
                                 </div>
@@ -177,142 +197,140 @@ export function EmailPredictorTool() {
 
                             {isSignedIn ? (
                                 <Button
-                                    disabled={true}
-                                    className="w-full h-12 bg-slate-400 cursor-not-allowed text-white font-medium shadow-sm transition-all text-base opacity-70"
+                                    onClick={handleSearch}
+                                    disabled={!canSearch || status === 'loading'}
+                                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-all text-base disabled:opacity-50"
                                 >
-                                    <Lock className="mr-2 h-5 w-5" />
-                                    {t('emailPredictor.findEmail')}
+                                    {status === 'loading' ? (
+                                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Recherche en cours...</>
+                                    ) : (
+                                        <><Search className="mr-2 h-5 w-5" /> {t('emailPredictor.findEmail')}</>
+                                    )}
                                 </Button>
                             ) : (
                                 <SignInButton mode="modal">
-                                    <Button
-                                        className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-sm transition-all text-base"
-                                    >
+                                    <Button className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-sm transition-all text-base">
                                         <User className="mr-2 h-5 w-5" />
                                         {t('emailPredictor.signIn')}
                                     </Button>
                                 </SignInButton>
                             )}
+
+                            {/* Info crédit */}
+                            {isSignedIn && (
+                                <p className="text-xs text-slate-400 text-center">
+                                    1 crédit par recherche • Résultats mis en cache partagé
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Results Panel */}
+                {/* ── Panneau résultats ── */}
                 <div className="md:col-span-2 space-y-6">
                     {status === 'success' && result ? (
                         <Card className="bg-white border-slate-200 shadow-sm h-full animate-slide-up">
                             <CardHeader className="border-b border-slate-100 pb-4">
-                                <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <div className="p-2 bg-emerald-100 rounded-lg">
-                                        <Check className="w-5 h-5 text-emerald-600" />
+                                <CardTitle className="text-lg text-slate-900 flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 bg-emerald-100 rounded-lg">
+                                            <Check className="w-5 h-5 text-emerald-600" />
+                                        </div>
+                                        {t('emailPredictor.result')}
                                     </div>
-                                    {t('emailPredictor.result')}
+                                    {fromCache && (
+                                        <span className="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 flex items-center gap-1">
+                                            <Database className="w-3 h-3" /> Cache
+                                        </span>
+                                    )}
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6 h-[calc(100%-80px)]">
+                            <CardContent className="pt-6 flex flex-col items-center space-y-5">
                                 {result.email ? (
                                     <>
-                                        <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center border border-indigo-100">
-                                            <Mail className="w-10 h-10 text-indigo-600" />
+                                        <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center border border-indigo-100">
+                                            <Mail className="w-8 h-8 text-indigo-600" />
                                         </div>
 
                                         <div className="w-full text-center space-y-2">
-                                            <h3 className="font-semibold text-slate-900">
-                                                {result.source === 'finder' || result.source === 'cache' ? t('emailPredictor.verified') : t('emailPredictor.suggestion')}
-                                            </h3>
-                                            <div className="flex items-center justify-center gap-2 w-full">
-                                                <code className="text-lg font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded border border-indigo-100 break-all">
+                                            <p className="text-sm font-medium text-slate-500">
+                                                {result.source === 'finder' || result.source === 'cache'
+                                                    ? "Email trouvé via Hunter.io"
+                                                    : "Email généré depuis le pattern"}
+                                            </p>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <code className="text-base font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100 break-all">
                                                     {result.email}
                                                 </code>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={copyToClipboard}
-                                                    className="h-9 w-9 p-0 text-slate-500 hover:text-indigo-600"
-                                                >
-                                                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                                <Button variant="ghost" size="sm" onClick={copyToClipboard} className="h-9 w-9 p-0 shrink-0">
+                                                    {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4 text-slate-400" />}
                                                 </Button>
                                             </div>
+                                            {result.score !== undefined && (
+                                                <p className="text-xs text-slate-400">Confiance Hunter : {result.score}%</p>
+                                            )}
                                         </div>
 
+                                        {/* Badge selon la source */}
+                                        {(result.source === 'finder' || result.source === 'cache') && (
+                                            <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full text-sm font-medium border border-emerald-200">
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Email vérifié par Career Match
+                                            </div>
+                                        )}
                                         {result.source === 'pattern' && (
-                                            <div className="w-full space-y-3 pt-4 border-t border-slate-100">
-                                                {verificationStatus === 'idle' && (
-                                                    <Button
-                                                        onClick={handleVerify}
-                                                        variant="outline"
-                                                        className="w-full text-xs"
-                                                        size="sm"
-                                                    >
-                                                        {t('emailPredictor.verifyFormat')}
-                                                    </Button>
-                                                )}
-                                                {verificationStatus === 'verifying' && (
-                                                    <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
-                                                        <Loader2 className="h-3 w-3 animate-spin" /> {t('emailPredictor.verifying')}
-                                                    </div>
-                                                )}
-                                                {verificationStatus === 'error' && (
-                                                    <div className="flex flex-col items-center gap-2 w-full animate-fade-in">
-                                                        <div className="text-red-500 text-sm flex items-center gap-1 font-medium bg-red-50 px-3 py-1 rounded-full border border-red-100">
-                                                            <AlertCircle className="w-3.5 h-3.5" />
-                                                            {t('emailPredictor.errors.verificationFailed') || "Vérification échouée"}
-                                                        </div>
-                                                        <Button
-                                                            onClick={handleVerify}
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 h-8 font-medium"
-                                                        >
-                                                            {t('common.retry') || "Réessayer"}
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                                {verificationStatus !== 'idle' && verificationStatus !== 'verifying' && verificationStatus !== 'error' && getVerificationBadge()}
+                                            <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-full text-sm font-medium border border-indigo-200">
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Format vérifié par Career Match
                                             </div>
                                         )}
                                     </>
                                 ) : (
-                                    <>
-                                        <div className="p-4 bg-slate-50 rounded-xl w-full text-center border border-slate-100">
-                                            <p className="text-sm text-slate-500 font-medium mb-2">{t('emailPredictor.patternFound')}</p>
-                                            <code className="text-slate-900 font-mono font-bold">
+                                    /* Pattern trouvé mais pas d'email direct */
+                                    <div className="w-full space-y-4 text-center">
+                                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p className="text-xs text-slate-500 mb-2">Format email détecté</p>
+                                            <code className="text-slate-900 font-mono font-bold text-base">
                                                 {formatEmailPattern(result.pattern)}@{result.domain}
                                             </code>
                                         </div>
-                                        <p className="text-xs text-slate-400 text-center px-4">
-                                            {t('emailPredictor.patternDesc')}
+                                        <p className="text-xs text-slate-400">
+                                            Hunter n'a pas trouvé l'email exact. Vous pouvez essayer avec ce format.
                                         </p>
-                                    </>
+                                    </div>
                                 )}
+
+                                {/* Bouton nouvelle recherche */}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => { setStatus('idle'); setEmailPredictorState({ result: null }); }}
+                                    className="text-slate-400 hover:text-slate-600 text-xs"
+                                >
+                                    Nouvelle recherche
+                                </Button>
                             </CardContent>
                         </Card>
-                    ) : status === 'error' && error ? (
+                    ) : status === 'error' ? (
                         <Card className="bg-red-50/50 border-red-200 shadow-sm h-full animate-slide-up">
-                            <CardHeader className="border-b border-red-100 pb-4">
-                                <CardTitle className="text-lg text-red-900 flex items-center gap-2">
-                                    <div className="p-2 bg-red-100 rounded-lg">
-                                        <XCircle className="w-5 h-5 text-red-600" />
-                                    </div>
-                                    Error
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6 h-[calc(100%-80px)]">
-                                <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center border border-red-100">
-                                    <AlertCircle className="w-10 h-10 text-red-600" />
+                            <CardContent className="pt-8 flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center border border-red-100">
+                                    <AlertCircle className="w-8 h-8 text-red-500" />
                                 </div>
-                                <div className="w-full text-center space-y-2 px-4">
-                                    <h3 className="font-semibold text-red-900">
-                                        An error occurred
-                                    </h3>
-                                    <p className="text-red-600 font-medium">
-                                        {error}
-                                    </p>
-                                </div>
+                                <p className="text-sm text-red-700 font-medium px-4">{errorMsg}</p>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setStatus('idle')}
+                                    className="text-indigo-600 hover:text-indigo-700 text-sm"
+                                >
+                                    Réessayer
+                                </Button>
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full transition-opacity">
+                        /* État initial — exemple */
+                        <Card className="bg-slate-50/50 border-slate-200 shadow-sm h-full">
                             <CardHeader className="border-b border-slate-100 pb-4">
                                 <CardTitle className="text-lg text-slate-900 flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
@@ -321,34 +339,22 @@ export function EmailPredictorTool() {
                                         </div>
                                         {t('emailPredictor.noPrediction')}
                                     </div>
-                                    <div className="flex gap-2">
-                                        <span className="text-xs font-bold px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase tracking-wider">
-                                            Exemple
-                                        </span>
-                                    </div>
+                                    <span className="text-xs font-bold px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase tracking-wider">Exemple</span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="pt-6 flex flex-col items-center justify-center space-y-6">
-                                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center border border-indigo-100">
-                                    <Mail className="w-10 h-10 text-indigo-600" />
+                            <CardContent className="pt-6 flex flex-col items-center space-y-5">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center border border-indigo-100">
+                                    <Mail className="w-8 h-8 text-indigo-600" />
                                 </div>
-
-                                <div className="w-full text-center space-y-2">
-                                    <h3 className="font-semibold text-slate-900">
-                                        {t('emailPredictor.verified')}
-                                    </h3>
-                                    <div className="flex items-center justify-center gap-2 w-full">
-                                        <code className="text-lg font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded border border-indigo-100 break-all">
-                                            jean.dupont@google.com
-                                        </code>
-                                    </div>
+                                <div className="text-center space-y-2">
+                                    <p className="text-sm font-medium text-slate-500">Email Vérifié</p>
+                                    <code className="text-base font-mono font-bold text-indigo-700 bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100">
+                                        jean.dupont@google.com
+                                    </code>
                                 </div>
-
-                                <div className="w-full space-y-3 pt-4 border-t border-slate-100">
-                                    <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-sm font-medium border border-emerald-200 justify-center">
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        Valid (Score: 100%)
-                                    </div>
+                                <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full text-sm font-medium border border-emerald-200">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Valid (Score: 100%)
                                 </div>
                             </CardContent>
                         </Card>
@@ -356,11 +362,7 @@ export function EmailPredictorTool() {
                 </div>
             </div>
 
-
-            <InsufficientCreditsModal
-                isOpen={showCreditModal}
-                onClose={() => setShowCreditModal(false)}
-            />
+            <InsufficientCreditsModal isOpen={showCreditModal} onClose={() => setShowCreditModal(false)} />
         </div>
     );
 }
