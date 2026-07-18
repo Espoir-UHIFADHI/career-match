@@ -17,7 +17,6 @@ export function PublicAnalysis() {
     const [searchParams] = useSearchParams();
     const mode = searchParams.get('mode');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);

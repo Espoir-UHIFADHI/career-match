@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUserStore } from "../../store/useUserStore";
 import { useAppStore } from "../../store/useAppStore";
 import { Mail, Loader2, Building2, User, Copy, Check, Search, Lock } from "lucide-react";
@@ -19,7 +19,7 @@ export function EmailPredictorTool() {
     // Derived state from store for convenience, or use directly
     const { company, firstName, lastName, result } = emailPredictor;
 
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [status, _setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(result ? 'success' : 'idle');
     // Error and Copied are transient UI states, keep local
     const [error] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -31,13 +31,6 @@ export function EmailPredictorTool() {
     // Verification state
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'verifying' | 'verified' | 'error'>('idle');
     const [verificationResult, setVerificationResult] = useState<VerificationResponse['data'] | null>(null);
-
-    // Initialize status if result exists
-    useEffect(() => {
-        if (result && status === 'idle') {
-            setStatus('success');
-        }
-    }, [result, status]);
 
     const copyToClipboard = () => {
         if (result?.email) {

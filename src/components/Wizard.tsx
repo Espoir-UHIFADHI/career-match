@@ -285,7 +285,7 @@ function Wizard() {
     };
 
     sendWelcome();
-  }, [isLoaded, isSignedIn, user]);
+  }, [isLoaded, isSignedIn, user, getToken]);
 
   const handleStepClick = (stepId: number) => {
     // Prevent skipping steps logic

@@ -608,7 +608,7 @@ const getBullets = (text: any): string[] => {
     let s = clean(text);
     if (!s) return [];
     if (s.includes('\n')) return s.split('\n').filter(l => l.trim());
-    s = s.replace(/(^|\s)([•\-])\s/g, '\n$2 ');
+    s = s.replace(/(^|\s)([•-])\s/g, '\n$2 ');
     return s.split('\n').filter(l => l.trim());
 };
 

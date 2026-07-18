@@ -249,7 +249,8 @@ export function MatchingDashboard() {
             }
         }
         prevCvLanguageRef.current = cvLanguage;
-    }, [cvLanguage, cvData, jobData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cvLanguage, cvData, jobData]); // analysisResults/isProcessing/runAnalysis intentionally omitted — including them causes infinite re-analysis loop
 
     const runAnalysis = async () => {
         if (!cvData || !jobData) return;
