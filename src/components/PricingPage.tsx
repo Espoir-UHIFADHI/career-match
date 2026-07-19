@@ -10,15 +10,22 @@ import { useState, useEffect } from "react";
 import { trackEvent, trackPricingPageViewed, trackCheckoutStarted } from "../utils/analytics";
 
 export function PricingPage() {
-    const { credits } = useUserStore();
+    const { credits, fetchCredits } = useUserStore();
     const { t } = useTranslation();
-    const { user } = useUser();
-    const { getToken } = useAuth(); // Import useAuth
+    const { user, isLoaded } = useUser();
+    const { getToken } = useAuth();
     const [loadingProduct, setLoadingProduct] = useState<string | null>(null);
 
     useEffect(() => {
         trackPricingPageViewed();
     }, []);
+
+    useEffect(() => {
+        if (!isLoaded || !user?.id) return;
+        getToken({ template: 'supabase' }).then(token => {
+            fetchCredits(user.id, token || undefined);
+        });
+    }, [isLoaded, user?.id]);
 
     // Redemption State
     const [licenseKey, setLicenseKey] = useState("");
