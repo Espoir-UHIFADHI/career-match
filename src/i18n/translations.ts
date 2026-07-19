@@ -18,8 +18,9 @@ export const translations = {
         },
         about: {
             hero: {
+                badge: "AI-Powered Career Platform",
                 title: "Your skills deserve to be seen.",
-                subtitle: "Most CVs are rejected before a human reads them - not because of the candidate's skills, but because of formatting and keywords. Career Match fixes that."
+                subtitle: "Career Match gives you three unfair advantages: an ATS-optimized CV, the right people to contact, and their verified email — all powered by AI."
             },
             stats: {
                 rejected: "CVs filtered before human review",
@@ -28,8 +29,8 @@ export const translations = {
             },
             story: {
                 title: "Why we built this",
-                p1: "Recruitment software (ATS) has become a black box. Candidates send CVs into a void and never hear back - not because they're unqualified, but because the formatting or keywords don't match what the algorithm expects.",
-                p2: "Career Match was built to fix that. We analyze your CV against a real job posting, identify exactly what's missing, and generate an optimized version - so your actual skills get seen."
+                p1: "Finding a job today requires three things most candidates lack: a CV that passes recruitment software, the right person to contact inside the company, and a way to reach them directly. Career Match covers all three.",
+                p2: "We built an AI suite that analyzes your CV against any job posting, identifies the hiring managers and recruiters worth reaching out to, and finds their verified professional email — so you stop sending applications into a void."
             },
             values: {
                 title: "What we stand for",
@@ -41,9 +42,9 @@ export const translations = {
                 empowermentDesc: "We build tools for job seekers, not for HR software vendors."
             },
             cta: {
-                title: "See how your CV scores right now.",
-                subtitle: "Free analysis. No credit card. Results in under a minute.",
-                button: "Start Free Analysis",
+                title: "Land your next job faster.",
+                subtitle: "Optimize your CV, find the right contacts, reach them directly. Free to start.",
+                button: "Start for Free",
                 guarantee: "No credit card required • Instant Results"
             },
             tech: {
@@ -58,8 +59,8 @@ export const translations = {
             },
             faq: {
                 title: "Common questions",
-                q1: "Is using AI to optimize my CV ethical?",
-                a1: "Recruiters already use AI to filter candidates. Using a tool to make sure your CV is readable by those systems is not an unfair advantage - it's a necessary one.",
+                q1: "Is this just a CV optimizer?",
+                a1: "No. Career Match includes three tools: a CV optimizer that passes ATS filters, a Networking AI that identifies the right people to contact at your target company, and an Email Finder that retrieves their verified professional email.",
                 q2: "Will the optimized CV look obviously AI-generated?",
                 a2: "No. The output is plain text reformatted around your actual experience. There are no watermarks, no robotic phrasing, no AI signatures."
             }
@@ -666,8 +667,9 @@ export const translations = {
         },
         about: {
             hero: {
+                badge: "Plateforme carrière propulsée par l'IA",
                 title: "Vos compétences méritent d'être vues.",
-                subtitle: "La plupart des CVs sont rejetés avant qu'un humain les lise - pas à cause du profil du candidat, mais à cause du formatage et des mots-clés. Career Match règle ça."
+                subtitle: "Career Match vous donne trois avantages décisifs : un CV optimisé pour les ATS, les bonnes personnes à contacter, et leur email vérifié — le tout propulsé par l'IA."
             },
             stats: {
                 rejected: "des CVs filtrés avant lecture humaine",
@@ -676,8 +678,8 @@ export const translations = {
             },
             story: {
                 title: "Pourquoi on a construit ça",
-                p1: "Les logiciels de recrutement (ATS) sont devenus une boîte noire. Les candidats envoient des CVs dans le vide et n'ont jamais de réponse - non pas parce qu'ils ne sont pas qualifiés, mais parce que le formatage ou les mots-clés ne correspondent pas à ce que l'algorithme attend.",
-                p2: "Career Match a été créé pour corriger ça. On analyse votre CV face à une vraie offre d'emploi, on identifie exactement ce qui manque, et on génère une version optimisée - pour que vos vraies compétences soient enfin lues."
+                p1: "Trouver un emploi aujourd'hui exige trois choses que la plupart des candidats n'ont pas : un CV qui passe les logiciels de recrutement, la bonne personne à contacter dans l'entreprise, et un moyen de la joindre directement. Career Match couvre les trois.",
+                p2: "On a construit une suite IA qui analyse votre CV face à n'importe quelle offre, identifie les recruteurs et managers à cibler, et trouve leur email professionnel vérifié — pour que vous arrêtiez d'envoyer des candidatures dans le vide."
             },
             howItWorks: {
                 title: "Comment ça marche concrètement",
@@ -710,18 +712,18 @@ export const translations = {
                     formatting: { title: "Vérification du format", desc: "Détecte les problèmes de mise en page (tableaux, colonnes, caractères spéciaux) qui font rater la lecture ATS." }
                 }
             },
+            cta: {
+                title: "Décrochez votre prochain poste plus vite.",
+                subtitle: "Optimisez votre CV, trouvez les bons contacts, joignez-les directement. Gratuit pour commencer.",
+                button: "Commencer gratuitement",
+                guarantee: "Sans carte bancaire • Résultat immédiat"
+            },
             faq: {
                 title: "Questions fréquentes",
-                q1: "Est-ce éthique d'utiliser cet outil ?",
-                a1: "Les recruteurs utilisent déjà l'IA pour filtrer les candidats. S'assurer que votre CV est lisible par ces systèmes n'est pas un avantage déloyal - c'est une nécessité.",
+                q1: "C'est juste un optimiseur de CV ?",
+                a1: "Non. Career Match comprend trois outils : un optimiseur de CV qui passe les filtres ATS, un Networking AI qui identifie les bonnes personnes à contacter dans votre entreprise cible, et un Email Finder qui récupère leur email professionnel vérifié.",
                 q2: "Le CV optimisé va-t-il paraître généré par IA ?",
                 a2: "Non. Le résultat est du texte brut reformaté autour de votre vraie expérience. Pas de filigrane, pas de tournures robotiques, pas de signature IA."
-            },
-            cta: {
-                title: "Voyez comment votre CV se classe maintenant.",
-                subtitle: "Analyse gratuite. Sans carte bancaire. Résultats en moins d'une minute.",
-                button: "Voir mon score ATS",
-                guarantee: "Analyse gratuite • Résultat immédiat"
             }
         },
         blog: {

@@ -395,7 +395,7 @@ export function LandingPage() {
             </section>
 
             {/* How it works */}
-            <section className="py-24 bg-slate-50 relative overflow-hidden">
+            <section id="how-it-works" className="py-24 bg-slate-50 relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-white rounded-full opacity-50 blur-[100px] pointer-events-none" />
 
                 <div className="container mx-auto px-6 relative z-10">

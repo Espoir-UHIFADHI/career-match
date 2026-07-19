@@ -292,7 +292,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <div>
                             <h3 className="font-semibold text-slate-900 mb-6">{t('footer.product')}</h3>
                             <ul className="space-y-4">
-                                <li><Link to="/" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">{t('footer.features')}</Link></li>
+                                <li><Link to="/about#how-it-works" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">{t('footer.features')}</Link></li>
                                 <li><Link to="/pricing" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">{t('footer.pricing')}</Link></li>
                                 <li>
                                     <button onClick={() => handleProtectedNavigation(5)} className="text-slate-500 hover:text-indigo-600 transition-colors text-sm">
