@@ -201,6 +201,11 @@ export function LandingPageNetworking() {
                     content="Identifiez recruteurs, managers et DRH dans votre entreprise cible. Career Match trouve les contacts clés en 30 secondes. 3 crédits gratuits, sans carte bancaire."
                 />
                 <meta name="robots" content="noindex, nofollow" />
+                <meta property="og:image" content="https://careermatch.fr/og-image-networking.png" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="twitter:card" content="summary_large_image" />
+                <meta property="twitter:image" content="https://careermatch.fr/og-image-networking.png" />
             </Helmet>
 
             {/* ── Navbar minimale ── */}

@@ -1,9 +1,6 @@
 /**
- * Génère public/og-image.png (1200×630) sans dépendance externe.
- * Utilise uniquement les modules Node.js built-in : zlib, fs, path.
- *
- * Structure PNG : IHDR + IDAT (données compressées zlib) + IEND
- * Rendu : fond dégradé slate→indigo, logo textuel, headline, badge score.
+ * Génère public/og-image-cv-ats.png (1200×630) sans dépendance externe.
+ * Thème : CV Optimizer — score ATS, mots-clés, optimisation IA.
  */
 
 import { deflateSync } from 'zlib';
@@ -23,7 +20,7 @@ function hexToRgb(hex) {
 }
 
 // ─── Canvas pixel buffer ──────────────────────────────────────────────────────
-const pixels = new Uint8Array(W * H * 3); // RGB
+const pixels = new Uint8Array(W * H * 3);
 
 function setPixel(x, y, r, g, b) {
     if (x < 0 || x >= W || y < 0 || y >= H) return;
@@ -50,7 +47,6 @@ function fillRoundRect(x0, y0, x1, y1, radius, r, g, b) {
     }
 }
 
-// ─── Dégradé horizontal A→B ───────────────────────────────────────────────────
 function fillGradient(x0, y0, x1, y1, colorA, colorB) {
     const [r1, g1, b1] = colorA;
     const [r2, g2, b2] = colorB;
@@ -66,8 +62,24 @@ function fillGradient(x0, y0, x1, y1, colorA, colorB) {
     }
 }
 
-// ─── Rendu texte bitmap (police 6×8 px, subset ASCII imprimable) ──────────────
-// Glyphes 5×7 encodés en 5 octets (7 bits par octet = colonnes du bas vers le haut)
+function drawCircle(cx, cy, radius, r, g, b) {
+    for (let y = cy - radius; y <= cy + radius; y++)
+        for (let x = cx - radius; x <= cx + radius; x++)
+            if ((x - cx) ** 2 + (y - cy) ** 2 <= radius * radius)
+                setPixel(x, y, r, g, b);
+}
+
+function drawCircleOutline(cx, cy, radius, thickness, r, g, b) {
+    for (let y = cy - radius - thickness; y <= cy + radius + thickness; y++) {
+        for (let x = cx - radius - thickness; x <= cx + radius + thickness; x++) {
+            const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+            if (dist >= radius && dist <= radius + thickness)
+                setPixel(x, y, r, g, b);
+        }
+    }
+}
+
+// ─── Rendu texte bitmap (police 5×7 px) ──────────────────────────────────────
 const FONT_5x7 = {
     ' ': [0x00,0x00,0x00,0x00,0x00],
     'A': [0x7E,0x09,0x09,0x09,0x7E],
@@ -185,79 +197,111 @@ function textWidth(text, scale) {
     return text.length * (5 + 1) * scale;
 }
 
-function drawTextCentered(text, y, scale, r, g, b) {
-    const w = textWidth(text, scale);
-    drawText(text, Math.round((W - w) / 2), y, scale, r, g, b);
-}
-
 // ─── RENDU ────────────────────────────────────────────────────────────────────
 
-// 1. Fond dégradé slate-900 → indigo-900
+// 1. Fond dégradé slate-900 → indigo-950
 fillGradient(0, 0, W - 1, H - 1,
-    hexToRgb('#0f172a'),  // slate-900
-    hexToRgb('#1e1b4b')   // indigo-950
+    hexToRgb('#0f172a'),
+    hexToRgb('#1e1b4b')
 );
 
 // 2. Bande décorative gauche (accent indigo)
 fillRect(0, 0, 6, H - 1, ...hexToRgb('#6366f1'));
 
-// 3. Cercle décoratif flou (simulé par plusieurs rectangles concentriques)
-const cx = 960, cy = 100;
-for (let r = 180; r > 0; r -= 3) {
-    const alpha = 1 - r / 180;
-    const intensity = Math.round(alpha * 60);
-    for (let y = cy - r; y <= cy + r; y++) {
-        for (let x = cx - r; x <= cx + r; x++) {
-            if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) {
+// 3. Halo décoratif haut-droit (indigo)
+const hx = 980, hy = 120;
+for (let radius = 200; radius > 0; radius -= 3) {
+    const alpha = 1 - radius / 200;
+    const intensity = Math.round(alpha * 55);
+    for (let y = hy - radius; y <= hy + radius; y++) {
+        for (let x = hx - radius; x <= hx + radius; x++) {
+            if ((x - hx) ** 2 + (y - hy) ** 2 <= radius * radius) {
                 const i = (y * W + x) * 3;
                 if (x >= 0 && x < W && y >= 0 && y < H) {
-                    pixels[i]     = Math.min(255, pixels[i] + intensity);
-                    pixels[i + 1] = Math.min(255, pixels[i + 1] + intensity);
-                    pixels[i + 2] = Math.min(255, pixels[i + 2] + Math.round(intensity * 2.5));
+                    pixels[i]     = Math.min(255, pixels[i] + Math.round(intensity * 0.4));
+                    pixels[i + 1] = Math.min(255, pixels[i + 1] + Math.round(intensity * 0.4));
+                    pixels[i + 2] = Math.min(255, pixels[i + 2] + Math.round(intensity * 2.0));
                 }
             }
         }
     }
 }
 
-// 4. Pastille "Score ATS" en haut à droite
-fillRoundRect(900, 40, 1140, 140, 20, ...hexToRgb('#312e81'));
-fillRoundRect(900, 40, 1140, 140, 20, ...hexToRgb('#4338ca'));
-drawTextCentered = (text, y, scale, r, g, b) => {
-    const w = textWidth(text, scale);
-    drawText(text, Math.round((W - w) / 2), y, scale, r, g, b);
-};
-// Label pastille
+// 4. Visuel droite : carte CV stylisée avec score ATS
+const cardX = 820, cardY = 160, cardW = 330, cardH = 310;
+
+// Fond carte
+fillRoundRect(cardX, cardY, cardX + cardW, cardY + cardH, 16, ...hexToRgb('#1e293b'));
+fillRoundRect(cardX, cardY, cardX + cardW, cardY + cardH, 16, ...hexToRgb('#0f172a'));
+
+// Bordure carte
+for (let i = 0; i < 2; i++) {
+    // top
+    fillRect(cardX + 16, cardY + i, cardX + cardW - 16, cardY + i, ...hexToRgb('#334155'));
+    // bottom
+    fillRect(cardX + 16, cardY + cardH - i, cardX + cardW - 16, cardY + cardH - i, ...hexToRgb('#334155'));
+    // left
+    fillRect(cardX + i, cardY + 16, cardX + i, cardY + cardH - 16, ...hexToRgb('#334155'));
+    // right
+    fillRect(cardX + cardW - i, cardY + 16, cardX + cardW - i, cardY + cardH - 16, ...hexToRgb('#334155'));
+}
+
+// Avatar cercle
+drawCircle(cardX + 40, cardY + 50, 22, ...hexToRgb('#4338ca'));
+drawCircleOutline(cardX + 40, cardY + 50, 22, 2, ...hexToRgb('#818cf8'));
+const initials = 'CV';
+drawText(initials, cardX + 40 - Math.round(textWidth(initials, 2) / 2), cardY + 44, 2, ...hexToRgb('#ffffff'));
+
+// Nom fictif
+drawText('Thomas Dupont', cardX + 72, cardY + 38, 2, ...hexToRgb('#f1f5f9'));
+drawText('Dev Fullstack - 4 ans', cardX + 72, cardY + 56, 2, ...hexToRgb('#64748b'));
+
+// Séparateur
+fillRect(cardX + 20, cardY + 84, cardX + cardW - 20, cardY + 85, ...hexToRgb('#1e3a5f'));
+
+// Score ATS (badge vert)
+fillRoundRect(cardX + 20, cardY + 100, cardX + 140, cardY + 148, 10, ...hexToRgb('#052e16'));
 const scoreLabel = 'Score ATS';
-const scoreLabelW = textWidth(scoreLabel, 2);
-drawText(scoreLabel, 900 + Math.round((240 - scoreLabelW) / 2), 68, 2, ...hexToRgb('#a5b4fc'));
-// Chiffre
+drawText(scoreLabel, cardX + 30, cardY + 108, 2, ...hexToRgb('#86efac'));
 const scoreNum = '92%';
-const scoreNumW = textWidth(scoreNum, 5);
-drawText(scoreNum, 900 + Math.round((240 - scoreNumW) / 2), 90, 5, ...hexToRgb('#34d399'));
+drawText(scoreNum, cardX + 30, cardY + 122, 3, ...hexToRgb('#34d399'));
+
+// Mots-clés trouvés
+drawText('Mots-cles ajoutes', cardX + 20, cardY + 165, 2, ...hexToRgb('#475569'));
+const keywords = ['React', 'CI/CD', 'Agile', 'API'];
+let kx = cardX + 20;
+for (const kw of keywords) {
+    const kw_w = textWidth(kw, 2) + 14;
+    fillRoundRect(kx, cardY + 182, kx + kw_w, cardY + 204, 6, ...hexToRgb('#1e3a5f'));
+    drawText(kw, kx + 7, cardY + 188, 2, ...hexToRgb('#93c5fd'));
+    kx += kw_w + 8;
+}
+
+// Barre de progression "avant/après"
+drawText('Avant : 52%', cardX + 20, cardY + 220, 2, ...hexToRgb('#64748b'));
+drawText('Apres : 92%', cardX + 170, cardY + 220, 2, ...hexToRgb('#34d399'));
+fillRoundRect(cardX + 20, cardY + 238, cardX + cardW - 20, cardY + 250, 6, ...hexToRgb('#1e293b'));
+fillRoundRect(cardX + 20, cardY + 238, cardX + 20 + Math.round((cardW - 40) * 0.92), cardY + 250, 6, ...hexToRgb('#34d399'));
+
+// Delta
+drawText('+40 pts', cardX + 20, cardY + 264, 2, ...hexToRgb('#34d399'));
+drawText('en 30 secondes', cardX + 80, cardY + 264, 2, ...hexToRgb('#475569'));
 
 // 5. Logo texte "Career Match"
-const logoScale = 5;
-const logoText = 'Career Match';
-const logoW = textWidth(logoText, logoScale);
-drawText(logoText, 60, 80, logoScale, ...hexToRgb('#ffffff'));
+drawText('Career Match', 60, 80, 5, ...hexToRgb('#ffffff'));
 
 // 6. Ligne de séparation sous le logo
-fillRect(60, 130, 60 + logoW, 133, ...hexToRgb('#6366f1'));
+fillRect(60, 130, 60 + textWidth('Career Match', 5), 133, ...hexToRgb('#6366f1'));
 
 // 7. Headline principale
-const line1 = 'Obtenez votre score ATS';
-const line2 = 'en 30 secondes';
-const headScale = 6;
-drawText(line1, 60, 200, headScale, ...hexToRgb('#ffffff'));
-drawText(line2, 60, 260, headScale, ...hexToRgb('#a5b4fc'));
+drawText('Votre score ATS', 60, 200, 6, ...hexToRgb('#ffffff'));
+drawText('en 30 secondes', 60, 260, 6, ...hexToRgb('#a5b4fc'));
 
 // 8. Sous-titre
-const sub = "Optimisez votre CV. Passez les filtres. Decrochez l'entretien.";
-drawText(sub, 60, 360, 2, ...hexToRgb('#94a3b8'));
+drawText("Optimisez votre CV. Passez les filtres. Decrochez l'entretien.", 60, 360, 2, ...hexToRgb('#94a3b8'));
 
 // 9. Badges en bas
-const badges = ['7 credits offerts', 'Sans carte bancaire', 'Resultats immediats'];
+const badges = ['3 credits offerts', 'Sans carte bancaire', 'Resultats immediats'];
 let bx = 60;
 for (const badge of badges) {
     const bw = textWidth(badge, 2) + 24;
@@ -268,7 +312,7 @@ for (const badge of badges) {
 }
 
 // 10. URL en bas
-drawText('careermatch.fr', 60, 530, 3, ...hexToRgb('#475569'));
+drawText('careermatch.fr/lp/cv-ats', 60, 530, 3, ...hexToRgb('#475569'));
 
 // 11. Ligne décorative bas
 fillRect(0, H - 5, W - 1, H - 1, ...hexToRgb('#6366f1'));
@@ -298,18 +342,16 @@ function chunk(type, data) {
     return Buffer.concat([len, typeBytes, data, crc]);
 }
 
-// IHDR
 const ihdr = Buffer.alloc(13);
 ihdr.writeUInt32BE(W, 0);
 ihdr.writeUInt32BE(H, 4);
-ihdr[8] = 8;  // bit depth
-ihdr[9] = 2;  // color type RGB
+ihdr[8] = 8;
+ihdr[9] = 2;
 ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
 
-// Scanlines avec filtre 0 (None)
 const raw = Buffer.alloc(H * (1 + W * 3));
 for (let y = 0; y < H; y++) {
-    raw[y * (1 + W * 3)] = 0; // filter None
+    raw[y * (1 + W * 3)] = 0;
     for (let x = 0; x < W; x++) {
         const si = (y * W + x) * 3;
         const di = y * (1 + W * 3) + 1 + x * 3;
@@ -322,12 +364,12 @@ for (let y = 0; y < H; y++) {
 const compressed = deflateSync(raw, { level: 6 });
 
 const png = Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]), // PNG signature
+    Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
     chunk('IHDR', ihdr),
     chunk('IDAT', compressed),
     chunk('IEND', Buffer.alloc(0)),
 ]);
 
-const outPath = join(__dirname, '..', 'public', 'og-image.png');
+const outPath = join(__dirname, '..', 'public', 'og-image-cv-ats.png');
 writeFileSync(outPath, png);
-console.log(`og-image.png generated: ${W}x${H} — ${(png.length / 1024).toFixed(1)} kB`);
+console.log(`og-image-cv-ats.png generated: ${W}x${H} — ${(png.length / 1024).toFixed(1)} kB`);

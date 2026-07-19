@@ -68,6 +68,11 @@ export function LandingPageAds() {
                     content="Votre CV est rejeté avant d'être lu ? Notre IA analyse votre CV face à l'offre d'emploi et vous donne un score ATS + un CV optimisé en 30 secondes. Essai gratuit."
                 />
                 <meta name="robots" content="noindex, nofollow" />
+                <meta property="og:image" content="https://careermatch.fr/og-image-cv-ats.png" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="twitter:card" content="summary_large_image" />
+                <meta property="twitter:image" content="https://careermatch.fr/og-image-cv-ats.png" />
             </Helmet>
 
             {/* ── Navbar minimale ── */}

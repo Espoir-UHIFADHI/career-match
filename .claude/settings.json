@@ -10,7 +10,9 @@
       "Bash(npx supabase *)",
       "Bash(grep -n \"^ \\\\`send-email\\\\`\\\\|^ \\\\`career-match\\\\|^ \\\\`gumroad\\\\|^ \\\\`process\\\\|^ \\\\`redeem\\\\|^ \\\\`sync\\\\|^ \\\\`analyze\\\\|^ \\\\`reengage\\\\|^ \\\\`keep-alive\" \"c:/Users/espoi/Desktop/ADOUWEKONOU/MICRO USINE SAAS/Tous les projets/career-match/docs/GUIDE_CESSION.md\")",
       "Bash(grep -v \"node_modules\\\\|comment\\\\|//.*credit\")",
-      "Bash(grep -n \"routes\\\\|\\\\/lp\\\\|landing\\\\|NetworkingSearch\\\\|step.*5\\\\|Networking\" \"c:/Users/espoi/Desktop/ADOUWEKONOU/MICRO USINE SAAS/Tous les projets/career-match/docs/CAREER_MATCH.md\")"
+      "Bash(grep -n \"routes\\\\|\\\\/lp\\\\|landing\\\\|NetworkingSearch\\\\|step.*5\\\\|Networking\" \"c:/Users/espoi/Desktop/ADOUWEKONOU/MICRO USINE SAAS/Tous les projets/career-match/docs/CAREER_MATCH.md\")",
+      "Bash(node scripts/generate-og-image-networking.mjs)",
+      "Bash(node scripts/generate-og-image-cv-ats.mjs)"
     ],
     "additionalDirectories": [
       "c:\\Users\\espoi\\.claude\\projects\\c--Users-espoi-Desktop-ADOUWEKONOU-MICRO-USINE-SAAS-Tous-les-projets-career-match\\memory"
