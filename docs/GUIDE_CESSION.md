@@ -378,6 +378,21 @@ L’acquéreur crée son projet Clarity et remplace l’ID.
 - `index.html` — `<meta name="google-site-verification" ...>`  
 Remplacer par la balise du nouveau propriétaire ou supprimer.
 
+### 13.11 Google Tag Manager + Google Ads
+
+- `index.html` — snippet GTM : `GTM-WKC22G6S` à remplacer par le container ID du nouvel acquéreur.
+- Dans GTM : recréer les tags Google Ads avec le Conversion ID et Label propres au nouveau compte.
+- `src/utils/consent.ts` — aucune dépendance à l'ID GTM (la mise à jour du consentement passe par `gtag` générique). Aucun changement de code nécessaire, seulement la mise à jour de l'ID dans `index.html`.
+
+### 13.12 Landing pages Google Ads
+
+Deux pages dédiées aux campagnes publicitaires (noindex, standalone) :
+
+- `src/components/pages/LandingPageAds.tsx` → `/lp/cv-ats`
+- `src/components/pages/LandingPageNetworking.tsx` → `/lp/networking`
+
+Ces pages contiennent des textes marketing spécifiques à Career Match (nom du produit, promesses). L'acquéreur doit adapter le contenu à sa propre marque. Les UTM et gclid sont capturés dynamiquement depuis l'URL — aucun ID hardcodé dans le code.
+
 ### 13.9 Scripts de test / internes (nettoyage cédant)
 
 - `scripts/test-webhook-prod.js` contient un **`PROJECT_REF` Supabase** et des identifiants de test — **retirer ou anonymiser** avant partage public du repo ; **rotation** des clés si jamais exposées.

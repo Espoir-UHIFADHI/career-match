@@ -17,6 +17,7 @@ const Contact = lazy(() => import("./components/pages/Contact").then(m => ({ def
 const PublicAnalysis = lazy(() => import("./components/share/PublicAnalysis").then(m => ({ default: m.PublicAnalysis })));
 // Standalone - rendu sans Layout global (no nav, no footer)
 const LandingPageAds = lazy(() => import("./components/pages/LandingPageAds").then(m => ({ default: m.LandingPageAds })));
+const LandingPageNetworking = lazy(() => import("./components/pages/LandingPageNetworking").then(m => ({ default: m.LandingPageNetworking })));
 
 function PageLoader() {
   return (
@@ -40,8 +41,9 @@ function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Route standalone - pas de Layout (no nav, no footer) */}
+        {/* Routes standalone - pas de Layout (no nav, no footer) */}
         <Route path="/lp/cv-ats" element={<LandingPageAds />} />
+        <Route path="/lp/networking" element={<LandingPageNetworking />} />
 
         {/* Routes avec Layout global */}
         <Route path="/*" element={

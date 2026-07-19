@@ -248,6 +248,13 @@ Fichiers principaux :
 - `src/components/results/NetworkingSection.tsx`
 - `src/services/search/serper.ts`
 - `src/services/networking/searchQueries.ts`
+
+**Landing page dédiée Google Ads (Networking)** :
+
+- `src/components/pages/LandingPageNetworking.tsx` — accessible sur `/lp/networking`, noindex.
+  Même structure que `/lp/cv-ats` (navbar, hero + CoachAvatar, bénéfices, section démo dark, CTA final).
+  Le CTA principal appelle `setStep(5)` → `NetworkingSearch`.
+  La section démo dark reproduit visuellement le formulaire Networking (entreprise + rôle + localisation + contacts simulés).
 - `src/services/networking/quality.ts`
 - `src/services/networking/crm.ts`
 
@@ -364,7 +371,7 @@ Fichiers principaux :
 
 L'application contient plusieurs pages publiques :
 
-- `/` : landing page ;
+- `/` : landing page principale ;
 - `/pricing` : tarifs ;
 - `/about` : à propos ;
 - `/contact` : contact ;
@@ -373,7 +380,9 @@ L'application contient plusieurs pages publiques :
 - `/blog` : liste des articles ;
 - `/blog/:slug` : article ;
 - `/career/:slug` : page métier SEO ;
-- `/share/:id` : analyse ou CV partagé.
+- `/share/:id` : analyse ou CV partagé ;
+- `/lp/cv-ats` : landing page dédiée Google Ads — angle CV/ATS (noindex, pas de nav globale) ;
+- `/lp/networking` : landing page dédiée Google Ads — angle Réseautage / contact direct (noindex, pas de nav globale).
 
 Les pages métier sont alimentées par un fichier JSON.
 

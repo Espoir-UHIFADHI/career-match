@@ -10,7 +10,7 @@
 **Type** : Campagne Search uniquement (pas Display, pas Performance Max au démarrage)
 **Géo** : France uniquement
 **Langue** : Français
-**Budget total départ** : 7€/jour (réparti sur 2 AdGroups actifs)
+**Budget total départ** : 10€/jour (réparti sur 3 AdGroups actifs semaine 2)
 **Enchères** : CPC Manuel — NE PAS activer Smart Bidding avant 30 conversions `purchase` enregistrées
 
 ### Structure recommandée : 2 AdGroups actifs + 1 en veille
@@ -19,7 +19,8 @@
 |---------|-----------|-------------|----------|
 | **AG1 — Problème ATS** | Candidat qui sait que son CV est bloqué par un algorithme | 4€ | ★★★ Priorité 1 |
 | **AG2 — Optimisation CV** | Candidat qui cherche à améliorer son CV sans connaître ATS | 3€ | ★★ Priorité 2 |
-| **AG3 — Remarketing Display** | Visiteurs ayant uploadé un CV sans acheter | 0€ (activer semaine 3) | En veille |
+| **AG3 — Networking / Contact Direct** | Candidat qui veut contacter un recruteur directement | 3€ (activer semaine 2) | ★★ Priorité 2 |
+| **AG4 — Remarketing Display** | Visiteurs ayant uploadé un CV sans acheter | 0€ (activer semaine 3) | En veille |
 
 ---
 
@@ -52,6 +53,78 @@
 "cv rejeté recruteur algorithme"
 "pourquoi cv pas lu recruteur"
 "cv ignoré candidature"
+```
+
+---
+
+### AG3 — Networking / Réseautage d'Entreprise (nouvelle audience)
+
+**Angle** : Candidat qui veut contacter directement les recruteurs et décisionnaires d'une entreprise cible — en bypasse des portails RH.
+
+**URL de destination** : `https://careermatch.fr/lp/networking`
+
+**Correspondance EXACTE** (CPC max 1.50€) :
+```
+[trouver recruteur entreprise]
+[contacter recruteur directement]
+[trouver contact recrutement]
+[joindre responsable rh]
+[networking recherche emploi]
+```
+
+**Correspondance EXPRESSION** (CPC max 1.00€) :
+```
+"trouver recruteur dans une entreprise"
+"contacter recruteur sans linkedin"
+"trouver contact recrutement entreprise"
+"comment contacter drh directement"
+"networking pour trouver emploi"
+"bypasser portail rh candidature"
+"trouver la bonne personne pour postuler"
+```
+
+**Correspondance LARGE** (découverte, CPC max 0.70€) :
+```
+"trouver recruteur cible"
+"networking candidature emploi"
+```
+
+**Mots-clés négatifs supplémentaires pour AG3** :
+```
+linkedin premium
+réseau social
+facebook
+twitter
+formation networking
+cours networking
+linkedin learning
+```
+
+**RSA AG3 — 15 titres** :
+```
+T1 : Trouvez qui contacter chez vos cibles  (30c)
+T2 : Recruteur identifié en 30 secondes     (30c)
+T3 : Bypass les portails RH anonymes        (28c)
+T4 : Contactez directement le décisionnaire (30c)
+T5 : 80% des postes pourvus par réseau      (30c)
+T6 : Career Match — Networking gratuit      (29c)
+T7 : 3 crédits offerts à l'inscription      (30c)
+T8 : Recruteurs et managers identifiés      (29c)
+T9 : Contact direct sans LinkedIn Premium   (29c)
+T10: Trouvez les bons contacts en 30 sec    (30c)
+T11: Votre prochaine entreprise à portée    (30c)
+T12: DRH, managers — trouvez-les vite       (28c)
+T13: Networking ciblé par entreprise        (28c)
+T14: Contacts sauvegardés et suivis         (27c)
+T15: Postulez auprès des bonnes personnes   (30c)
+```
+
+**4 descriptions** :
+```
+D1 (90c): Entrez l'entreprise et le rôle recherché. Career Match identifie recruteurs et managers en 30 secondes.
+D2 (89c): 80% des postes sont pourvus par réseau. Contactez directement les décisionnaires — sans portail RH.
+D3 (88c): Trouvez recruteurs, DRH et team leads dans votre entreprise cible. 3 crédits offerts. Sans CB.
+D4 (87c): Networking intelligent + analyse CV ATS dans un seul outil. Résultats immédiats. Sans engagement.
 ```
 
 ---
